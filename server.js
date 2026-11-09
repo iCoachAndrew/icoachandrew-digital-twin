@@ -717,6 +717,11 @@ const userServer = http.createServer(async (req, res) => {
     const urlObj = new URL(req.url, 'http://localhost');
     const pathname = urlObj.pathname;
 
+    // Allow accessing Admin portal via /admin, /admin.html, or admin subdomain on single-port hosting
+    if (pathname === '/admin' || pathname === '/admin.html' || pathname.startsWith('/admin/') || pathname === '/admin-studio.js' || (req.headers.host && req.headers.host.startsWith('admin.'))) {
+      return handleAdmin(req, res);
+    }
+
     // Frontend pages, media & localization files
     if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html' || pathname === '/member')) {
       return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
@@ -965,10 +970,23 @@ function initStudio() {
 }
 initStudio();
 
+adminServer.on('error', (err) => {
+  console.log('Standalone admin port notice:', err.message);
+});
+userServer.on('error', (err) => {
+  console.error('User server error:', err.message);
+});
+
 function start() {
   ensureStores();
   userServer.listen(USER_PORT, () => console.log('user site on', USER_PORT));
-  adminServer.listen(ADMIN_PORT, () => console.log('admin site on', ADMIN_PORT));
+  if (ADMIN_PORT && ADMIN_PORT !== USER_PORT) {
+    try {
+      adminServer.listen(ADMIN_PORT, () => console.log('admin site on', ADMIN_PORT));
+    } catch (e) {
+      console.log('Admin port skipped:', e.message);
+    }
+  }
 }
 if (require.main === module) start();
 module.exports = { start, userServer, adminServer, ensureStores, retrieve, leakGuard, readableRings, seedSampleKnowledge, studio, db };
