@@ -457,17 +457,23 @@ async function handleAdmin(req, res) {
     const pathname = urlObj.pathname;
 
     if (req.method === 'GET' && (pathname === '/' || pathname === '/admin' || pathname === '/admin.html')) {
+      const adminHtmlPath = fs.existsSync(path.join(__dirname, 'admin.html'))
+        ? path.join(__dirname, 'admin.html')
+        : path.join(PUBLIC_DIR, 'admin.html');
       try {
-        const html = fs.readFileSync(path.join(PUBLIC_DIR, 'admin.html'), 'utf8')
+        const html = fs.readFileSync(adminHtmlPath, 'utf8')
           .replace('href="http://localhost:3000"', 'href="/" onclick="if(location.port===\'3001\'){this.href=location.protocol+\'//\'+location.hostname+\':3000\';}"');
         res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
         return res.end(html);
       } catch (_) {
-        return sendFile(res, path.join(PUBLIC_DIR, 'admin.html'));
+        return sendFile(res, adminHtmlPath);
       }
     }
     if (req.method === 'GET' && pathname === '/admin-studio.js') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'admin-studio.js'), 'application/javascript; charset=utf-8');
+      const adminJsPath = fs.existsSync(path.join(__dirname, 'admin-studio.js'))
+        ? path.join(__dirname, 'admin-studio.js')
+        : path.join(PUBLIC_DIR, 'admin-studio.js');
+      return sendFile(res, adminJsPath, 'application/javascript; charset=utf-8');
     }
     if (req.method === 'GET' && pathname === '/cms-runtime.js') {
       return sendFile(res, path.join(PUBLIC_DIR, 'cms-runtime.js'), 'application/javascript; charset=utf-8');
@@ -502,13 +508,18 @@ async function handleAdmin(req, res) {
 
     // Same-origin Visual Website Editor preview routes on the Admin port
     if (req.method === 'GET' && pathname === '/preview-site') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
+      const idxPath = fs.existsSync(path.join(__dirname, 'index.html'))
+        ? path.join(__dirname, 'index.html')
+        : path.join(PUBLIC_DIR, 'index.html');
+      return sendFile(res, idxPath);
     }
     if (req.method === 'GET' && pathname === '/i18n/en.json') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'i18n', 'en.json'), 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(__dirname, 'i18n', 'en.json')) ? path.join(__dirname, 'i18n', 'en.json') : path.join(PUBLIC_DIR, 'i18n', 'en.json');
+      return sendFile(res, p, 'application/json; charset=utf-8');
     }
     if (req.method === 'GET' && pathname === '/i18n/id.json') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'i18n', 'id.json'), 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(__dirname, 'i18n', 'id.json')) ? path.join(__dirname, 'i18n', 'id.json') : path.join(PUBLIC_DIR, 'i18n', 'id.json');
+      return sendFile(res, p, 'application/json; charset=utf-8');
     }
     if (req.method === 'GET' && pathname === '/api/session') {
       return send(res, 200, { ring: 3, label: 'public', studioPreview: true });
@@ -738,19 +749,27 @@ const userServer = http.createServer(async (req, res) => {
 
     // Frontend pages, media & localization files
     if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html' || pathname === '/member')) {
-      return sendFile(res, path.join(PUBLIC_DIR, 'index.html'));
+      const idxPath = fs.existsSync(path.join(__dirname, 'index.html'))
+        ? path.join(__dirname, 'index.html')
+        : path.join(PUBLIC_DIR, 'index.html');
+      return sendFile(res, idxPath);
     }
     if (req.method === 'GET' && pathname === '/cms-runtime.js') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'cms-runtime.js'), 'application/javascript; charset=utf-8');
+      const cmsPath = fs.existsSync(path.join(__dirname, 'cms-runtime.js'))
+        ? path.join(__dirname, 'cms-runtime.js')
+        : path.join(PUBLIC_DIR, 'cms-runtime.js');
+      return sendFile(res, cmsPath, 'application/javascript; charset=utf-8');
     }
     if (req.method === 'GET' && studio && studio.serveMedia(req, res, pathname)) {
       return;
     }
     if (req.method === 'GET' && pathname === '/i18n/en.json') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'i18n', 'en.json'), 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(__dirname, 'i18n', 'en.json')) ? path.join(__dirname, 'i18n', 'en.json') : path.join(PUBLIC_DIR, 'i18n', 'en.json');
+      return sendFile(res, p, 'application/json; charset=utf-8');
     }
     if (req.method === 'GET' && pathname === '/i18n/id.json') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'i18n', 'id.json'), 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(__dirname, 'i18n', 'id.json')) ? path.join(__dirname, 'i18n', 'id.json') : path.join(PUBLIC_DIR, 'i18n', 'id.json');
+      return sendFile(res, p, 'application/json; charset=utf-8');
     }
     if (studio && await studio.dispatchPublic(req, res, { url: urlObj, getSess: () => resolveUserSession(req) })) {
       return;
