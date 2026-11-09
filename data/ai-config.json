@@ -1,0 +1,22 @@
+{
+  "provider": "anthropic",
+  "enabled": true,
+  "keys": [],
+  "model": "claude-sonnet-4-5",
+  "ringModels": {
+    "0": "",
+    "1": "",
+    "2": "",
+    "3": ""
+  },
+  "maxTokens": 700,
+  "temperature": null,
+  "timeoutMs": 30000,
+  "monthlyBudgetUsd": 0,
+  "pricing": {},
+  "extraInstructions": "",
+  "baseUrl": "https://api.anthropic.com",
+  "anthropicVersion": "2023-06-01",
+  "modelsCache": null,
+  "lastRateLimit": null
+}

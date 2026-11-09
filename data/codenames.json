@@ -1,0 +1,76 @@
+[
+  {
+    "codeName": "Begapal",
+    "ring": 1,
+    "passphraseHash": "6c1942828c7b6eb48ecf73ffd57effae73b3b1a6e4181016335ebca21bb34dcb",
+    "otpCode": "111222",
+    "status": "active",
+    "channel": {
+      "provider": "signal",
+      "linkedAt": "2026-10-19",
+      "label": "Signal Enclave #812"
+    },
+    "addedAt": "2026-10-19"
+  },
+  {
+    "codeName": "BEGAPAL-92",
+    "ring": 1,
+    "passphraseHash": "4eb304e2cc978262b2235a17c3e96c542681f43f93875d9a1a23154903637c6e",
+    "otpCode": "749203",
+    "status": "active",
+    "channel": {
+      "provider": "signal",
+      "linkedAt": "2023-10-14",
+      "label": "Signal Enclave #812"
+    },
+    "addedAt": "14 Oct 2023"
+  },
+  {
+    "codeName": "King Peacock",
+    "ring": 1,
+    "passphraseHash": "e05575d3207951f4d5c0ce3693c0942f83e01f845eb797a4c7fb44b6c61f0ca7",
+    "otpCode": "333444",
+    "status": "active",
+    "channel": {
+      "provider": "whatsapp",
+      "linkedAt": "2026-10-19",
+      "label": "WhatsApp HSM-Proxy"
+    },
+    "addedAt": "2026-10-19"
+  },
+  {
+    "codeName": "BANYU-VENTURE",
+    "ring": 1,
+    "passphraseHash": "4eb304e2cc978262b2235a17c3e96c542681f43f93875d9a1a23154903637c6e",
+    "otpCode": "749203",
+    "status": "active",
+    "channel": {
+      "provider": "whatsapp",
+      "linkedAt": "2024-02-02",
+      "label": "WhatsApp HSM-Proxy"
+    },
+    "addedAt": "02 Feb 2024"
+  },
+  {
+    "codeName": "GOLDEN-FALCON",
+    "ring": 1,
+    "passphraseHash": "4eb304e2cc978262b2235a17c3e96c542681f43f93875d9a1a23154903637c6e",
+    "otpCode": "749203",
+    "status": "active",
+    "channel": {
+      "provider": "airterm",
+      "linkedAt": "2024-03-19",
+      "label": "Direct Air-Term 4"
+    },
+    "addedAt": "19 Mar 2024"
+  },
+  {
+    "codeName": "MERPATI-CAUCUS",
+    "ring": 1,
+    "passphraseHash": "4bb47f186df233e48b09d241ee4defb821add0c35ac8311469fe1522c6813dd5",
+    "otpCode": "000000",
+    "status": "revoked",
+    "channel": null,
+    "addedAt": "11 Jan 2023"
+  }
+]

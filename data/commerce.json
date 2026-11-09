@@ -1,0 +1,126 @@
+{
+  "currency": "IDR",
+  "taxPercent": 0,
+  "freeForNow": true,
+  "checkoutRequiresMember": true,
+  "successUrl": "/?pembayaran=berhasil",
+  "gateways": {
+    "midtrans": {
+      "enabled": false,
+      "mode": "sandbox",
+      "merchantId": "",
+      "clientKey": "",
+      "serverKey": null
+    },
+    "xendit": {
+      "enabled": false,
+      "mode": "test",
+      "publicKey": "",
+      "secretKey": null,
+      "callbackToken": null
+    },
+    "stripe": {
+      "enabled": false,
+      "mode": "test",
+      "publishableKey": "",
+      "secretKey": null,
+      "webhookSecret": null
+    },
+    "manual": {
+      "enabled": true,
+      "mode": "live",
+      "bankName": "BCA",
+      "accountNo": "",
+      "accountName": "",
+      "instructions": "Transfer sesuai nominal, lalu kirim bukti transfer. Keanggotaan diaktifkan setelah dana kami terima."
+    }
+  },
+  "plans": [
+    {
+      "id": "plan_open",
+      "name": "Ruang Diskusi Terbuka",
+      "tagline": "Untuk siapa saja yang ingin mulai berbincang.",
+      "ring": 3,
+      "priceMonthly": 0,
+      "priceYearly": 0,
+      "messageCap": 0,
+      "features": [
+        "Tanya-jawab dari karya yang sudah terbit",
+        "Tanpa perlu mendaftar"
+      ],
+      "highlight": false,
+      "active": true,
+      "purchasable": false,
+      "order": 0,
+      "ctaLabel": "Mulai Berbincang"
+    },
+    {
+      "id": "plan_member",
+      "name": "Keanggotaan Eksekutif",
+      "tagline": "Pendampingan strategis yang lebih dalam dan personal.",
+      "ring": 2,
+      "priceMonthly": 750000,
+      "priceYearly": 7500000,
+      "messageCap": 50,
+      "features": [
+        "Materi khusus anggota (Orbex Framework)",
+        "50 sesi diskusi per bulan",
+        "Riwayat percakapan tersimpan"
+      ],
+      "highlight": true,
+      "active": true,
+      "purchasable": true,
+      "order": 1,
+      "ctaLabel": "Bergabung Sekarang"
+    },
+    {
+      "id": "plan_member_plus",
+      "name": "Eksekutif Plus",
+      "tagline": "Untuk pemimpin yang berdiskusi hampir setiap hari.",
+      "ring": 2,
+      "priceMonthly": 1500000,
+      "priceYearly": 15000000,
+      "messageCap": 150,
+      "features": [
+        "Semua manfaat Keanggotaan Eksekutif",
+        "150 sesi diskusi per bulan",
+        "Prioritas sesi refleksi"
+      ],
+      "highlight": false,
+      "active": true,
+      "purchasable": true,
+      "order": 2,
+      "ctaLabel": "Pilih Plus"
+    },
+    {
+      "id": "plan_invite",
+      "name": "Lingkaran Sahabat Dekat",
+      "tagline": "Hanya melalui undangan pribadi Pak Andrew.",
+      "ring": 1,
+      "priceMonthly": 0,
+      "priceYearly": 0,
+      "messageCap": 0,
+      "features": [
+        "Akses dengan kode undangan",
+        "Pendampingan pribadi"
+      ],
+      "highlight": false,
+      "active": true,
+      "purchasable": false,
+      "order": 3,
+      "ctaLabel": "Masuk dengan Undangan"
+    }
+  ],
+  "coupons": [
+    {
+      "code": "SAHABAT10",
+      "percentOff": 10,
+      "amountOff": 0,
+      "expiresAt": null,
+      "maxRedemptions": 100,
+      "redeemed": 0,
+      "active": true
+    }
+  ],
+  "updatedAt": "2026-11-09T17:45:39.219Z"
+}
