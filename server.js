@@ -43,7 +43,7 @@ const FIXED_DUTIES = [
 ];
 
 const createStudio = require('./lib/studio');
-const createDatabase = require('./lib/db');
+const createDatabase = fs.existsSync(path.join(__dirname, 'db.js')) ? require('./db') : require('./lib/db');
 const db = createDatabase(DATA);
 let studio;
 
