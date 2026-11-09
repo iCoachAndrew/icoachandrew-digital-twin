@@ -988,5 +988,6 @@ function start() {
     }
   }
 }
-if (require.main === module) start();
+// Hostinger Node.js hosting wraps the entry file, so start() must be called directly.
+start();
 module.exports = { start, userServer, adminServer, ensureStores, retrieve, leakGuard, readableRings, seedSampleKnowledge, studio, db };
