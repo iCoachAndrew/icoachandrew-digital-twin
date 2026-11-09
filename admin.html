@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>iCoachAndrew — Ring 0 Sovereign Admin Studio &amp; Workbench</title>
+  <!-- Google Fonts: Newsreader (Editorial Authority), Figtree & Source Sans 3 (Executive UI), JetBrains Mono (Cryptographic Telemetry) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "navy-imperial": "#0D2B55",
+            "navy-dark": "#071A35",
+            "gold-antique": "#C9A227",
+            "gold-subtle": "#E5C869",
+            "gold-light": "#F7EFCF",
+            "burgundy": "#8B0000",
+            "burgundy-light": "#FDF0F0",
+            "parchment": "#FAF6ED",
+            "parchment-warm": "#FDF9F1",
+            "parchment-border": "#E6DFD3",
+            "parchment-dark": "#D8CEB8",
+            "slate-ink": "#142033",
+            "slate-body": "#4A5568",
+            "slate-muted": "#718096",
+            /* Compatibility aliases for dynamic studio scripts */
+            "primary": "#0D2B55",
+            "primary-container": "#071A35",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#E5C869",
+            "secondary": "#8B0000",
+            "tertiary": "#211500",
+            "tertiary-container": "#071A35",
+            "on-tertiary-container": "#C9A227",
+            "tertiary-fixed": "#F7EFCF",
+            "tertiary-fixed-dim": "#E5C869",
+            "on-tertiary-fixed": "#142033",
+            "surface": "#FAF6ED",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#FDF9F1",
+            "surface-container": "#FAF6ED",
+            "surface-container-high": "#E6DFD3",
+            "surface-container-highest": "#D8CEB8",
+            "on-surface": "#142033",
+            "on-surface-variant": "#4A5568",
+            "outline": "#718096",
+            "outline-variant": "#E6DFD3"
+          },
+          fontFamily: {
+            "serif": ["Newsreader", "Georgia", "serif"],
+            "sans": ["Figtree", "Source Sans 3", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          boxShadow: {
+            "card": "0 2px 8px -2px rgba(13, 43, 85, 0.06), 0 1px 3px -1px rgba(13, 43, 85, 0.04)",
+            "elevated": "0 10px 25px -5px rgba(13, 43, 85, 0.08), 0 4px 10px -3px rgba(13, 43, 85, 0.04)"
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #FAF6ED;
+      color: #142033;
+      font-family: 'Figtree', 'Source Sans 3', sans-serif;
+      overflow-x: hidden;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+    }
+    .canvas-grid {
+      background-size: 20px 20px;
+      background-image: radial-gradient(circle, #D8CEB8 1px, transparent 1px);
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FAF6ED;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D8CEB8;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C9A227;
+    }
+    @keyframes pulse-bar {
+      0%, 100% { transform: scaleY(0.35); }
+      50% { transform: scaleY(0.95); }
+    }
+    .bariton-bar {
+      animation: pulse-bar 1.8s ease-in-out infinite;
+      transform-origin: bottom;
+    }
+    .ring-badge-0 { background: #FDF0F0; color: #8B0000; border: 1px solid rgba(139, 0, 0, 0.25); }
+    .ring-badge-1 { background: #0D2B55; color: #ffffff; border: 1px solid #071A35; }
+    .ring-badge-2 { background: #F7EFCF; color: #071A35; border: 1px solid rgba(201, 162, 39, 0.45); }
+    .ring-badge-3 { background: #FAF6ED; color: #4A5568; border: 1px solid #E6DFD3; }
+    .nav-btn.active {
+      background: #0D2B55 !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(13, 43, 85, 0.18);
+    }
+    .nav-btn.active .nav-icon {
+      color: #C9A227 !important;
+    }
+    .sidebar-nav-btn.active {
+      background: #0D2B55;
+      color: #ffffff;
+      border-color: #C9A227;
+      box-shadow: 0 2px 6px rgba(13, 43, 85, 0.15);
+    }
+    .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: #D8CEB8; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-parchment text-slate-ink antialiased selection:bg-gold-antique/20 selection:text-navy-imperial">
+
+  <!-- ======================================================== -->
+  <!-- FIXED TOP MASTHEAD (IMPERIAL NAVY)                        -->
+  <!-- ======================================================== -->
+  <header class="fixed top-0 left-0 right-0 h-16 bg-navy-imperial text-white z-50 border-b border-gold-antique/40 px-4 lg:px-6 flex items-center justify-between shadow-md">
+    <!-- Brand & Clearance Crest -->
+    <div class="flex items-center gap-3.5">
+      <div class="w-9 h-9 rounded bg-navy-dark border border-gold-antique flex items-center justify-center shadow-inner">
+        <span class="font-serif font-bold text-gold-antique text-lg tracking-wider">AT</span>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-serif text-lg font-semibold tracking-tight text-white">iCoachAndrew</span>
+          <span class="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 bg-burgundy text-white rounded font-semibold border border-gold-antique/40">AIR-GAP R0</span>
+        </div>
+        <p class="text-[11px] font-mono text-gold-subtle/90 tracking-wider uppercase hidden sm:block">Digital Twin // Sovereign Advisory Workbench</p>
+      </div>
+    </div>
+
+    <!-- Center: Clearance Selector & Top Navigation Links -->
+    <div class="hidden xl:flex items-center gap-6">
+      <div class="flex items-center bg-navy-dark/80 p-1 rounded border border-white/10 text-xs font-mono">
+        <span class="px-2.5 py-1 text-slate-muted">Tingkat Izin:</span>
+        <a href="/" target="_blank" class="px-2.5 py-1 text-white/60 hover:text-white transition-colors" title="Buka mode Publik Ring 3">R3:PUBLIC</a>
+        <a href="/" target="_blank" class="px-2.5 py-1 text-white/60 hover:text-white transition-colors" title="Buka mode Anggota Ring 2">R2:MEMBER</a>
+        <a href="/" target="_blank" class="px-2.5 py-1 text-white/60 hover:text-white transition-colors" title="Buka mode Eksekutor Ring 1">R1:EXECUTOR</a>
+        <button onclick="switchStudioTab('overview')" class="px-3 py-1 bg-gold-antique text-navy-dark font-bold rounded shadow-sm flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-burgundy animate-ping"></span>
+          R0:SOVEREIGN
+        </button>
+      </div>
+      <nav class="flex items-center gap-5 text-xs font-medium tracking-wide">
+        <a href="/" onclick="if(location.port==='3001'){this.href=location.protocol+'//'+location.hostname+':3000';}" target="_blank" class="text-white/70 hover:text-gold-antique transition-colors">Advisory Twin</a>
+        <button onclick="switchStudioTab('governance')" class="text-white/70 hover:text-gold-antique transition-colors">Ring Access</button>
+        <button onclick="switchStudioTab('works')" class="text-white/70 hover:text-gold-antique transition-colors">Corpus Vault</button>
+        <button onclick="switchStudioTab('overview')" class="text-gold-antique font-semibold border-b-2 border-gold-antique pb-1">Sovereign Ring 0</button>
+      </nav>
+    </div>
+
+    <!-- Right: Enclave Status, Public Link & Logout -->
+    <div class="flex items-center gap-3">
+      <div class="hidden sm:flex items-center gap-2 px-3 py-1 rounded bg-navy-dark border border-emerald-500/30 text-xs font-mono">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="studio-auth-pill" class="text-emerald-300 font-medium">TERKUNCI</span>
+      </div>
+      <div class="hidden md:flex items-center border border-white/15 rounded overflow-hidden text-xs font-mono">
+        <button onclick="setEditorLang('id')" class="px-2 py-1 bg-gold-antique text-navy-dark font-bold">ID</button>
+        <button onclick="setEditorLang('en')" class="px-2 py-1 bg-navy-dark text-white/70 hover:text-white">EN</button>
+      </div>
+      <a href="/" onclick="if(location.port==='3001'){this.href=location.protocol+'//'+location.hostname+':3000';}" target="_blank" class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded bg-navy-dark border border-gold-antique/40 text-gold-subtle hover:bg-white/10 transition-colors font-medium">
+        <span class="material-symbols-outlined text-[15px]">open_in_new</span>
+        <span class="hidden md:inline">Lihat Web Publik</span>
+      </a>
+      <button id="btn-logout-admin" onclick="adminLogout()" class="hidden text-xs px-3 py-1.5 rounded bg-burgundy hover:bg-red-900 text-white font-semibold border border-white/15 transition-colors">
+        Keluar
+      </button>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- RING 0 LOGIN GATE OVERLAY                                 -->
+  <!-- ======================================================== -->
+  <div id="admin-login-gate" class="fixed inset-0 z-50 bg-navy-dark/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-parchment-warm rounded-xl max-w-md w-full p-8 shadow-2xl border-2 border-gold-antique/50 space-y-5 relative overflow-hidden">
+      <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-burgundy via-gold-antique to-navy-imperial"></div>
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-lg bg-navy-imperial border border-gold-antique text-gold-antique flex items-center justify-center font-serif text-xl font-bold shadow-md">
+          R0
+        </div>
+        <div>
+          <div class="text-[11px] font-mono uppercase tracking-widest text-burgundy font-bold">Sovereign Enclave Authentication</div>
+          <h1 class="font-serif text-2xl text-navy-imperial font-bold">Ring 0 Admin Studio</h1>
+        </div>
+      </div>
+      <p class="text-xs text-slate-body leading-relaxed">
+        Masukkan <strong>Passphrase Sovereign Ring 0</strong> untuk membuka Visual Website Editor, Repositori Karya Ring 0–3, Memori Protokoler Andrew Tani, Brankas Token Claude API, dan Pengaturan Payment Gateway.
+      </p>
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-navy-imperial uppercase tracking-wider font-mono">Passphrase Sovereign Ring 0</label>
+        <input id="admin-passphrase-input" type="password" value="" onkeydown="if(event.key==='Enter')adminLogin()" placeholder="Masukkan passphrase Ring 0 Anda..." class="w-full px-3.5 py-2.5 rounded-lg border border-parchment-dark bg-white font-mono text-sm text-slate-ink focus:outline-none focus:border-navy-imperial shadow-inner"/>
+        <div class="text-[11px] text-slate-muted font-mono">Enkripsi Sesi: AES-256-GCM • Zero-PII Audit Enforced</div>
+      </div>
+      <div id="admin-login-err" class="hidden text-xs text-burgundy font-semibold bg-burgundy-light p-2.5 rounded-lg border border-burgundy/30"></div>
+      <button onclick="adminLogin()" class="w-full py-2.5 px-4 rounded-lg bg-navy-imperial text-white font-semibold text-sm hover:bg-navy-dark transition-all flex items-center justify-center gap-2 shadow-md border border-gold-antique/30">
+        <span class="material-symbols-outlined text-[18px] text-gold-antique">lock_open</span>Buka Ring 0 Sovereign Studio
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="studio-toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl bg-navy-imperial text-white text-xs font-medium shadow-xl border border-gold-antique/40 items-center gap-2"></div>
+
+  <!-- ======================================================== -->
+  <!-- FIXED LEFT SIDEBAR (WARM PARCHMENT TELEMETRY & NAV)       -->
+  <!-- ======================================================== -->
+  <aside class="hidden lg:flex fixed top-16 left-0 bottom-0 w-64 bg-parchment-warm border-r border-parchment-border z-40 flex-col justify-between p-5 select-none overflow-y-auto thin-scroll">
+    <div class="flex flex-col gap-5">
+      <!-- 1. Telemetry Stream -->
+      <div class="bg-parchment p-3.5 rounded-lg border border-parchment-border shadow-card">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-slate-muted font-bold">Telemetry Stream</span>
+          <span class="text-[10px] font-mono text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded font-semibold">LIVE</span>
+        </div>
+        <div class="space-y-2 font-mono text-xs">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-body">LATENSI</span>
+            <span id="sb-telemetry-latency" class="text-navy-imperial font-semibold">42ms [Prima]</span>
+          </div>
+          <div class="w-full bg-parchment-border h-1 rounded-full overflow-hidden">
+            <div class="bg-navy-imperial h-full w-1/4"></div>
+          </div>
+          <div class="flex justify-between items-center pt-1">
+            <span class="text-slate-body">SINTESIS</span>
+            <span id="sb-telemetry-model" class="text-navy-imperial font-semibold truncate max-w-[115px]">NEURAL_V4.2</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-body">CIPHER NODE</span>
+            <span class="text-burgundy font-semibold">JKT-ALPHA-01</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Vocal Synthesis Monitor (Bariton) -->
+      <div class="bg-parchment p-3.5 rounded-lg border border-parchment-border shadow-card">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[10px] font-mono uppercase tracking-widest text-slate-muted font-bold">Vocal Synthesis Monitor</span>
+          <span class="text-[10px] font-mono text-gold-antique font-bold">BARITON</span>
+        </div>
+        <div class="h-12 flex items-end justify-between gap-1 px-1 py-1 bg-navy-imperial/5 rounded border border-parchment-border">
+          <div class="w-1.5 bg-navy-imperial h-5 rounded-t bariton-bar" style="animation-delay: 0.1s"></div>
+          <div class="w-1.5 bg-navy-imperial h-8 rounded-t bariton-bar" style="animation-delay: 0.3s"></div>
+          <div class="w-1.5 bg-gold-antique h-10 rounded-t bariton-bar" style="animation-delay: 0.2s"></div>
+          <div class="w-1.5 bg-navy-imperial h-6 rounded-t bariton-bar" style="animation-delay: 0.5s"></div>
+          <div class="w-1.5 bg-gold-antique h-9 rounded-t bariton-bar" style="animation-delay: 0.15s"></div>
+          <div class="w-1.5 bg-navy-imperial h-7 rounded-t bariton-bar" style="animation-delay: 0.4s"></div>
+          <div class="w-1.5 bg-navy-imperial h-4 rounded-t bariton-bar" style="animation-delay: 0.25s"></div>
+          <div class="w-1.5 bg-gold-antique h-8 rounded-t bariton-bar" style="animation-delay: 0.35s"></div>
+          <div class="w-1.5 bg-navy-imperial h-6 rounded-t bariton-bar" style="animation-delay: 0.05s"></div>
+          <div class="w-1.5 bg-navy-imperial h-9 rounded-t bariton-bar" style="animation-delay: 0.45s"></div>
+          <div class="w-1.5 bg-gold-antique h-5 rounded-t bariton-bar" style="animation-delay: 0.2s"></div>
+          <div class="w-1.5 bg-navy-imperial h-7 rounded-t bariton-bar" style="animation-delay: 0.3s"></div>
+        </div>
+        <div class="mt-2 flex justify-between text-[10px] font-mono text-slate-muted">
+          <span>TIMBRE: WIBAWA_SOCRATES</span>
+          <span class="text-navy-imperial font-semibold">98.4%</span>
+        </div>
+      </div>
+
+      <!-- 3. Enclave Navigation -->
+      <div>
+        <div class="text-[10px] font-mono uppercase tracking-widest text-slate-muted font-bold mb-2.5 px-2">Enclave Navigation</div>
+        <ul class="space-y-1 text-xs font-medium">
+          <li>
+            <a href="/" onclick="if(location.port==='3001'){this.href=location.protocol+'//'+location.hostname+':3000';}" target="_blank" class="flex items-center justify-between px-3 py-2 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors">
+              <span class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px] text-slate-muted">forum</span>
+                <span>01 // Chat Enclave</span>
+              </span>
+              <span class="font-mono text-[10px] text-slate-muted">R3/R2</span>
+            </a>
+          </li>
+          <li>
+            <button onclick="switchStudioTab('governance')" class="w-full flex items-center justify-between px-3 py-2 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors text-left">
+              <span class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px] text-slate-muted">vpn_key</span>
+                <span>02 // Ring Access</span>
+              </span>
+              <span class="font-mono text-[10px] text-slate-muted">TOKEN</span>
+            </button>
+          </li>
+          <li>
+            <button onclick="switchStudioTab('works')" class="w-full flex items-center justify-between px-3 py-2 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors text-left">
+              <span class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px] text-slate-muted">library_books</span>
+                <span>03 // Corpus Vault</span>
+              </span>
+              <span class="font-mono text-[10px] text-slate-muted">R0–R3</span>
+            </button>
+          </li>
+          <li>
+            <button onclick="switchStudioTab('overview')" class="w-full flex items-center justify-between px-3 py-2.5 rounded bg-navy-imperial text-white font-semibold shadow-sm border-l-4 border-gold-antique text-left">
+              <span class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-[18px] text-gold-antique">admin_panel_settings</span>
+                <span>00 // Sovereign Ring 0</span>
+              </span>
+              <span class="w-2 h-2 rounded-full bg-gold-antique"></span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 4. Studio Workbench Modules Quick Access -->
+      <div>
+        <div class="text-[10px] font-mono uppercase tracking-widest text-slate-muted font-bold mb-2 px-2">Modul Studio Ring 0</div>
+        <div class="space-y-1 text-xs">
+          <button onclick="switchStudioTab('visual-editor')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors text-left">
+            <span class="material-symbols-outlined text-[16px] text-gold-antique">web</span>Visual Website Editor
+          </button>
+          <button onclick="switchStudioTab('media')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors text-left">
+            <span class="material-symbols-outlined text-[16px] text-gold-antique">photo_library</span>Pustaka Foto &amp; Media
+          </button>
+          <button onclick="switchStudioTab('memory')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors text-left">
+            <span class="material-symbols-outlined text-[16px] text-gold-antique">psychology</span>Memori Protokoler
+          </button>
+          <button onclick="switchStudioTab('ai')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors text-left">
+            <span class="material-symbols-outlined text-[16px] text-gold-antique">key_visualizer</span>Claude AI Token Vault
+          </button>
+          <button onclick="switchStudioTab('commerce')" class="w-full flex items-center gap-2 px-3 py-1.5 rounded text-slate-body hover:bg-parchment hover:text-navy-imperial transition-colors text-left">
+            <span class="material-symbols-outlined text-[16px] text-gold-antique">payments</span>Payment &amp; Pricing
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Hash Footnote -->
+    <div class="pt-4 border-t border-parchment-border text-[10px] font-mono text-slate-muted space-y-1">
+      <div class="flex justify-between">
+        <span>NODE PROTOCOL:</span>
+        <span class="text-navy-imperial font-semibold">SEC-TLS-1.3</span>
+      </div>
+      <div class="flex justify-between">
+        <span>ENCLAVE DOMAIN:</span>
+        <span class="text-slate-ink">twin.andrewtani.id</span>
+      </div>
+      <div class="pt-1 text-[9px] text-slate-muted/80 leading-tight">
+        Zero-PII Telemetry Enforced. Seluruh kunci dienkripsi AES-256-GCM.
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- MAIN CONTENT AREA (OFFSET FOR SIDEBAR & TOPBAR)           -->
+  <!-- ======================================================== -->
+  <div class="lg:pl-64 pt-16 min-h-screen flex flex-col justify-between">
+    <main class="p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6 flex-1 flex flex-col">
+
+      <!-- 01. TOP SOVEREIGN SECURITY BANNER -->
+      <section class="bg-white border border-parchment-border rounded-lg p-4 sm:p-5 shadow-card relative overflow-hidden">
+        <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-burgundy"></div>
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pl-3">
+          <div class="space-y-1">
+            <div class="flex flex-wrap items-center gap-2.5">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider bg-burgundy-light text-burgundy border border-burgundy/20">
+                <span class="material-symbols-outlined text-[14px]">verified_user</span>
+                Ring 0 Sovereign Air-Gap Active
+              </span>
+              <span class="text-xs font-mono text-slate-muted">SOVEREIGN ENCLAVE // AUTH-OK</span>
+              <span class="text-xs font-mono text-navy-imperial font-semibold bg-gold-light px-2 py-0.5 rounded border border-gold-antique/30">
+                SESI: ANDREW TANI (SUPER-ADMIN R0)
+              </span>
+            </div>
+            <h1 class="font-serif text-xl sm:text-2xl text-navy-imperial font-bold tracking-tight pt-1">
+              Protokol Keamanan Air-Gap Ring 0
+            </h1>
+            <p class="text-xs text-slate-body font-mono">
+              Hardware Vault AES-256-GCM • Hash Integritas: SHA-512 Enforced • Zona Waktu: WIB (UTC+7, Jakarta Enclave) • Passphrase Validated (2026 Sovereign)
+            </p>
+          </div>
+          <!-- Quick Global Actions -->
+          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button onclick="seedSampleDocs()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded border border-parchment-dark bg-parchment hover:bg-parchment-border/60 text-navy-imperial text-xs font-semibold transition-all shadow-sm">
+              <span class="material-symbols-outlined text-[16px] text-gold-antique">database</span>
+              Muat Sampel Ring 0–3
+            </button>
+            <a href="/admin/api/export" class="inline-flex items-center gap-2 px-3.5 py-2 rounded border border-parchment-dark bg-parchment hover:bg-parchment-border/60 text-navy-imperial text-xs font-semibold transition-all shadow-sm">
+              <span class="material-symbols-outlined text-[16px] text-navy-imperial">download</span>
+              Ekspor Backup JSON
+            </a>
+            <button onclick="switchStudioTab('visual-editor')" class="inline-flex items-center gap-2 px-4 py-2 rounded bg-navy-imperial hover:bg-navy-dark text-white text-xs font-semibold transition-all shadow-sm border border-gold-antique/40">
+              <span class="material-symbols-outlined text-[16px] text-gold-antique">web</span>
+              Buka Editor Website Visual
+            </button>
+            <button onclick="adminLogout()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-burgundy/30 bg-burgundy-light hover:bg-burgundy hover:text-white text-burgundy text-xs font-semibold transition-all">
+              <span class="material-symbols-outlined text-[16px]">lock</span>
+              Kunci Sesi
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02. HERO TITLE & LIVE SYNC CAPSULE -->
+      <section class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-parchment-border pb-5">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-gold-antique font-bold mb-1">
+            <span class="material-symbols-outlined text-[16px]">shield_person</span>
+            Ring 0 Sovereign Command Center
+          </div>
+          <h2 class="font-serif text-2xl sm:text-3xl lg:text-4xl text-navy-imperial font-bold tracking-tight">
+            Pusat Kendali iCoachAndrew Digital Twin
+          </h2>
+          <p class="text-sm text-slate-body mt-1 max-w-3xl">
+            Kelola tampilan visual website secara langsung (live canvas), pustaka foto &amp; media, repositori karya kanonik Ring 0–3, memori protokoler &amp; persona bariton Andrew Tani, brankas enkripsi token Claude AI, serta gerbang pembayaran.
+          </p>
+        </div>
+        <div class="flex items-center gap-3 bg-white px-4 py-3 rounded-lg border border-parchment-border shadow-card shrink-0">
+          <div class="text-right">
+            <span class="block text-[10px] font-mono uppercase text-slate-muted">Status Sinkronisasi</span>
+            <span id="hero-sync-status" class="font-mono text-xs font-bold text-emerald-700 flex items-center gap-1.5 justify-end">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Draft Ready
+            </span>
+          </div>
+          <div class="h-8 w-px bg-parchment-border"></div>
+          <button onclick="publishSiteDraft()" class="px-4 py-2 rounded bg-gold-antique hover:bg-gold-subtle text-navy-dark font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">rocket_launch</span>
+            Publikasikan Live ke twin.andrewtani.id
+          </button>
+        </div>
+      </section>
+
+      <!-- 03. SYSTEM MODULE NAVIGATION TABS -->
+      <div class="bg-white border border-parchment-border rounded-lg p-1.5 shadow-card overflow-x-auto thin-scroll">
+        <nav class="flex items-center gap-1 min-w-max" id="adminTabsNav">
+          <button onclick="switchStudioTab('overview')" data-tab="overview" class="nav-btn active px-3.5 py-2 rounded text-xs font-bold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon text-gold-antique">dashboard</span>
+            Ringkasan &amp; Status
+          </button>
+          <button onclick="switchStudioTab('visual-editor')" data-tab="visual-editor" class="nav-btn px-3.5 py-2 rounded text-slate-body hover:text-navy-imperial hover:bg-parchment text-xs font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon">edit_square</span>
+            Visual Website Editor
+          </button>
+          <button onclick="switchStudioTab('media')" data-tab="media" class="nav-btn px-3.5 py-2 rounded text-slate-body hover:text-navy-imperial hover:bg-parchment text-xs font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon">perm_media</span>
+            Foto &amp; Media
+          </button>
+          <button onclick="switchStudioTab('works')" data-tab="works" class="nav-btn px-3.5 py-2 rounded text-slate-body hover:text-navy-imperial hover:bg-parchment text-xs font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon">menu_book</span>
+            Repositori Karya R0–R3
+          </button>
+          <button onclick="switchStudioTab('memory')" data-tab="memory" class="nav-btn px-3.5 py-2 rounded text-slate-body hover:text-navy-imperial hover:bg-parchment text-xs font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon">psychology</span>
+            Memori Protokoler &amp; Persona
+          </button>
+          <button onclick="switchStudioTab('ai')" data-tab="ai" class="nav-btn px-3.5 py-2 rounded text-slate-body hover:text-navy-imperial hover:bg-parchment text-xs font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon">key_visualizer</span>
+            Claude AI Token Vault
+          </button>
+          <button onclick="switchStudioTab('commerce')" data-tab="commerce" class="nav-btn px-3.5 py-2 rounded text-slate-body hover:text-navy-imperial hover:bg-parchment text-xs font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon">payments</span>
+            Payment &amp; Pricing
+          </button>
+          <button onclick="switchStudioTab('governance')" data-tab="governance" class="nav-btn px-3.5 py-2 rounded text-slate-body hover:text-navy-imperial hover:bg-parchment text-xs font-semibold flex items-center gap-2 transition-all">
+            <span class="material-symbols-outlined text-[18px] nav-icon">policy</span>
+            Ring 1 Registry &amp; Audit Log
+          </button>
+        </nav>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB 1: OVERVIEW (RINGKASAN & STATUS)                      -->
+      <!-- ======================================================== -->
+      <section id="tab-overview" class="studio-panel space-y-6">
+        <!-- 4 Physical Knowledge Vaults Row -->
+        <div>
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h3 class="font-serif text-lg font-bold text-navy-imperial flex items-center gap-2">
+              <span class="material-symbols-outlined text-gold-antique">dns</span>
+              4 Penyimpanan Fisik Terpisah — Physical Knowledge Vaults
+            </h3>
+            <span class="text-xs font-mono text-slate-muted">ISOLASI DATABASE FISIK: AKTIF</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Ring 0 Vault -->
+            <div onclick="switchStudioTab('governance')" class="cursor-pointer bg-white border-t-4 border-t-burgundy border border-parchment-border rounded-lg p-5 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="px-2 py-0.5 bg-burgundy-light text-burgundy font-mono text-[11px] font-bold rounded border border-burgundy/20">RING 0 STORE</span>
+                  <span class="material-symbols-outlined text-burgundy">lock_person</span>
+                </div>
+                <h4 class="font-serif text-lg font-bold text-navy-imperial">Sovereign Pribadi</h4>
+                <p class="text-xs text-slate-body mt-1 leading-relaxed">
+                  Memoar rahasia keluarga, evaluasi suksesi, keputusan dewan tertutup, catatan refleksi pribadi Pak Andrew.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-parchment-border flex items-center justify-between font-mono text-xs">
+                <span id="vault-count-r0" class="text-slate-muted">Memuat...</span>
+                <span class="text-burgundy font-semibold">AES-256-GCM</span>
+              </div>
+            </div>
+
+            <!-- Ring 1 Vault -->
+            <div onclick="switchStudioTab('governance')" class="cursor-pointer bg-white border-t-4 border-t-navy-imperial border border-parchment-border rounded-lg p-5 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="px-2 py-0.5 bg-navy-imperial/10 text-navy-imperial font-mono text-[11px] font-bold rounded border border-navy-imperial/20">RING 1 STORE</span>
+                  <span class="material-symbols-outlined text-navy-imperial">shield_locked</span>
+                </div>
+                <h4 class="font-serif text-lg font-bold text-navy-imperial">Inner Circle Codenamed</h4>
+                <p class="text-xs text-slate-body mt-1 leading-relaxed">
+                  Mandat eksekutor, studi kasus M&amp;A sensitif, strategi korporasi klien C-Suite terikat NDA.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-parchment-border flex items-center justify-between font-mono text-xs">
+                <span id="vault-count-r1" class="text-slate-muted">Memuat...</span>
+                <span class="text-navy-imperial font-semibold">CODENAME GUARD</span>
+              </div>
+            </div>
+
+            <!-- Ring 2 Vault -->
+            <div onclick="switchStudioTab('governance')" class="cursor-pointer bg-white border-t-4 border-t-gold-antique border border-parchment-border rounded-lg p-5 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="px-2 py-0.5 bg-gold-light text-navy-dark font-mono text-[11px] font-bold rounded border border-gold-antique/40">RING 2 STORE</span>
+                  <span class="material-symbols-outlined text-gold-antique">workspace_premium</span>
+                </div>
+                <h4 class="font-serif text-lg font-bold text-navy-imperial">Anggota Eksekutif</h4>
+                <p class="text-xs text-slate-body mt-1 leading-relaxed">
+                  Kerangka kerja Orbex lengkap, 18 buku kepemimpinan, modul diagnostik organisasi &amp; kurikulum.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-parchment-border flex items-center justify-between font-mono text-xs">
+                <span id="vault-count-r2" class="text-slate-muted">Memuat...</span>
+                <span class="text-gold-antique font-bold">TIERED QUOTA</span>
+              </div>
+            </div>
+
+            <!-- Ring 3 Vault -->
+            <div onclick="switchStudioTab('governance')" class="cursor-pointer bg-white border-t-4 border-t-parchment-dark border border-parchment-border rounded-lg p-5 shadow-card hover:shadow-elevated transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="px-2 py-0.5 bg-parchment text-slate-body font-mono text-[11px] font-bold rounded border border-parchment-border">RING 3 STORE</span>
+                  <span class="material-symbols-outlined text-slate-muted">public</span>
+                </div>
+                <h4 class="font-serif text-lg font-bold text-navy-imperial">Publik Terbuka</h4>
+                <p class="text-xs text-slate-body mt-1 leading-relaxed">
+                  Esai publik, pengantar falsafah Tut Wuri Handayani, pidato kunci, dan wawasan kepemimpinan umum.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-parchment-border flex items-center justify-between font-mono text-xs">
+                <span id="vault-count-r3" class="text-slate-muted">Memuat...</span>
+                <span class="text-emerald-700 font-semibold">OPEN ACCESS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Live Metric Cards Grid -->
+        <div id="overview-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"></div>
+
+        <!-- 3 Action Pillar Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Pillar 1: Visual CMS & Media -->
+          <div class="bg-white border border-parchment-border rounded-lg p-6 shadow-card flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] font-mono uppercase tracking-widest text-gold-antique font-bold">Visual CMS &amp; Media</span>
+                <span class="w-8 h-8 rounded bg-parchment flex items-center justify-center text-navy-imperial border border-parchment-border">
+                  <span class="material-symbols-outlined text-[18px]">Burst_Mode</span>
+                </span>
+              </div>
+              <h3 class="font-serif text-xl font-bold text-navy-imperial mb-2">Editor Website Fluid &amp; Foto</h3>
+              <p class="text-xs text-slate-body leading-relaxed mb-4">
+                Klik elemen apa pun di kanvas langsung untuk mengedit teks (ID/EN), mengganti semua foto/gambar di website, mengatur urutan section, warna tema, font, dan blok kustom.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 pt-3 border-t border-parchment-border">
+              <button onclick="switchStudioTab('visual-editor')" class="flex-1 py-2 px-3 bg-navy-imperial hover:bg-navy-dark text-white text-xs font-semibold rounded transition-all text-center">
+                Buka Visual Editor
+              </button>
+              <button onclick="switchStudioTab('media')" class="py-2 px-3 bg-parchment hover:bg-parchment-border text-navy-imperial border border-parchment-border text-xs font-semibold rounded transition-all">
+                Pustaka Foto
+              </button>
+            </div>
+          </div>
+
+          <!-- Pillar 2: Ring 0-3 Knowledge & Persona -->
+          <div class="bg-white border border-parchment-border rounded-lg p-6 shadow-card flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] font-mono uppercase tracking-widest text-gold-antique font-bold">Ring 0–3 Knowledge &amp; Persona</span>
+                <span class="w-8 h-8 rounded bg-parchment flex items-center justify-center text-navy-imperial border border-parchment-border">
+                  <span class="material-symbols-outlined text-[18px]">psychology_alt</span>
+                </span>
+              </div>
+              <h3 class="font-serif text-xl font-bold text-navy-imperial mb-2">Repositori Karya &amp; Memori Protokoler</h3>
+              <p class="text-xs text-slate-body leading-relaxed mb-4">
+                Atur buku, esai, modul, himne, dan memoar di Ring 0–3, serta susun memori protokoler, nada bicara bariton, nilai Nusantara, dan batasan topik Andrew Tani per ring.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 pt-3 border-t border-parchment-border">
+              <button onclick="switchStudioTab('works')" class="flex-1 py-2 px-3 bg-navy-imperial hover:bg-navy-dark text-white text-xs font-semibold rounded transition-all text-center">
+                Repositori Karya
+              </button>
+              <button onclick="switchStudioTab('memory')" class="py-2 px-3 bg-parchment hover:bg-parchment-border text-navy-imperial border border-parchment-border text-xs font-semibold rounded transition-all">
+                Memori Protokoler
+              </button>
+            </div>
+          </div>
+
+          <!-- Pillar 3: AI Engine & Monetization -->
+          <div class="bg-white border border-parchment-border rounded-lg p-6 shadow-card flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="text-[11px] font-mono uppercase tracking-widest text-gold-antique font-bold">AI Engine &amp; Monetization</span>
+                <span class="w-8 h-8 rounded bg-parchment flex items-center justify-center text-navy-imperial border border-parchment-border">
+                  <span class="material-symbols-outlined text-[18px]">encrypted</span>
+                </span>
+              </div>
+              <h3 class="font-serif text-xl font-bold text-navy-imperial mb-2">Dasbor Claude API &amp; Payment Gateway</h3>
+              <p class="text-xs text-slate-body leading-relaxed mb-4">
+                Simpan API Token Claude terenkripsi AES-256-GCM, uji konektivitas &amp; model per ring, pantau pemakaian token, serta atur Midtrans, Xendit, Stripe, dan editor harga paket.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 pt-3 border-t border-parchment-border">
+              <button onclick="switchStudioTab('ai')" class="flex-1 py-2 px-3 bg-navy-imperial hover:bg-navy-dark text-white text-xs font-semibold rounded transition-all text-center">
+                Dasbor Claude AI
+              </button>
+              <button onclick="switchStudioTab('commerce')" class="py-2 px-3 bg-parchment hover:bg-parchment-border text-navy-imperial border border-parchment-border text-xs font-semibold rounded transition-all">
+                Gateway &amp; Harga
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Telemetry & System Vitals Bar -->
+        <div class="bg-navy-imperial text-white rounded-lg p-5 shadow-elevated border border-gold-antique/30 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-lg bg-navy-dark border border-gold-antique/40 flex items-center justify-center text-gold-antique shrink-0">
+              <span class="material-symbols-outlined text-[26px]">monitoring</span>
+            </div>
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-widest text-gold-subtle block">Zero-PII Audit &amp; Guardrail Status</span>
+              <h4 class="font-serif text-lg font-semibold text-white">Arsip Ring &amp; Keamanan Enclave Aktif</h4>
+              <p class="text-xs text-white/70">Tidak ada teks pertanyaan atau isi percakapan pribadi yang disimpan di log server (Zero-PII Policy).</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 w-full lg:w-auto border-t lg:border-t-0 pt-4 lg:pt-0 border-white/10 font-mono">
+            <div>
+              <span class="text-[10px] text-white/60 block">STATUS AI ENGINE</span>
+              <span id="vitals-ai-mode" class="text-sm font-bold text-emerald-400">READY</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-white/60 block">KUOTASI BULAN INI</span>
+              <span id="vitals-ai-cost" class="text-sm font-bold text-gold-antique">0 Sesi ($0.00)</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-white/60 block">MODE AKSES KEANGGOTAAN</span>
+              <span id="vitals-commerce-mode" class="text-sm font-bold text-white">Gratis Sementara</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-white/60 block">CODENAMED R1 AKTIF</span>
+              <span id="vitals-r1-count" class="text-sm font-bold text-gold-subtle">3 Sandi</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="px-2.5 py-1 bg-navy-dark border border-white/15 rounded font-mono text-[11px] text-gold-subtle">KMS: OK-SHA512</span>
+            <button onclick="loadOverview()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs font-semibold text-white transition-colors">
+              Segarkan Audit
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 2: VISUAL WEBSITE EDITOR                              -->
+      <!-- ======================================================== -->
+      <section id="tab-visual-editor" class="studio-panel hidden flex-1 flex flex-col min-h-[760px] bg-white border border-parchment-border rounded-xl shadow-card overflow-hidden">
+        <!-- Editor Toolbar -->
+        <div class="bg-parchment-warm border-b border-parchment-border px-4 py-2.5 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-navy-imperial flex items-center gap-1 font-serif">
+              <span class="material-symbols-outlined text-[16px] text-gold-antique">touch_app</span>Visual Studio:
+            </span>
+            <div class="inline-flex rounded-lg border border-parchment-border bg-white p-0.5 text-xs">
+              <button id="ve-mode-inspect" onclick="setEditorMode('inspect')" class="px-2.5 py-1 rounded-md bg-navy-imperial text-white font-semibold">Klik-Edit Elemen</button>
+              <button id="ve-mode-navigate" onclick="setEditorMode('navigate')" class="px-2.5 py-1 rounded-md text-slate-body hover:text-navy-imperial">Navigasi Bebas</button>
+            </div>
+
+            <div class="inline-flex rounded-lg border border-parchment-border bg-white p-0.5 text-xs">
+              <button onclick="setEditorView('frontpage')" class="px-2.5 py-1 rounded-md hover:bg-parchment font-medium">Beranda</button>
+              <button onclick="setEditorView('chamber')" class="px-2.5 py-1 rounded-md hover:bg-parchment font-medium">Ruang Diskusi</button>
+              <button onclick="setEditorView('modal-r2')" class="px-2.5 py-1 rounded-md hover:bg-parchment font-medium">Modal Anggota</button>
+              <button onclick="setEditorView('modal-r1')" class="px-2.5 py-1 rounded-md hover:bg-parchment font-medium">Modal Undangan</button>
+            </div>
+
+            <div class="inline-flex rounded-lg border border-parchment-border bg-white p-0.5 text-xs font-mono">
+              <button id="ve-lang-id" onclick="setEditorLang('id')" class="px-2 py-1 rounded-md bg-navy-imperial text-white font-semibold">ID</button>
+              <button id="ve-lang-en" onclick="setEditorLang('en')" class="px-2 py-1 rounded-md text-slate-body">EN</button>
+            </div>
+
+            <div class="inline-flex rounded-lg border border-parchment-border bg-white p-0.5 text-xs">
+              <button onclick="setEditorViewport('100%')" class="px-2 py-1 rounded-md hover:bg-parchment" title="Desktop">Desktop</button>
+              <button onclick="setEditorViewport('768px')" class="px-2 py-1 rounded-md hover:bg-parchment" title="Tablet">Tablet</button>
+              <button onclick="setEditorViewport('390px')" class="px-2 py-1 rounded-md hover:bg-parchment" title="Mobile">Mobile</button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="ve-dirty-indicator" class="text-[11px] font-mono px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">Tersinkron</span>
+            <button onclick="discardSiteDraft()" class="px-2.5 py-1.5 rounded border border-parchment-border bg-white text-xs font-medium hover:bg-parchment">Kembalikan ke Publikasi</button>
+            <button onclick="saveSiteDraft()" class="px-3 py-1.5 rounded bg-parchment text-navy-imperial border border-parchment-dark text-xs font-semibold hover:bg-parchment-border">Simpan Draf</button>
+            <button onclick="publishSiteDraft()" class="px-3.5 py-1.5 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark flex items-center gap-1 shadow-sm">
+              <span class="material-symbols-outlined text-[15px] text-gold-antique">rocket_launch</span>Publikasikan Live
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-Pane Studio Body -->
+        <div class="flex-1 grid grid-cols-12 min-h-[680px] overflow-hidden">
+          <!-- Left Dock (3 cols): Photos, Sections, Custom Blocks, Theme & SEO -->
+          <aside class="col-span-12 lg:col-span-3 bg-white border-r border-parchment-border flex flex-col min-h-0">
+            <div class="grid grid-cols-4 border-b border-parchment-border text-[11px] font-semibold text-center bg-parchment-warm">
+              <button onclick="switchLeftDock('photos')" data-dock="photos" class="dock-tab py-2.5 border-b-2 border-navy-imperial text-navy-imperial font-bold">Semua Foto</button>
+              <button onclick="switchLeftDock('sections')" data-dock="sections" class="dock-tab py-2.5 border-b-2 border-transparent text-slate-body">Section</button>
+              <button onclick="switchLeftDock('blocks')" data-dock="blocks" class="dock-tab py-2.5 border-b-2 border-transparent text-slate-body">Blok Baru</button>
+              <button onclick="switchLeftDock('theme')" data-dock="theme" class="dock-tab py-2.5 border-b-2 border-transparent text-slate-body">Tema &amp; SEO</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto thin-scroll p-3.5 space-y-4">
+              <!-- Subpanel: All Photos on Website -->
+              <div id="dock-photos" class="dock-panel space-y-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Seluruh Foto &amp; Gambar di Halaman</h4>
+                  <button onclick="refreshCanvasInventory()" class="text-[11px] text-navy-imperial underline font-semibold">Segarkan</button>
+                </div>
+                <p class="text-[11px] text-slate-body">Klik salah satu foto di bawah ini (atau klik langsung pada foto di kanvas tengah) untuk mengganti foto, mengunggah gambar baru, atau mengatur gaya visualnya.</p>
+                <div id="ve-page-images-list" class="space-y-2"></div>
+              </div>
+
+              <!-- Subpanel: Sections Order & Visibility -->
+              <div id="dock-sections" class="dock-panel hidden space-y-3">
+                <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Urutan &amp; Visibilitas Section</h4>
+                <p class="text-[11px] text-slate-body">Atur urutan tampil section di halaman utama atau sembunyikan section tertentu.</p>
+                <div id="ve-sections-list" class="space-y-2"></div>
+                <div class="pt-3 border-t border-parchment-border space-y-2">
+                  <h5 class="text-xs font-bold text-navy-imperial">Integrasi Otomatis ke Beranda</h5>
+                  <label class="flex items-center justify-between text-xs bg-parchment p-2.5 rounded-lg border border-parchment-border">
+                    <span>Sinkronkan Kartu Buku dari Repositori Karya</span>
+                    <input id="ve-opt-works-home" type="checkbox" onchange="updateSiteSettingsFromUI()"/>
+                  </label>
+                  <label class="flex items-center justify-between text-xs bg-parchment p-2.5 rounded-lg border border-parchment-border">
+                    <span>Tampilkan Tabel Paket &amp; Harga di Beranda</span>
+                    <input id="ve-opt-pricing-home" type="checkbox" onchange="updateSiteSettingsFromUI()"/>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Subpanel: Custom Flexible Blocks -->
+              <div id="dock-blocks" class="dock-panel hidden space-y-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Blok Section Fleksibel</h4>
+                  <button onclick="addCustomBlock()" class="px-2.5 py-1 rounded bg-navy-imperial text-white text-[11px] font-semibold">+ Tambah Blok</button>
+                </div>
+                <p class="text-[11px] text-slate-body">Sisipkan section tambahan (kutipan, pengumuman acara, galeri foto, video, atau CTA baru) di posisi mana pun.</p>
+                <div id="ve-blocks-list" class="space-y-3"></div>
+              </div>
+
+              <!-- Subpanel: Theme Colors, Fonts, SEO & History -->
+              <div id="dock-theme" class="dock-panel hidden space-y-4">
+                <div class="space-y-2">
+                  <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Palet Warna Tema</h4>
+                  <div id="ve-theme-colors" class="grid grid-cols-2 gap-2"></div>
+                </div>
+                <div class="space-y-2 pt-2 border-t border-parchment-border">
+                  <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Tipografi (Google Fonts)</h4>
+                  <label class="block text-[11px] text-slate-body">Font Judul (Serif)
+                    <select id="ve-font-serif" onchange="updateThemeFromUI()" class="mt-1 w-full border border-parchment-border rounded px-2 py-1.5 text-xs bg-white">
+                      <option value="">Default (Newsreader)</option>
+                      <option value="Newsreader">Newsreader</option>
+                      <option value="Playfair Display">Playfair Display</option>
+                      <option value="Cormorant Garamond">Cormorant Garamond</option>
+                      <option value="Lora">Lora</option>
+                      <option value="Merriweather">Merriweather</option>
+                    </select>
+                  </label>
+                  <label class="block text-[11px] text-slate-body">Font Isi (Sans-Serif)
+                    <select id="ve-font-sans" onchange="updateThemeFromUI()" class="mt-1 w-full border border-parchment-border rounded px-2 py-1.5 text-xs bg-white">
+                      <option value="">Default (Source Sans 3)</option>
+                      <option value="Source Sans 3">Source Sans 3</option>
+                      <option value="Figtree">Figtree</option>
+                      <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                      <option value="Inter">Inter</option>
+                      <option value="DM Sans">DM Sans</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="space-y-2 pt-2 border-t border-parchment-border">
+                  <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Pita Pengumuman Atas</h4>
+                  <input id="ve-announcement" type="text" onchange="updateSiteSettingsFromUI()" placeholder="Kosongkan jika tidak dipakai..." class="w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-white"/>
+                </div>
+                <div class="space-y-2 pt-2 border-t border-parchment-border">
+                  <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">SEO &amp; Metadata</h4>
+                  <input id="ve-seo-title" type="text" onchange="updateSeoFromUI()" placeholder="Judul Halaman (Title)..." class="w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-white"/>
+                  <textarea id="ve-seo-desc" rows="2" onchange="updateSeoFromUI()" placeholder="Deskripsi Meta..." class="w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-white"></textarea>
+                </div>
+                <div class="space-y-2 pt-2 border-t border-parchment-border">
+                  <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">CSS Kustom Tambahan</h4>
+                  <textarea id="ve-custom-css" rows="3" onchange="updateThemeFromUI()" placeholder="/* CSS kustom */" class="w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs font-mono bg-white"></textarea>
+                </div>
+                <div class="space-y-2 pt-2 border-t border-parchment-border">
+                  <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Riwayat Versi Publikasi</h4>
+                    <button onclick="resetAllSiteOverrides()" class="text-[11px] text-burgundy underline font-semibold">Reset Semua</button>
+                  </div>
+                  <div id="ve-versions-list" class="space-y-1.5 text-xs"></div>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Center Live Canvas (6 cols) -->
+          <div class="col-span-12 lg:col-span-6 canvas-grid bg-parchment flex flex-col items-center justify-start p-3 overflow-auto">
+            <div id="ve-iframe-wrap" class="w-full h-full min-h-[640px] bg-white rounded-xl shadow-elevated border border-parchment-dark overflow-hidden transition-all duration-200">
+              <iframe id="ve-preview-iframe" src="/preview-site?studio=1" class="w-full h-full min-h-[640px] border-0"></iframe>
+            </div>
+          </div>
+
+          <!-- Right Element & Image Inspector (3 cols) -->
+          <aside class="col-span-12 lg:col-span-3 bg-white border-l border-parchment-border flex flex-col min-h-0">
+            <div class="px-4 py-2.5 border-b border-parchment-border bg-parchment-warm flex items-center justify-between">
+              <div>
+                <div class="text-[10px] font-mono uppercase tracking-wider text-gold-antique font-bold">Inspector Properti</div>
+                <div id="ins-key-label" class="text-xs font-mono text-navy-imperial truncate max-w-[200px]">Pilih elemen di kanvas...</div>
+              </div>
+              <span id="ins-tag-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-navy-imperial text-gold-subtle">NONE</span>
+            </div>
+
+            <div id="ins-empty-state" class="p-6 text-center space-y-3 text-slate-body my-auto">
+              <span class="material-symbols-outlined text-4xl text-gold-antique">ads_click</span>
+              <div class="text-sm font-serif font-bold text-navy-imperial">Klik Elemen atau Foto di Kanvas</div>
+              <p class="text-xs leading-relaxed">
+                Klik judul, paragraf, tombol, kartu, atau <strong>foto/gambar mana pun</strong> pada pratinjau website di tengah untuk mengedit isinya, mengganti foto, atau mengubah tampilannya secara langsung. Anda juga dapat <strong>klik ganda (double-click)</strong> teks di kanvas untuk mengetik langsung.
+              </p>
+            </div>
+
+            <div id="ins-form" class="hidden flex-1 overflow-y-auto thin-scroll p-4 space-y-4">
+              <!-- Image Inspector Block -->
+              <div id="ins-image-section" class="hidden space-y-3 bg-parchment p-3.5 rounded-xl border border-gold-antique/40">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-navy-imperial flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">image</span>Editor Foto / Gambar</span>
+                  <button onclick="openMediaPickerForSelected()" class="px-2.5 py-1 rounded bg-navy-imperial text-white text-[11px] font-semibold">Pilih dari Pustaka</button>
+                </div>
+                <div class="h-36 rounded-lg overflow-hidden bg-white flex items-center justify-center border border-parchment-border">
+                  <img id="ins-img-preview" src="" alt="" class="max-h-full max-w-full object-contain"/>
+                </div>
+                <label class="block text-[11px] font-semibold text-navy-imperial">Unggah &amp; Ganti Foto Langsung
+                  <input id="ins-img-file" type="file" accept="image/*" onchange="uploadAndReplaceSelectedImage(this)" class="mt-1 block w-full text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-navy-imperial file:text-white hover:file:bg-navy-dark"/>
+                </label>
+                <label class="block text-[11px] text-slate-body">URL Sumber Gambar (`src`)
+                  <input id="ins-img-src" type="text" oninput="applyInspectorChange()" class="mt-1 w-full border border-parchment-border rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white"/>
+                </label>
+                <label class="block text-[11px] text-slate-body">Teks Alternatif (`alt`)
+                  <input id="ins-img-alt" type="text" oninput="applyInspectorChange()" class="mt-1 w-full border border-parchment-border rounded-lg px-2.5 py-1.5 text-xs bg-white"/>
+                </label>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block text-[11px] text-slate-body">Object Fit
+                    <select id="ins-img-fit" onchange="applyInspectorChange()" class="mt-1 w-full border border-parchment-border rounded px-2 py-1 text-xs bg-white">
+                      <option value="">Default</option>
+                      <option value="cover">Cover (Penuh)</option>
+                      <option value="contain">Contain (Utuh)</option>
+                      <option value="fill">Fill</option>
+                    </select>
+                  </label>
+                  <label class="block text-[11px] text-slate-body">Posisi Fokus
+                    <select id="ins-img-pos" onchange="applyInspectorChange()" class="mt-1 w-full border border-parchment-border rounded px-2 py-1 text-xs bg-white">
+                      <option value="">Default</option>
+                      <option value="top">Atas (Top)</option>
+                      <option value="center">Tengah (Center)</option>
+                      <option value="bottom">Bawah (Bottom)</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Text / HTML Inspector Block -->
+              <div id="ins-text-section" class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-navy-imperial">Konten Teks / HTML (<span id="ins-lang-badge">ID</span>)</label>
+                  <span class="text-[10px] text-slate-muted">Mendukung &lt;em&gt;, &lt;strong&gt;, &lt;br&gt;</span>
+                </div>
+                <textarea id="ins-text-value" rows="4" oninput="applyInspectorChange()" class="w-full border border-parchment-border rounded-lg p-2.5 text-xs bg-parchment leading-relaxed shadow-inner"></textarea>
+              </div>
+
+              <!-- Placeholder Inspector -->
+              <div id="ins-placeholder-section" class="hidden space-y-1">
+                <label class="block text-xs font-bold text-navy-imperial">Teks Placeholder Input</label>
+                <input id="ins-placeholder-value" type="text" oninput="applyInspectorChange()" class="w-full border border-parchment-border rounded-lg px-2.5 py-1.5 text-xs bg-white"/>
+              </div>
+
+              <!-- Link href Inspector -->
+              <div id="ins-link-section" class="hidden space-y-1">
+                <label class="block text-xs font-bold text-navy-imperial">Tujuan Tautan (`href`)</label>
+                <input id="ins-link-href" type="text" oninput="applyInspectorChange()" placeholder="https://... atau #section" class="w-full border border-parchment-border rounded-lg px-2.5 py-1.5 text-xs font-mono bg-white"/>
+              </div>
+
+              <!-- Style & Typography Controls -->
+              <div class="space-y-3 pt-3 border-t border-parchment-border">
+                <h5 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Gaya &amp; Tampilan Elemen</h5>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block text-[11px] text-slate-body">Warna Teks
+                    <div class="flex items-center gap-1 mt-1">
+                      <input id="ins-style-color-picker" type="color" onchange="document.getElementById('ins-style-color').value=this.value;applyInspectorChange()" class="w-7 h-7 rounded border cursor-pointer"/>
+                      <input id="ins-style-color" type="text" oninput="applyInspectorChange()" placeholder="Default" class="w-full border border-parchment-border rounded px-2 py-1 text-xs font-mono bg-white"/>
+                    </div>
+                  </label>
+                  <label class="block text-[11px] text-slate-body">Warna Latar
+                    <div class="flex items-center gap-1 mt-1">
+                      <input id="ins-style-bg-picker" type="color" onchange="document.getElementById('ins-style-bg').value=this.value;applyInspectorChange()" class="w-7 h-7 rounded border cursor-pointer"/>
+                      <input id="ins-style-bg" type="text" oninput="applyInspectorChange()" placeholder="Default" class="w-full border border-parchment-border rounded px-2 py-1 text-xs font-mono bg-white"/>
+                    </div>
+                  </label>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block text-[11px] text-slate-body">Ukuran Font
+                    <input id="ins-style-fontsize" type="text" oninput="applyInspectorChange()" placeholder="cth: 18px / 1.5rem" class="mt-1 w-full border border-parchment-border rounded px-2 py-1 text-xs bg-white"/>
+                  </label>
+                  <label class="block text-[11px] text-slate-body">Perataan Teks
+                    <select id="ins-style-align" onchange="applyInspectorChange()" class="mt-1 w-full border border-parchment-border rounded px-2 py-1 text-xs bg-white">
+                      <option value="">Default</option>
+                      <option value="left">Kiri</option>
+                      <option value="center">Tengah</option>
+                      <option value="right">Kanan</option>
+                      <option value="justify">Rata Kiri-Kanan</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block text-[11px] text-slate-body">Radius Sudut
+                    <input id="ins-style-radius" type="text" oninput="applyInspectorChange()" placeholder="cth: 12px / 9999px" class="mt-1 w-full border border-parchment-border rounded px-2 py-1 text-xs bg-white"/>
+                  </label>
+                  <label class="block text-[11px] text-slate-body">Padding
+                    <input id="ins-style-padding" type="text" oninput="applyInspectorChange()" placeholder="cth: 16px 24px" class="mt-1 w-full border border-parchment-border rounded px-2 py-1 text-xs bg-white"/>
+                  </label>
+                </div>
+                <label class="flex items-center justify-between text-xs bg-parchment p-2.5 rounded-lg border border-parchment-border">
+                  <span>Sembunyikan Elemen Ini di Website</span>
+                  <input id="ins-hidden-toggle" type="checkbox" onchange="applyInspectorChange()"/>
+                </label>
+              </div>
+
+              <div class="pt-3 border-t border-parchment-border flex items-center justify-between gap-2">
+                <button onclick="resetSelectedElement()" class="w-full py-2 rounded-lg border border-burgundy text-burgundy text-xs font-semibold hover:bg-burgundy-light">
+                  Reset Elemen Ini ke Asli
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 3: FOTO & MEDIA                                       -->
+      <!-- ======================================================== -->
+      <section id="tab-media" class="studio-panel hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-lg border border-parchment-border shadow-card">
+          <div>
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gold-antique">Asset &amp; Photo Repository</span>
+            <h2 class="font-serif text-2xl lg:text-3xl text-navy-imperial font-bold">Manajemen Foto &amp; Gambar Website</h2>
+            <p class="text-xs text-slate-body mt-1">
+              Unggah foto baru (potret Pak Andrew, sampul buku, ilustrasi kegiatan) atau ganti langsung foto mana pun yang tampil di website.
+            </p>
+          </div>
+          <label class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-navy-imperial hover:bg-navy-dark text-white font-semibold text-xs rounded shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-[18px] text-gold-antique">upload_file</span>
+            + Unggah Foto / Gambar Baru
+            <input id="media-upload-input" type="file" accept="image/*" multiple onchange="handleMediaUploadFiles(this.files)" class="hidden"/>
+          </label>
+        </div>
+
+        <!-- Active Website Photos Strip -->
+        <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Slot Foto Aktif di Website Saat Ini</h3>
+              <p class="text-xs text-slate-body">Klik <strong>"Unggah &amp; Ganti Foto Ini"</strong> pada salah satu slot di bawah untuk langsung mengganti foto tersebut di website.</p>
+            </div>
+            <button onclick="publishSiteDraft()" class="px-4 py-2 rounded bg-gold-antique hover:bg-gold-subtle text-navy-dark text-xs font-bold shadow-sm">
+              Publikasikan Perubahan Foto
+            </button>
+          </div>
+          <div id="media-live-slots" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+        </div>
+
+        <!-- Uploaded Media Library Grid -->
+        <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-navy-imperial">Pustaka File Gambar yang Diunggah</h3>
+            <span id="media-count-label" class="text-xs font-mono text-slate-muted">0 file</span>
+          </div>
+          <div id="media-library-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 4: REPOSITORI KARYA R0–R3                             -->
+      <!-- ======================================================== -->
+      <section id="tab-works" class="studio-panel hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-lg border border-parchment-border shadow-card">
+          <div>
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gold-antique">Ring 0–3 Canonical Corpus &amp; Works Repository</span>
+            <h2 class="font-serif text-2xl lg:text-3xl text-navy-imperial font-bold">Repositori Karya Andrew Tani (Ring 0 – Ring 3)</h2>
+            <p class="text-xs text-slate-body mt-1">
+              Kelola buku, esai, modul, kerangka kerja (Orbex), lagu/himne, hingga memoar pribadi beserta klasifikasi Ring 0–3 dan sinkronisasi ke pengetahuan Digital Twin.
+            </p>
+          </div>
+          <button onclick="openWorkModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-navy-imperial hover:bg-navy-dark text-white font-semibold text-xs rounded shadow-sm shrink-0">
+            <span class="material-symbols-outlined text-[18px] text-gold-antique">library_add</span>
+            + Tambah Karya Baru
+          </button>
+        </div>
+
+        <!-- Filter & Stricter Wins Law Bar -->
+        <div class="bg-white border border-parchment-border rounded-lg p-4 shadow-card flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="filterWorksRing('all')" data-wring="all" class="wring-btn px-3 py-1.5 rounded bg-navy-imperial text-white text-xs font-bold">Semua Ring</button>
+            <button onclick="filterWorksRing(0)" data-wring="0" class="wring-btn px-3 py-1.5 rounded ring-badge-0 text-xs font-semibold">Ring 0 • Sovereign Pribadi</button>
+            <button onclick="filterWorksRing(1)" data-wring="1" class="wring-btn px-3 py-1.5 rounded ring-badge-1 text-xs font-semibold">Ring 1 • Mandat Eksekutor</button>
+            <button onclick="filterWorksRing(2)" data-wring="2" class="wring-btn px-3 py-1.5 rounded ring-badge-2 text-xs font-semibold">Ring 2 • Lisensi Anggota</button>
+            <button onclick="filterWorksRing(3)" data-wring="3" class="wring-btn px-3 py-1.5 rounded ring-badge-3 text-xs font-semibold">Ring 3 • Publik Terbuka</button>
+          </div>
+          <div class="flex items-center gap-2 px-3 py-1.5 bg-gold-light rounded border border-gold-antique/40 text-xs">
+            <span class="material-symbols-outlined text-[16px] text-navy-imperial">gavel</span>
+            <span class="font-semibold text-navy-dark">Hukum Protokol: Stricter Wins</span>
+            <span class="text-slate-body hidden sm:inline">— Pelonggaran Ring wajib disertai catatan preseden.</span>
+          </div>
+        </div>
+
+        <!-- Canonical Corpus Ledger Table -->
+        <div class="bg-white border border-parchment-border rounded-lg shadow-card overflow-hidden">
+          <div class="px-4 py-3 bg-parchment-warm border-b border-parchment-border flex items-center justify-between">
+            <span class="font-serif text-sm font-bold text-navy-imperial">Tabel Indeks Kanonik Karya (Ring 0–3)</span>
+            <span class="font-mono text-[11px] text-slate-muted">Klik Edit untuk mengubah naskah atau klasifikasi Ring</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-parchment-warm border-b border-parchment-border text-[10px] font-mono uppercase text-slate-muted">
+                  <th class="py-3 px-4">Klasifikasi Ring</th>
+                  <th class="py-3 px-4">Judul Karya / Dokumen Kanonik</th>
+                  <th class="py-3 px-4">Kategori</th>
+                  <th class="py-3 px-4">Tahun</th>
+                  <th class="py-3 px-4">Bahasa</th>
+                  <th class="py-3 px-4">Status Twin</th>
+                  <th class="py-3 px-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="works-table-body" class="divide-y divide-parchment-border text-xs"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Visual Cards Grid -->
+        <div id="works-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 5: MEMORI PROTOKOLER & PERSONA                        -->
+      <!-- ======================================================== -->
+      <section id="tab-memory" class="studio-panel hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-lg border border-parchment-border shadow-card">
+          <div>
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gold-antique">Sovereign Persona &amp; Ring 0–3 Protocol Memory</span>
+            <h2 class="font-serif text-2xl lg:text-3xl text-navy-imperial font-bold">Memori Protokoler Andrew Tani (The Persona Engine)</h2>
+            <p class="text-xs text-slate-body mt-1">
+              Susun identitas inti, gaya tutur socrates bariton, nilai Tut Wuri Handayani, direktif ring, dan pembatasan topik otomatis.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openCompiledMemoryPreview()" class="px-3.5 py-2 bg-parchment hover:bg-parchment-border text-navy-imperial border border-parchment-border text-xs font-semibold rounded flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">visibility</span>Pratinjau Memori Terkompilasi
+            </button>
+            <button onclick="saveCoreMemory()" class="px-4 py-2 bg-navy-imperial hover:bg-navy-dark text-white text-xs font-semibold rounded shadow-sm flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-gold-antique">save</span>Simpan Profil Inti
+            </button>
+          </div>
+        </div>
+
+        <!-- Fixed Duties Guardrail Banner -->
+        <div id="memory-fixed-duties" class="grid grid-cols-1 md:grid-cols-4 gap-3"></div>
+
+        <!-- Core Identity + Ring Memory Columns -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Core Identity (5 cols) -->
+          <div class="lg:col-span-5 bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+            <h3 class="font-serif text-lg font-bold text-navy-imperial">Identitas Inti &amp; Karakter Tutur</h3>
+            <label class="block text-xs font-semibold text-slate-ink">Identitas Diri (Sudut Pandang Pertama)
+              <textarea id="mem-core-identity" rows="3" class="mt-1 w-full bg-parchment border border-parchment-border rounded p-2.5 text-xs text-slate-ink leading-relaxed shadow-inner"></textarea>
+            </label>
+            <label class="block text-xs font-semibold text-slate-ink">Karakter Suara &amp; Sikap (Voice &amp; Demeanor)
+              <textarea id="mem-core-voice" rows="3" class="mt-1 w-full bg-parchment border border-parchment-border rounded p-2.5 text-xs text-slate-ink leading-relaxed shadow-inner"></textarea>
+            </label>
+            <label class="block text-xs font-semibold text-slate-ink">Gaya Bahasa (ID &amp; EN)
+              <textarea id="mem-core-lang" rows="2" class="mt-1 w-full bg-parchment border border-parchment-border rounded p-2.5 text-xs text-slate-ink leading-relaxed shadow-inner"></textarea>
+            </label>
+            <label class="block text-xs font-semibold text-slate-ink">Nilai-Nilai Utama Nusantara (Satu per baris)
+              <textarea id="mem-core-values" rows="5" class="mt-1 w-full bg-parchment border border-parchment-border rounded p-2.5 text-xs font-mono text-navy-imperial leading-relaxed shadow-inner"></textarea>
+            </label>
+            <button onclick="saveCoreMemory()" class="w-full py-2.5 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark shadow-sm">Simpan Profil Inti</button>
+
+            <div class="pt-4 border-t border-parchment-border space-y-2">
+              <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Riwayat Snapshot Memori</h4>
+              <div id="mem-versions-list" class="space-y-1.5 text-xs"></div>
+            </div>
+          </div>
+
+          <!-- Ring 0..3 Memory Tabs & Entries (7 cols) -->
+          <div class="lg:col-span-7 bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-parchment-border pb-3">
+              <div class="flex flex-wrap gap-2">
+                <button onclick="selectMemoryRing(0)" data-mring="0" class="mring-btn px-3.5 py-1.5 rounded ring-badge-0 text-xs font-semibold">Ring 0 • Sovereign</button>
+                <button onclick="selectMemoryRing(1)" data-mring="1" class="mring-btn px-3.5 py-1.5 rounded ring-badge-1 text-xs font-semibold">Ring 1 • Eksekutor</button>
+                <button onclick="selectMemoryRing(2)" data-mring="2" class="mring-btn px-3.5 py-1.5 rounded ring-badge-2 text-xs font-semibold">Ring 2 • Anggota</button>
+                <button onclick="selectMemoryRing(3)" data-mring="3" class="mring-btn px-3.5 py-1.5 rounded ring-badge-3 text-xs font-semibold">Ring 3 • Publik</button>
+              </div>
+              <span id="mem-ring-stats" class="text-xs font-mono text-slate-muted"></span>
+            </div>
+
+            <!-- Ring Directives Form -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-parchment p-4 rounded-lg border border-parchment-border">
+              <label class="block text-xs font-semibold text-navy-imperial">Audiens Ring Ini
+                <input id="mem-ring-audience" type="text" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-white"/>
+              </label>
+              <label class="block text-xs font-semibold text-navy-imperial">Nada Bicara (Tone) di Ring Ini
+                <input id="mem-ring-tone" type="text" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-white"/>
+              </label>
+              <label class="block text-xs font-semibold text-navy-imperial md:col-span-2">Direktif Protokoler Khusus Ring Ini
+                <textarea id="mem-ring-directives" rows="2" class="mt-1 w-full border border-parchment-border rounded p-2 text-xs bg-white"></textarea>
+              </label>
+              <label class="block text-xs font-bold text-burgundy md:col-span-2">
+                <span class="inline-flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">block</span>Daftar Topik yang Diblokir Otomatis di Ring Ini (pisahkan dengan koma)</span>
+                <input id="mem-ring-blocked" type="text" placeholder="cth: valuasi, sengketa warisan, pajak pribadi" class="mt-1 w-full border border-burgundy/30 rounded px-2.5 py-1.5 text-xs font-mono text-burgundy bg-burgundy-light/40"/>
+              </label>
+              <div class="md:col-span-2 flex justify-end">
+                <button onclick="saveRingMemoryPolicy()" class="px-4 py-2 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark shadow-sm">Simpan Direktif Ring &amp; Filter</button>
+              </div>
+            </div>
+
+            <!-- Add Memory Entry -->
+            <div class="bg-parchment p-4 rounded-lg border border-parchment-border space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-navy-imperial uppercase tracking-wider">Tambah Butir Memori / Pengalaman Andrew Tani</h4>
+                <label class="flex items-center gap-1.5 text-xs text-navy-imperial font-semibold">
+                  <input id="mem-new-pinned" type="checkbox"/> Sematkan (Prioritas Utama)
+                </label>
+              </div>
+              <textarea id="mem-new-text" rows="2" placeholder="Tulis prinsip, pengalaman nyata, cara mengambil keputusan, atau konteks khusus yang perlu diingat Digital Twin di Ring ini..." class="w-full border border-parchment-border rounded p-2.5 text-xs bg-white"></textarea>
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <input id="mem-new-tags" type="text" placeholder="Tag (pisahkan koma, cth: kepemimpinan, keluarga, orbex)" class="flex-1 border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-white"/>
+                <button onclick="addMemoryEntry()" class="px-4 py-1.5 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark">+ Simpan ke Ring Ini</button>
+              </div>
+            </div>
+
+            <!-- Memory Entries List -->
+            <div id="mem-entries-list" class="space-y-2.5"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 6: CLAUDE AI TOKEN VAULT                              -->
+      <!-- ======================================================== -->
+      <section id="tab-ai" class="studio-panel hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-lg border border-parchment-border shadow-card">
+          <div>
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gold-antique">Anthropic Claude Engine &amp; Encrypted Token Vault</span>
+            <h2 class="font-serif text-2xl lg:text-3xl text-navy-imperial font-bold">Dasbor API Token Claude &amp; Konektivitas AI</h2>
+            <p class="text-xs text-slate-body mt-1">
+              Penyimpanan kunci KMS AES-256-GCM, failover multi-kunci, alokasi anggaran bulanan, parameter inferensi per Ring, serta simulasi percakapan.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="ai-status-pill" class="px-3 py-1.5 rounded text-xs font-mono font-semibold bg-parchment border border-parchment-border">Memeriksa...</span>
+            <button onclick="testClaudeConnection()" class="inline-flex items-center gap-2 px-4 py-2 bg-navy-imperial hover:bg-navy-dark text-white text-xs font-semibold rounded shadow-sm">
+              <span class="material-symbols-outlined text-[16px] text-gold-antique">network_check</span>
+              Tes Konektivitas Claude API
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Telemetry Cards -->
+        <div id="ai-telemetry-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Token Vault & Model Config (7 cols) -->
+          <div class="lg:col-span-7 space-y-6">
+            <!-- Encrypted Key Vault -->
+            <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+              <div>
+                <h3 class="font-serif text-lg font-bold text-navy-imperial">Brankas Kunci API Claude (Multi-Key Failover)</h3>
+                <p class="text-xs text-slate-body">Kunci disimpan terenkripsi dengan AES-256-GCM. Jika kunci utama mengalami limit (429/529), sistem otomatis beralih ke kunci cadangan.</p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 bg-parchment p-3.5 rounded-lg border border-parchment-border">
+                <input id="ai-new-key-label" type="text" placeholder="Label (cth: Kunci Produksi Utama)" class="sm:col-span-4 border border-parchment-border rounded px-2.5 py-2 text-xs bg-white"/>
+                <input id="ai-new-key-val" type="password" placeholder="sk-ant-api03-..." class="sm:col-span-5 border border-parchment-border rounded px-2.5 py-2 text-xs font-mono bg-white"/>
+                <button onclick="addClaudeKey()" class="sm:col-span-3 py-2 px-3 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark">+ Simpan Kunci</button>
+              </div>
+              <div id="ai-keys-list" class="space-y-2"></div>
+              <div id="ai-test-result" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
+            </div>
+
+            <!-- Model & Generation Parameters -->
+            <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-serif text-lg font-bold text-navy-imperial">Konfigurasi Model Claude &amp; Parameter per Ring</h3>
+                <label class="flex items-center gap-2 text-xs font-semibold text-navy-imperial">
+                  <input id="ai-enabled-toggle" type="checkbox"/> Aktifkan Generasi Claude AI
+                </label>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="block text-xs font-semibold text-slate-ink">Model Default Utama
+                  <input id="ai-model-default" list="claude-models-datalist" type="text" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-2 text-xs font-mono bg-parchment"/>
+                  <datalist id="claude-models-datalist">
+                    <option value="claude-sonnet-4-5"></option>
+                    <option value="claude-opus-4-1"></option>
+                    <option value="claude-haiku-4-5"></option>
+                  </datalist>
+                </label>
+                <label class="block text-xs font-semibold text-slate-ink">Batas Anggaran Bulanan (USD, 0 = Tanpa Batas)
+                  <input id="ai-budget-usd" type="number" step="1" min="0" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-2 text-xs font-mono bg-parchment"/>
+                </label>
+                <label class="block text-xs text-slate-body">Override Model Ring 0 (Sovereign)
+                  <input id="ai-model-r0" list="claude-models-datalist" type="text" placeholder="Kosong = ikut default" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs font-mono bg-parchment"/>
+                </label>
+                <label class="block text-xs text-slate-body">Override Model Ring 1 (Eksekutor)
+                  <input id="ai-model-r1" list="claude-models-datalist" type="text" placeholder="Kosong = ikut default" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs font-mono bg-parchment"/>
+                </label>
+                <label class="block text-xs text-slate-body">Override Model Ring 2 (Anggota)
+                  <input id="ai-model-r2" list="claude-models-datalist" type="text" placeholder="Kosong = ikut default" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs font-mono bg-parchment"/>
+                </label>
+                <label class="block text-xs text-slate-body">Override Model Ring 3 (Publik)
+                  <input id="ai-model-r3" list="claude-models-datalist" type="text" placeholder="Kosong = ikut default" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs font-mono bg-parchment"/>
+                </label>
+                <label class="block text-xs text-slate-body">Max Output Tokens
+                  <input id="ai-max-tokens" type="number" min="64" max="8192" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs font-mono bg-parchment"/>
+                </label>
+                <label class="block text-xs text-slate-body">Temperature (0.0 – 1.0, kosong = default)
+                  <input id="ai-temperature" type="number" step="0.05" min="0" max="1" class="mt-1 w-full border border-parchment-border rounded px-2.5 py-1.5 text-xs font-mono bg-parchment"/>
+                </label>
+                <label class="block text-xs text-slate-body sm:col-span-2">Instruksi Sistem Tambahan Ring 0 (Opsional)
+                  <textarea id="ai-extra-instructions" rows="2" class="mt-1 w-full border border-parchment-border rounded p-2 text-xs bg-parchment"></textarea>
+                </label>
+              </div>
+              <div class="pt-3 border-t border-parchment-border flex items-center justify-between text-xs">
+                <span class="text-slate-muted font-mono">Log: Zero-PII Enforced (Audit token &amp; metadata)</span>
+                <button onclick="saveAiConfig()" class="px-4 py-2 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark shadow-sm">Simpan Konfigurasi AI</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Ring 0..3 Playground & Telemetry Log (5 cols) -->
+          <div class="lg:col-span-5 space-y-6">
+            <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Simulasi &amp; Playground Percakapan Ring 0–3</h3>
+              <p class="text-xs text-slate-body">Uji bagaimana Digital Twin menjawab pada masing-masing Ring dan periksa dokumen yang ditarik.</p>
+              <div class="grid grid-cols-2 gap-2">
+                <select id="ai-pg-ring" class="border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-parchment font-semibold">
+                  <option value="3">Uji sebagai Ring 3 (Publik)</option>
+                  <option value="2">Uji sebagai Ring 2 (Anggota)</option>
+                  <option value="1">Uji sebagai Ring 1 (Eksekutor)</option>
+                  <option value="0">Uji sebagai Ring 0 (Andrew Pribadi)</option>
+                </select>
+                <select id="ai-pg-lang" class="border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-parchment font-semibold">
+                  <option value="id">Bahasa Indonesia (ID)</option>
+                  <option value="en">English (EN)</option>
+                </select>
+              </div>
+              <textarea id="ai-pg-question" rows="3" placeholder="Tulis pertanyaan uji, misalnya: Bagaimana menyelaraskan strategi dan budaya kerja tim?" class="w-full border border-parchment-border rounded p-2.5 text-xs bg-parchment"></textarea>
+              <div class="flex gap-2">
+                <button onclick="runAiPlayground()" class="flex-1 py-2 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark">Kirim Uji Coba</button>
+                <button onclick="previewSystemPrompt()" class="py-2 px-3 rounded border border-parchment-border bg-parchment text-xs font-semibold text-navy-imperial hover:bg-parchment-border">Lihat System Prompt</button>
+              </div>
+              <div id="ai-pg-output" class="hidden bg-parchment p-3.5 rounded-lg border border-parchment-border space-y-2 text-xs"></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-serif text-lg font-bold text-navy-imperial">Log Panggilan AI Terbaru (Zero-PII)</h3>
+                <button onclick="resetAiUsage()" class="text-[11px] text-burgundy underline font-semibold">Reset Statistik</button>
+              </div>
+              <div id="ai-recent-calls" class="space-y-1.5 max-h-60 overflow-y-auto thin-scroll text-xs font-mono"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 7: PAYMENT GATEWAY & PRICING EDITOR                   -->
+      <!-- ======================================================== -->
+      <section id="tab-commerce" class="studio-panel hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-lg border border-parchment-border shadow-card">
+          <div>
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gold-antique">Payment Gateways, Membership Pricing &amp; Ledger</span>
+            <h2 class="font-serif text-2xl lg:text-3xl text-navy-imperial font-bold">Pengaturan Payment Gateway &amp; Pricing Editor</h2>
+            <p class="text-xs text-slate-body mt-1">
+              Konfigurasi Midtrans Snap, Xendit, Stripe, dan Transfer Bank Manual, serta atur paket keanggotaan Ring 2, opsi uji coba gratis, dan kupon diskon.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <label class="bg-parchment border border-parchment-border px-3.5 py-2 rounded-lg flex items-center gap-3 cursor-pointer">
+              <div>
+                <span class="text-xs font-mono text-gold-antique font-bold uppercase block">Mode Gratis Sementara</span>
+                <span class="text-[11px] text-slate-muted">Bebaskan akses publik tanpa penagihan</span>
+              </div>
+              <input id="com-free-for-now" type="checkbox" onchange="saveCommerceSettings()" class="w-5 h-5 accent-navy-imperial"/>
+            </label>
+            <select id="com-currency" onchange="saveCommerceSettings()" class="border border-parchment-border rounded-lg px-3 py-2.5 text-xs font-semibold bg-parchment">
+              <option value="IDR">Mata Uang: IDR (Rp)</option>
+              <option value="USD">Mata Uang: USD ($)</option>
+              <option value="SGD">Mata Uang: SGD (S$)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4 Payment Gateways Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4" id="commerce-gateways-grid"></div>
+
+        <!-- Pricing Plans Editor -->
+        <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Editor Paket &amp; Harga (Pricing Editor)</h3>
+              <p class="text-xs text-slate-body">Edit nama paket, harga bulanan/tahunan, batas sesi bulanan (`messageCap`), fitur, dan tombol aksi.</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="addPricingPlan()" class="px-3 py-1.5 rounded bg-parchment hover:bg-parchment-border border border-parchment-border text-xs font-semibold text-navy-imperial">+ Tambah Paket Baru</button>
+              <button onclick="savePricingPlans()" class="px-4 py-1.5 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark shadow-sm">Simpan Semua Paket</button>
+            </div>
+          </div>
+          <div id="commerce-plans-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+        </div>
+
+        <!-- Coupons & Transactions -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Kupon Diskon</h3>
+              <button onclick="addCouponRow()" class="px-2.5 py-1 rounded bg-navy-imperial text-white text-xs font-semibold">+ Kupon</button>
+            </div>
+            <div id="commerce-coupons-list" class="space-y-2"></div>
+            <button onclick="saveCoupons()" class="w-full py-2 rounded bg-navy-imperial text-white text-xs font-semibold">Simpan Kupon</button>
+          </div>
+
+          <div class="lg:col-span-7 bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Buku Besar Transaksi &amp; Aktivasi Anggota</h3>
+              <span id="commerce-tx-summary" class="text-xs font-mono text-slate-muted"></span>
+            </div>
+            <div id="commerce-tx-list" class="space-y-2 max-h-80 overflow-y-auto thin-scroll"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================== -->
+      <!-- TAB 8: RING 1 REGISTRY, KNOWLEDGE VAULTS & AUDIT LOG      -->
+      <!-- ======================================================== -->
+      <section id="tab-governance" class="studio-panel hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-6 rounded-lg border border-parchment-border shadow-card">
+          <div>
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gold-antique">Security, Confidentiality &amp; Zero-PII Telemetry</span>
+            <h2 class="font-serif text-2xl lg:text-3xl text-navy-imperial font-bold">Arsip Fisik Ring 0–3, Registri Kode Nama Ring 1 &amp; Audit Log Zero-PII</h2>
+            <p class="text-xs text-slate-body mt-1">
+              Kelola 4 penyimpanan fisik terpisah, antrean klasifikasi Stricter Wins, sandi nama anonim pelindung fidusia eksekutor tanpa identitas asli, serta buku besar log append-only.
+            </p>
+          </div>
+          <span class="font-mono text-xs text-burgundy font-bold bg-burgundy-light px-3 py-1.5 rounded border border-burgundy/20 shrink-0">
+            ZERO-PII // NO PROMPT STORED
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Upload & Pending Approval Queue (5 cols) -->
+          <div class="lg:col-span-5 space-y-6">
+            <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-3">
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Unggah &amp; Klasifikasi Dokumen Arsip (Ring 0–3)</h3>
+              <p class="text-xs text-slate-body">Dokumen yang mengandung kata sensitif otomatis diusulkan ke <strong>Ring 0</strong> (Stricter Wins) dan menunggu persetujuan Anda.</p>
+              <input id="gov-doc-title" type="text" placeholder="Judul Dokumen / Naskah..." class="w-full border border-parchment-border rounded px-3 py-2 text-xs bg-parchment"/>
+              <div class="grid grid-cols-2 gap-2">
+                <select id="gov-doc-ring" class="border border-parchment-border rounded px-2.5 py-2 text-xs bg-parchment font-semibold">
+                  <option value="3">Target: Ring 3 (Publik)</option>
+                  <option value="2">Target: Ring 2 (Anggota)</option>
+                  <option value="1">Target: Ring 1 (Eksekutor)</option>
+                  <option value="0">Target: Ring 0 (Sovereign)</option>
+                </select>
+                <select id="gov-doc-lang" class="border border-parchment-border rounded px-2.5 py-2 text-xs bg-parchment font-semibold">
+                  <option value="id">Bahasa Indonesia (ID)</option>
+                  <option value="en">English (EN)</option>
+                </select>
+              </div>
+              <textarea id="gov-doc-text" rows="4" placeholder="Isi teks dokumen pengetahuan..." class="w-full border border-parchment-border rounded p-2.5 text-xs bg-parchment"></textarea>
+              <button onclick="uploadKnowledgeDoc()" class="w-full py-2.5 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark shadow-sm">Kirim ke Antrean Klasifikasi</button>
+            </div>
+
+            <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-3">
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Antrean Persetujuan Ring (`Pending Queue`)</h3>
+              <div id="gov-pending-list" class="space-y-2.5"></div>
+            </div>
+          </div>
+
+          <!-- 4 Physical Ring Stores (7 cols) -->
+          <div class="lg:col-span-7 bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+            <h3 class="font-serif text-lg font-bold text-navy-imperial">4 Penyimpanan Fisik Terpisah (Ring 0, Ring 1, Ring 2, Ring 3)</h3>
+            <div id="gov-stores-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+          </div>
+        </div>
+
+        <!-- Ring 1 Codenames + Ring 2 Members -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+            <div>
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Registri Kode Nama Ring 1</h3>
+              <p class="text-xs text-slate-body">Tidak ada nama asli atau nomor identitas pribadi yang disimpan di basis data mana pun.</p>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <input id="gov-cn-name" type="text" placeholder="Kode Nama" class="border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-parchment font-mono"/>
+              <input id="gov-cn-otp" type="text" placeholder="OTP 6 Digit" class="border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-parchment font-mono"/>
+              <input id="gov-cn-pass" type="password" placeholder="Passphrase" class="border border-parchment-border rounded px-2.5 py-1.5 text-xs bg-parchment"/>
+            </div>
+            <button onclick="createOrRotateCodename()" class="w-full py-2 rounded bg-navy-imperial hover:bg-navy-dark text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm">
+              <span class="material-symbols-outlined text-[16px] text-gold-antique">key</span>+ Buat / Rotasi Kode Nama Ring 1
+            </button>
+            <div id="gov-codenames-list" class="space-y-2 max-h-64 overflow-y-auto thin-scroll"></div>
+          </div>
+
+          <div class="lg:col-span-7 bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-4">
+            <h3 class="font-serif text-lg font-bold text-navy-imperial">Daftar Anggota Eksekutif (Ring 2)</h3>
+            <div id="gov-members-list" class="space-y-2 max-h-80 overflow-y-auto thin-scroll"></div>
+          </div>
+        </div>
+
+        <!-- Zero-PII Audit Log -->
+        <div class="bg-white p-5 rounded-lg border border-parchment-border shadow-card space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <h3 class="font-serif text-lg font-bold text-navy-imperial">Log Audit Zero-PII (Append-Only)</h3>
+              <span class="font-mono text-[10px] text-burgundy font-bold bg-burgundy-light px-2 py-0.5 rounded border border-burgundy/20">NO PROMPT STORED</span>
+            </div>
+            <div class="flex gap-2">
+              <select id="gov-audit-ring" onchange="loadGovernanceData()" class="border border-parchment-border rounded px-2.5 py-1 text-xs bg-parchment">
+                <option value="">Semua Ring</option>
+                <option value="0">Ring 0</option>
+                <option value="1">Ring 1</option>
+                <option value="2">Ring 2</option>
+                <option value="3">Ring 3</option>
+              </select>
+              <button onclick="loadGovernanceData()" class="px-3 py-1 rounded bg-parchment hover:bg-parchment-border border border-parchment-border text-xs font-semibold text-navy-imperial">Segarkan</button>
+            </div>
+          </div>
+          <div id="gov-audit-list" class="space-y-1 max-h-64 overflow-y-auto thin-scroll font-mono text-[11px]"></div>
+          <p class="text-xs text-slate-muted leading-relaxed pt-1">
+            Sistem membuktikan secara matematis bahwa tidak ada teks pertanyaan, naskah prompt rahasia, atau data pribadi yang disimpan di log server twin.andrewtani.id.
+          </p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- PRESTIGIOUS BOTTOM FOOTNOTE                               -->
+    <!-- ======================================================== -->
+    <footer class="py-5 bg-parchment-warm border-t border-parchment-border text-center mt-8">
+      <p class="font-mono text-xs text-slate-muted uppercase tracking-wider">
+        iCoachAndrew Digital Twin • Ring 0 Sovereign Studio &amp; Workbench • Andrew Tani &amp; Co. Proprietary Sovereign Framework
+      </p>
+    </footer>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: WORK REPOSITORY EDITOR                             -->
+  <!-- ======================================================== -->
+  <div id="work-editor-modal" class="fixed inset-0 z-50 hidden bg-navy-dark/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-parchment-warm rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-gold-antique/50 space-y-4">
+      <div class="flex items-center justify-between border-b border-parchment-border pb-3">
+        <h3 id="wk-modal-title" class="font-serif text-2xl text-navy-imperial font-bold">Tambah / Edit Karya</h3>
+        <button onclick="closeWorkModal()" class="text-slate-muted hover:text-navy-imperial text-lg">✕</button>
+      </div>
+      <input id="wk-id" type="hidden"/>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label class="block text-xs font-semibold text-navy-imperial sm:col-span-2">Judul Karya
+          <input id="wk-title" type="text" class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white"/>
+        </label>
+        <label class="block text-xs text-slate-body">Subjudul / Jilid
+          <input id="wk-subtitle" type="text" placeholder="cth: Karya Utama • Jilid I" class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white"/>
+        </label>
+        <label class="block text-xs text-slate-body">Tahun
+          <input id="wk-year" type="number" placeholder="2026" class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white"/>
+        </label>
+        <label class="block text-xs font-semibold text-navy-imperial">Jenis Karya
+          <select id="wk-type" class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white">
+            <option value="buku">Buku</option>
+            <option value="esai">Esai</option>
+            <option value="artikel">Artikel</option>
+            <option value="modul">Modul</option>
+            <option value="kerangka">Kerangka Kerja (Framework)</option>
+            <option value="himne">Himne</option>
+            <option value="lagu">Lagu</option>
+            <option value="ceramah">Ceramah</option>
+            <option value="catatan">Catatan Eksekutor</option>
+            <option value="memoar">Memoar Pribadi</option>
+          </select>
+        </label>
+        <label class="block text-xs font-semibold text-navy-imperial">Klasifikasi Ring (0–3)
+          <select id="wk-ring" class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white font-semibold">
+            <option value="3">Ring 3 — Publik Terbuka</option>
+            <option value="2">Ring 2 — Lisensi Anggota Eksekutif</option>
+            <option value="1">Ring 1 — Mandat Lingkaran Eksekutor</option>
+            <option value="0">Ring 0 — Sovereign Pribadi Andrew</option>
+          </select>
+        </label>
+        <label class="block text-xs text-slate-body">Status Publikasi
+          <select id="wk-status" class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white">
+            <option value="published">Terbit (Published)</option>
+            <option value="draft">Draf</option>
+          </select>
+        </label>
+        <label class="block text-xs text-slate-body">Bahasa Naskah
+          <select id="wk-lang" class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white">
+            <option value="id">Bahasa Indonesia (ID)</option>
+            <option value="en">English (EN)</option>
+          </select>
+        </label>
+        <div class="sm:col-span-2 space-y-1">
+          <label class="block text-xs font-semibold text-navy-imperial">Foto Sampul Karya (`coverUrl`)</label>
+          <div class="flex gap-2">
+            <input id="wk-cover" type="text" placeholder="URL gambar sampul atau unggah di kanan..." class="flex-1 border border-parchment-border rounded px-3 py-2 text-xs font-mono bg-white"/>
+            <label class="cursor-pointer px-3 py-2 rounded bg-navy-imperial text-white text-xs font-semibold whitespace-nowrap">
+              Unggah Sampul
+              <input type="file" accept="image/*" onchange="uploadWorkCover(this)" class="hidden"/>
+            </label>
+          </div>
+        </div>
+        <label class="block text-xs text-slate-body sm:col-span-2">Ringkasan Karya
+          <textarea id="wk-summary" rows="2" class="mt-1 w-full border border-parchment-border rounded p-2.5 text-xs bg-white"></textarea>
+        </label>
+        <label class="block text-xs text-slate-body sm:col-span-2">Isi Naskah / Kutipan Inti (Digunakan oleh Digital Twin bila disinkronkan)
+          <textarea id="wk-content" rows="5" class="mt-1 w-full border border-parchment-border rounded p-2.5 text-xs bg-white"></textarea>
+        </label>
+        <label class="block text-xs text-slate-body sm:col-span-2">Catatan Preseden (Wajib diisi bila melonggarkan Ring, cth Ring 1 → Ring 3)
+          <input id="wk-note" type="text" placeholder="Alasan perubahan/pelonggaran klasifikasi Ring..." class="mt-1 w-full border border-parchment-border rounded px-3 py-2 text-xs bg-white"/>
+        </label>
+        <label class="flex items-center gap-2 text-xs font-semibold text-navy-imperial">
+          <input id="wk-featured" type="checkbox"/> Tampilkan di Beranda Utama
+        </label>
+        <label class="flex items-center gap-2 text-xs font-semibold text-navy-imperial">
+          <input id="wk-sync" type="checkbox"/> Sinkronkan ke Pengetahuan Digital Twin sesuai Ring
+        </label>
+      </div>
+      <div id="wk-error" class="hidden p-3 rounded bg-burgundy-light border border-burgundy/30 text-xs text-burgundy"></div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeWorkModal()" class="px-4 py-2 rounded border border-parchment-border bg-white text-xs font-semibold">Batal</button>
+        <button onclick="saveWorkItem(false)" class="px-5 py-2 rounded bg-navy-imperial text-white text-xs font-semibold hover:bg-navy-dark">Simpan Karya</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MEDIA PICKER FOR SELECTED ELEMENT -->
+  <div id="media-picker-modal" class="fixed inset-0 z-50 hidden bg-navy-dark/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-parchment-warm rounded-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl border border-gold-antique/50 space-y-4">
+      <div class="flex items-center justify-between border-b border-parchment-border pb-3">
+        <h3 class="font-serif text-xl text-navy-imperial font-bold">Pilih Foto dari Pustaka Media</h3>
+        <button onclick="document.getElementById('media-picker-modal').classList.add('hidden')" class="text-slate-muted hover:text-navy-imperial">✕</button>
+      </div>
+      <div id="media-picker-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: TEXT PREVIEW (Compiled Memory / System Prompt) -->
+  <div id="text-preview-modal" class="fixed inset-0 z-50 hidden bg-navy-dark/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-parchment-warm rounded-xl max-w-3xl w-full max-h-[85vh] flex flex-col p-6 shadow-2xl border border-gold-antique/50 space-y-3">
+      <div class="flex items-center justify-between border-b border-parchment-border pb-3">
+        <h3 id="tp-modal-title" class="font-serif text-xl text-navy-imperial font-bold">Pratinjau Protokol</h3>
+        <button onclick="document.getElementById('text-preview-modal').classList.add('hidden')" class="text-slate-muted hover:text-navy-imperial">✕</button>
+      </div>
+      <pre id="tp-modal-body" class="flex-1 overflow-auto p-4 rounded-lg bg-navy-imperial text-gold-light font-mono text-xs whitespace-pre-wrap leading-relaxed"></pre>
+    </div>
+  </div>
+
+  <script src="/admin-studio.js"></script>
+</body>
+</html>
