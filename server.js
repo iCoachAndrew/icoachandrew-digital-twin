@@ -457,7 +457,14 @@ async function handleAdmin(req, res) {
     const pathname = urlObj.pathname;
 
     if (req.method === 'GET' && (pathname === '/' || pathname === '/admin' || pathname === '/admin.html')) {
-      return sendFile(res, path.join(PUBLIC_DIR, 'admin.html'));
+      try {
+        const html = fs.readFileSync(path.join(PUBLIC_DIR, 'admin.html'), 'utf8')
+          .replace('href="http://localhost:3000"', 'href="/" onclick="if(location.port===\'3001\'){this.href=location.protocol+\'//\'+location.hostname+\':3000\';}"');
+        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+        return res.end(html);
+      } catch (_) {
+        return sendFile(res, path.join(PUBLIC_DIR, 'admin.html'));
+      }
     }
     if (req.method === 'GET' && pathname === '/admin-studio.js') {
       return sendFile(res, path.join(PUBLIC_DIR, 'admin-studio.js'), 'application/javascript; charset=utf-8');
@@ -717,8 +724,15 @@ const userServer = http.createServer(async (req, res) => {
     const urlObj = new URL(req.url, 'http://localhost');
     const pathname = urlObj.pathname;
 
+    const isStudioPreview = Boolean(
+      req.headers.referer &&
+      req.headers.referer.includes('/preview-site') &&
+      sessionRing(req, ADMIN_COOKIE) === 0 &&
+      (pathname === '/api/site-content' || pathname === '/api/works' || pathname === '/api/pricing' || pathname === '/api/session')
+    );
+
     // Allow accessing Admin portal via /admin, /admin.html, or admin subdomain on single-port hosting
-    if (pathname === '/admin' || pathname === '/admin.html' || pathname.startsWith('/admin/') || pathname === '/admin-studio.js' || (req.headers.host && req.headers.host.startsWith('admin.'))) {
+    if (pathname === '/admin' || pathname === '/admin.html' || pathname.startsWith('/admin/') || pathname === '/admin-studio.js' || pathname === '/preview-site' || isStudioPreview || (req.headers.host && req.headers.host.startsWith('admin.'))) {
       return handleAdmin(req, res);
     }
 
