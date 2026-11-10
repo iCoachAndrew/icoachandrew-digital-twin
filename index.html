@@ -161,7 +161,7 @@
           <button id="lang-en-btn" onclick="setLanguage('en')" class="px-1.5 hover:text-primary transition-colors" type="button">EN</button>
         </div>
 
-        <button id="header-login-btn" onclick="openModal('ring1-auth-modal')" class="font-label-md text-label-md text-primary hover:text-primary-container transition-colors px-space-sm py-2" type="button">
+        <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="font-label-md text-label-md text-primary hover:text-primary-container transition-colors px-space-sm py-2" type="button">
           Masuk
         </button>
 
@@ -215,11 +215,11 @@
             <div class="lg:col-span-8 space-y-space-md">
               <div class="inline-flex items-center gap-space-sm px-space-md py-1 rounded bg-surface-container text-on-tertiary-container shadow-sm">
                 <span class="material-symbols-outlined text-[16px] text-on-tertiary-container">verified_user</span>
-                <span class="font-label-sm text-label-sm tracking-widest uppercase" id="hero-badge">Teman Diskusi &amp; Refleksi Kepemimpinan Nusantara</span>
+                <span class="font-label-sm text-label-sm tracking-widest uppercase" id="hero-badge">Teman Diskusi &amp; Refleksi Kepemimpinan</span>
               </div>
 
               <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight leading-[1.08]" id="hero-title">
-                Mengapa iCoachAndrew Hadir: Mewariskan Empat Dekade Kearifan Manajemen &amp; Kepemimpinan Nusantara.
+                Mengapa iCoachAndrew Hadir: Mewariskan Empat Dekade Kearifan Manajemen &amp; Kepemimpinan.
               </h1>
 
               <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl leading-relaxed" id="hero-subtitle">
@@ -239,10 +239,7 @@
                     <span class="font-label-md text-label-md tracking-wide" id="hero-cta-member">Bergabung sebagai Anggota</span>
                   </button>
 
-                  <button onclick="openModal('ring1-auth-modal')" class="inline-flex items-center gap-space-xs text-on-surface-variant hover:text-primary transition-colors py-2 px-space-xs" type="button">
-                    <span class="material-symbols-outlined text-[18px]">key</span>
-                    <span class="font-body-sm text-body-sm underline underline-offset-4 decoration-outline-variant" id="hero-cta-invite">Masuk dengan Kode Undangan</span>
-                  </button>
+                  
                 </div>
 
                 <p class="font-body-sm text-body-sm text-outline flex items-center gap-space-xs">
@@ -261,17 +258,18 @@
                   <div class="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent"></div>
                   <div class="absolute bottom-3 left-3 right-3 text-on-primary">
                     <div class="font-headline-sm text-headline-sm font-display-lg leading-tight">Pak Andrew Tani</div>
-                    <div class="font-label-sm text-label-sm opacity-90 tracking-wider uppercase" id="portrait-subtitle">Mentor Kepemimpinan &amp; Penulis</div>
+                    <div class="font-label-sm text-label-sm tracking-wider uppercase font-semibold text-tertiary-fixed" id="portrait-subtitle">SENIOR MANAGEMENT ADVISOR &amp; AUTHOR</div>
+                    <div class="font-body-sm text-[11px] opacity-90 mt-0.5" id="portrait-sub-meta">Co-author, Organizing for Business Excellence and Brain Quotient</div>
                   </div>
                 </div>
-                <!-- Authentic Quotation Seal -->
+                <!-- Authentic Quotation Seal: Otorisasi Kembaran Digital (Catatan Resmi Pak Andrew) -->
                 <div class="p-space-sm rounded bg-surface-container space-y-1">
-                  <div class="flex items-center justify-between text-label-sm font-label-sm text-on-tertiary-container">
-                    <span id="portrait-quote-label">PESAN PAK ANDREW</span>
-                    <span class="material-symbols-outlined text-[14px]">auto_stories</span>
+                  <div class="flex items-center justify-between text-label-sm font-label-sm text-on-tertiary-container font-semibold tracking-wider">
+                    <span id="portrait-quote-label">OTORISASI KEMBARAN DIGITAL</span>
+                    <span class="material-symbols-outlined text-[14px]">lock</span>
                   </div>
                   <p class="font-body-sm text-body-sm text-on-surface italic leading-snug" id="portrait-quote">
-                    “Teknologi tidak boleh melucuti marwah kebijaksanaan; ia harus menjadi bahtera yang membawanya utuh.”
+                    “Teknologi tidak boleh melucuti marwah kebijaksanaan: ia harus menjadi bahtera yang menyampaikannya secara utuh.”
                   </p>
                 </div>
               </div>
@@ -404,140 +402,81 @@
             </div>
           </div>
 
-          <!-- 4-Card Bento Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+          <!-- 2-Card Balanced Grid (Public & Member Access) -->
+          <div class="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-space-lg">
             <!-- Card 1: Open Public Reflection -->
-            <div class="bg-surface-container rounded-xl p-space-lg flex flex-col justify-between shadow-md relative overflow-hidden">
-              <div class="absolute top-0 right-0 px-3 py-1 rounded-bl bg-tertiary-container text-on-tertiary font-label-sm text-[10px] uppercase tracking-widest" id="tier1-ribbon">
+            <div class="bg-surface-container rounded-xl p-space-lg flex flex-col justify-between shadow-md relative overflow-hidden border border-outline-variant/30">
+              <div class="absolute top-0 right-0 px-3 py-1 rounded-bl bg-tertiary-container text-on-tertiary font-label-sm text-[10px] uppercase tracking-widest font-bold" id="tier1-ribbon">
                 Anda Ada Di Sini
               </div>
               <div class="space-y-space-md">
                 <div class="space-y-1">
-                  <span class="inline-block px-2 py-0.5 rounded text-[11px] font-label-sm uppercase tracking-wider bg-surface text-on-tertiary-container font-bold" id="tier1-badge">
-                    Terbuka untuk Umum
+                  <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-label-sm uppercase tracking-wider bg-surface text-on-tertiary-container font-bold shadow-xs" id="tier1-badge">
+                    Akses Terbuka
                   </span>
-                  <h3 class="font-headline-md text-headline-md text-primary" id="tier1-title">Ruang Diskusi Terbuka</h3>
+                  <h3 class="font-headline-md text-headline-md text-primary font-serif font-bold" id="tier1-title">Ruang Diskusi Terbuka</h3>
                 </div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant" id="tier1-desc">
-                  Terbuka bagi para pemimpin muda, manajer, maupun siapa saja yang ingin bertukar pikiran mengenai kepemimpinan, budaya kerja, dan manajemen dasar.
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="tier1-desc">
+                  Terbuka bagi setiap insan pemimpin, manajer, dan pembelajar yang ingin bertukar pikiran mengenai praktik kepemimpinan, penyelarasan tim, dan budaya kerja.
                 </p>
-                <div class="space-y-2 pt-space-xs font-body-sm text-body-sm">
+                <div class="space-y-2.5 pt-space-xs font-body-sm text-body-sm">
                   <div class="flex items-center gap-2 text-on-surface">
                     <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
-                    <span id="tier1-f1">Tanya-jawab seputar buku &amp; pemikiran publik</span>
+                    <span id="tier1-f1">Tanya-jawab seputar konsep &amp; pokok pemikiran kepemimpinan</span>
                   </div>
                   <div class="flex items-center gap-2 text-on-surface">
                     <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
-                    <span id="tier1-f2">Refleksi kepemimpinan sehari-hari</span>
+                    <span id="tier1-f2">Refleksi kepemimpinan sehari-hari yang membumi</span>
                   </div>
                   <div class="flex items-center gap-2 text-on-surface">
                     <span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
-                    <span id="tier1-f3">Langsung digunakan tanpa registrasi</span>
+                    <span id="tier1-f3">Akses langsung tanpa perlu mendaftar</span>
                   </div>
                 </div>
               </div>
-              <div class="pt-space-md mt-space-md">
-                <a class="w-full inline-flex items-center justify-center py-2.5 rounded bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm" href="#ruang-diskusi" id="tier1-cta">
-                  Mulai Berbincang
+              <div class="pt-space-md mt-space-md border-t border-outline-variant/20">
+                <a class="w-full inline-flex items-center justify-center gap-2 py-3 rounded bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm" href="#ruang-diskusi" id="tier1-cta">
+                  <span>Mulai Berbincang Sekarang</span>
+                  <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </a>
               </div>
             </div>
 
             <!-- Card 2: Executive Membership -->
-            <div class="bg-surface-container-low rounded-xl p-space-lg flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-surface-container-low rounded-xl p-space-lg flex flex-col justify-between shadow-sm hover:shadow-md transition-all border border-on-tertiary-container/30 relative overflow-hidden">
+              <div class="absolute top-0 right-0 px-3 py-1 rounded-bl bg-surface-container-high text-on-tertiary-container font-label-sm text-[10px] uppercase tracking-widest font-bold">
+                Masa Perkenalan (Bebas Biaya)
+              </div>
               <div class="space-y-space-md">
                 <div class="space-y-1">
-                  <span class="inline-block px-2 py-0.5 rounded text-[11px] font-label-sm uppercase tracking-wider bg-surface text-primary font-bold" id="tier2-badge">
-                    Sahabat &amp; Anggota
+                  <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-label-sm uppercase tracking-wider bg-surface text-primary font-bold shadow-xs" id="tier2-badge">
+                    Sahabat &amp; Rekan Eksekutif
                   </span>
-                  <h3 class="font-headline-md text-headline-md text-primary" id="tier2-title">Keanggotaan Eksekutif</h3>
+                  <h3 class="font-headline-md text-headline-md text-primary font-serif font-bold" id="tier2-title">Keanggotaan Rekan Eksekutif</h3>
                 </div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant" id="tier2-desc">
-                  Bagi jajaran direksi, komisaris, dan pemimpin organisasi yang menginginkan pendampingan lebih mendalam, kerangka kerja lengkap, serta penyimpanan riwayat diskusi.
+                <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="tier2-desc">
+                  Bagi jajaran direksi, komisaris, pendiri usaha, dan pimpinan organisasi yang menginginkan ruang refleksi terstruktur, arsip percakapan, dan pendampingan berkala.
                 </p>
-                <div class="space-y-2 pt-space-xs font-body-sm text-body-sm text-on-surface-variant">
+                <div class="space-y-2.5 pt-space-xs font-body-sm text-body-sm text-on-surface-variant">
                   <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-[18px]">check</span>
+                    <span class="material-symbols-outlined text-primary text-[18px]">verified</span>
                     <span id="tier2-f1">50 sesi diskusi mendalam setiap bulan</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-[18px]">check</span>
-                    <span id="tier2-f2">Rekaman memo suara khas Pak Andrew Tani</span>
+                    <span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+                    <span id="tier2-f2">Penyimpanan arsip percakapan &amp; catatan refleksi terstruktur</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-[18px]">check</span>
-                    <span id="tier2-f3">Koneksi ke WhatsApp &amp; Telegram Anda</span>
+                    <span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+                    <span id="tier2-f3">Akses prioritas ke ruang bincang mendalam</span>
                   </div>
                 </div>
               </div>
-              <div class="pt-space-md mt-space-md">
-                <button onclick="openModal('ring2-membership-modal')" class="w-full inline-flex items-center justify-center py-2.5 rounded bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button" id="tier2-cta">
-                  Bergabung sebagai Anggota
+              <div class="pt-space-md mt-space-md border-t border-outline-variant/20">
+                <button onclick="openModal('ring2-membership-modal')" class="w-full inline-flex items-center justify-center gap-2 py-3 rounded bg-surface-container-high text-primary font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-colors font-semibold" type="button" id="tier2-cta">
+                  <span>Bergabung sebagai Rekan (Bebas Biaya)</span>
+                  <span class="material-symbols-outlined text-[16px]">workspace_premium</span>
                 </button>
-              </div>
-            </div>
-
-            <!-- Card 3: Private Invitation -->
-            <div class="bg-surface-container-low rounded-xl p-space-lg flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
-              <div class="space-y-space-md">
-                <div class="space-y-1">
-                  <span class="inline-block px-2 py-0.5 rounded text-[11px] font-label-sm uppercase tracking-wider bg-surface text-secondary font-bold" id="tier3-badge">
-                    Undangan Pribadi
-                  </span>
-                  <h3 class="font-headline-md text-headline-md text-primary" id="tier3-title">Lingkaran Sahabat Dekat</h3>
-                </div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant" id="tier3-desc">
-                  Ruang diskusi khusus bagi para pendiri usaha, sesepuh keluarga, dan rekan pendamping yang telah menerima kode undangan pribadi dari Pak Andrew Tani.
-                </p>
-                <div class="space-y-2 pt-space-xs font-body-sm text-body-sm text-on-surface-variant">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
-                    <span id="tier3-f1">Masuk menggunakan Nama Panggilan / Kode Undangan</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
-                    <span id="tier3-f2">Diskusi suksesi &amp; penyelarasan keluarga bisnis</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
-                    <span id="tier3-f3">Tanpa batas jumlah sesi percakapan</span>
-                  </div>
-                </div>
-              </div>
-              <div class="pt-space-md mt-space-md">
-                <button onclick="openModal('ring1-auth-modal')" class="w-full inline-flex items-center justify-center py-2.5 rounded bg-surface-container text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors" type="button" id="tier3-cta">
-                  Masuk dengan Undangan
-                </button>
-              </div>
-            </div>
-
-            <!-- Card 4: Curated Personal Library -->
-            <div class="bg-surface-container-high rounded-xl p-space-lg flex flex-col justify-between shadow-sm">
-              <div class="space-y-space-md">
-                <div class="space-y-1">
-                  <span class="inline-block px-2 py-0.5 rounded text-[11px] font-label-sm uppercase tracking-wider bg-surface text-outline font-bold" id="tier4-badge">
-                    Dapur Redaksi
-                  </span>
-                  <h3 class="font-headline-md text-headline-md text-primary" id="tier4-title">Ruang Kurasi Pak Andrew</h3>
-                </div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant" id="tier4-desc">
-                  Ruang pengelolaan naskah asli, catatan harian, dan kurasi pemikiran yang dijaga langsung oleh Pak Andrew Tani bersama tim pengelola web.
-                </p>
-                <div class="space-y-2 pt-space-xs font-body-sm text-body-sm text-outline">
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">menu_book</span>
-                    <span id="tier4-f1">Menjaga keaslian suara &amp; nilai pemikiran</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">shield</span>
-                    <span id="tier4-f2">Terpisah dari jaringan publik umum</span>
-                  </div>
-                </div>
-              </div>
-              <div class="pt-space-md mt-space-md">
-                <div class="w-full text-center py-2.5 rounded bg-surface-variant text-outline font-label-sm text-label-sm" id="tier4-cta">
-                  Khusus Pengelola &amp; Kurator
-                </div>
               </div>
             </div>
           </div>
@@ -550,118 +489,118 @@
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
             <div class="space-y-space-xs max-w-2xl">
               <div class="font-label-sm text-label-sm uppercase tracking-widest text-on-tertiary-container font-bold" id="sec4-eyebrow">
-                Pustaka &amp; Karya Tulis
+                Khazanah Pemikiran &amp; Praktik
               </div>
               <h2 class="font-headline-xl text-headline-xl-mobile md:text-headline-xl text-primary leading-tight" id="sec4-title">
-                Buku &amp; Renungan yang Menghidupkan Pemikiran iCoachAndrew
+                Empat Pilar Khazanah Pemikiran Andrew Tani
               </h2>
               <p class="font-body-md text-body-md text-on-surface-variant" id="sec4-desc">
-                Setiap tanggapan di ruang diskusi ini berakar pada karya tulis orisinal, pengalaman menata organisasi, serta esai reflektif yang ditulis langsung oleh Pak Andrew Tani. Klik salah satu buku untuk mendiskusikannya.
+                Setiap tanggapan di ruang diskusi ini berakar pada pengalaman empat dekade mendampingi para pemimpin, karya tulis, dan refleksi kepemimpinan yang digagas langsung oleh Andrew Tani sejak 1983. Klik salah satu pilar untuk mendiskusikannya.
               </p>
             </div>
             <div class="shrink-0 flex items-center gap-space-sm text-label-sm font-label-sm text-outline">
               <span class="material-symbols-outlined text-primary text-[20px]">auto_stories</span>
-              <span id="sec4-stat">4 Jilid Utama • 1.840 Halaman Karya</span>
+              <span id="sec4-stat">4 Pilar Utama • 40+ Tahun Pengalaman</span>
             </div>
           </div>
 
           <!-- Corpus 4-Grid with Stitch Cover Visuals -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
             <!-- Book 1 -->
-            <div onclick="askBookPrompt('the_tani_method')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
+            <div onclick="askBookPrompt('kepemimpinan_mendengarkan')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
               <div class="h-48 overflow-hidden bg-primary-container relative">
-                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="The Tani Method" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8rxr1n17bjKezwrzdsW2GS-f1c1nFeAMgZGX9BZDVC-3VFll0ZQvggCLMb9vDfQplYbrHrgJ72EaUq8or48lkulgDKthdUCwJ73zaiJsllvQoksLQMMJDnWrnZbIFV5Uiv5IT3TGDUBiNbC3rhI_T1qXAQtGAEzB23qfCX4hJghDJ3RdLgp0SG1nMjDiUndXIHGTr1RBAGmhGKI9YfxA1slmWiA8H4nejxx_w75Kr"/>
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Organizing for Business Excellence" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8rxr1n17bjKezwrzdsW2GS-f1c1nFeAMgZGX9BZDVC-3VFll0ZQvggCLMb9vDfQplYbrHrgJ72EaUq8or48lkulgDKthdUCwJ73zaiJsllvQoksLQMMJDnWrnZbIFV5Uiv5IT3TGDUBiNbC3rhI_T1qXAQtGAEzB23qfCX4hJghDJ3RdLgp0SG1nMjDiUndXIHGTr1RBAGmhGKI9YfxA1slmWiA8H4nejxx_w75Kr"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-transparent to-transparent"></div>
                 <div class="absolute bottom-3 left-3 right-3 text-on-primary">
-                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book1-tag">Karya Utama • Jilid I</span>
+                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book1-tag">Karya Buku • Co-author Andrew Tani</span>
                 </div>
               </div>
               <div class="p-space-md flex-1 flex flex-col justify-between space-y-space-sm">
                 <div class="space-y-1">
                   <h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-primary-container transition-colors" id="book1-title">
-                    The Tani Method: Architecture of Enterprise Governance
+                    Organizing for Business Excellence
                   </h3>
                   <p class="font-body-sm text-body-sm text-on-surface-variant" id="book1-desc">
-                    Kejelasan peran kepemimpinan, keselarasan strategi dan manusia, serta perancangan organisasi lintas generasi.
+                    Arsitektur tata kelola dan perancangan organisasi untuk mencapai keunggulan bisnis yang berkesinambungan serta penyelarasan strategi dewan direksi dengan eksekusi tim.
                   </p>
                 </div>
                 <div class="pt-space-xs font-label-sm text-label-sm text-primary flex items-center justify-between">
-                  <span id="book1-cta">Diskusikan Buku Ini →</span>
+                  <span id="book1-cta">Diskusikan Karya Ini →</span>
                   <span class="material-symbols-outlined text-[16px]">menu_book</span>
                 </div>
               </div>
             </div>
 
             <!-- Book 2 -->
-            <div onclick="askBookPrompt('harmoni_nusantara')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
+            <div onclick="askBookPrompt('penyelarasan_organisasi')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
               <div class="h-48 overflow-hidden bg-surface-container-high relative">
-                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Harmoni Nusantara" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI3_vsyVFul0uJCOcpoBKyo0pxFKj4XQvIHzZcWA_ORw3on1V5jtNxUNz6VCGQrREA9zg-RedEXp5coDxKiwBh65orDjPGiX1xxpDaGoXGMyptkDOHPzGgvcaQpZ3aD-nhFIF8l0ZnLadQopbIKCTulBrP3zPjkxnDVKl5RJppIx0C-YuYVu99wDJLf1soKQxabhHe130SlZxH2EVWBE5rz7qSyE54gwTm8Tk1UfaZ"/>
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Brain Quotient" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBI3_vsyVFul0uJCOcpoBKyo0pxFKj4XQvIHzZcWA_ORw3on1V5jtNxUNz6VCGQrREA9zg-RedEXp5coDxKiwBh65orDjPGiX1xxpDaGoXGMyptkDOHPzGgvcaQpZ3aD-nhFIF8l0ZnLadQopbIKCTulBrP3zPjkxnDVKl5RJppIx0C-YuYVu99wDJLf1soKQxabhHe130SlZxH2EVWBE5rz7qSyE54gwTm8Tk1UfaZ"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-transparent to-transparent"></div>
                 <div class="absolute bottom-3 left-3 right-3 text-on-primary">
-                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book2-tag">Falsafah Kepemimpinan • Jilid II</span>
+                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book2-tag">Penerbit Gramedia • Limited Edition</span>
                 </div>
               </div>
               <div class="p-space-md flex-1 flex flex-col justify-between space-y-space-sm">
                 <div class="space-y-1">
                   <h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-primary-container transition-colors" id="book2-title">
-                    Harmoni Nusantara: Kepemimpinan Kolektif
+                    Brain Quotient: Pahami Kemampuan Otak Anda
                   </h3>
                   <p class="font-body-sm text-body-sm text-on-surface-variant" id="book2-desc">
-                    Menghidupkan nilai Tut Wuri Handayani dan ketulusan mendengarkan di tengah dinamika dunia usaha modern.
+                    Karya bersama Heru Wiryanto &amp; Andrew Tani, SR. Terbitan PT Gramedia Widiasarana Indonesia (Limited Edition). Menyelami kapasitas kognitif otak dalam kepemimpinan dan ketahanan mental para pengambil keputusan di bawah tekanan.
                   </p>
                 </div>
                 <div class="pt-space-xs font-label-sm text-label-sm text-primary flex items-center justify-between">
-                  <span id="book2-cta">Diskusikan Buku Ini →</span>
+                  <span id="book2-cta">Diskusikan Karya Ini →</span>
                   <span class="material-symbols-outlined text-[16px]">menu_book</span>
                 </div>
               </div>
             </div>
 
             <!-- Book 3 -->
-            <div onclick="askBookPrompt('wadah_mandiri')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
+            <div onclick="askBookPrompt('suksesi_keberlanjutan')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
               <div class="h-48 overflow-hidden bg-surface-container-high relative">
-                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Wadah Mandiri" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPzyuAc0DetSZ0O6smud7RQ39-kJzIX-Rf-u-7JRrraEqg9F7Ii4AqX3Z3LOlqYYilf_v9vThqqBa1DYLn8vPsZiH4oM730kB-6F1eDcP3Q9siAKRU_whAifMsi9EV6igOsab9eShKGIsZ1i2h8o3tCYuZNZlFRzhBChK60sACj00INFQYG3hOlI8Zo04ioA_YrZCjxsLg8dqdOuyBLAfaQnyn_9C34e6E8s_AA3Lg"/>
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Suksesi &amp; Keberlanjutan Nilai" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPzyuAc0DetSZ0O6smud7RQ39-kJzIX-Rf-u-7JRrraEqg9F7Ii4AqX3Z3LOlqYYilf_v9vThqqBa1DYLn8vPsZiH4oM730kB-6F1eDcP3Q9siAKRU_whAifMsi9EV6igOsab9eShKGIsZ1i2h8o3tCYuZNZlFRzhBChK60sACj00INFQYG3hOlI8Zo04ioA_YrZCjxsLg8dqdOuyBLAfaQnyn_9C34e6E8s_AA3Lg"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-transparent to-transparent"></div>
                 <div class="absolute bottom-3 left-3 right-3 text-on-primary">
-                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book3-tag">Regenerasi &amp; Tim • Jilid III</span>
+                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book3-tag">Pilar III • Estafet Generasi</span>
                 </div>
               </div>
               <div class="p-space-md flex-1 flex flex-col justify-between space-y-space-sm">
                 <div class="space-y-1">
                   <h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-primary-container transition-colors" id="book3-title">
-                    Wadah Mandiri &amp; Dinamika Antar-Generasi
+                    Suksesi &amp; Keberlanjutan Nilai (Generational Stewardship)
                   </h3>
                   <p class="font-body-sm text-body-sm text-on-surface-variant" id="book3-desc">
-                    Cara menjembatani semangat generasi baru dengan kebijaksanaan para pendiri secara harmonis dan saling menghormati.
+                    Menjembatani kebijaksanaan para perintis dengan inovasi generasi penerus tanpa mencederai nilai luhur yang telah dibangun puluhan tahun.
                   </p>
                 </div>
                 <div class="pt-space-xs font-label-sm text-label-sm text-primary flex items-center justify-between">
-                  <span id="book3-cta">Diskusikan Buku Ini →</span>
+                  <span id="book3-cta">Diskusikan Pilar Ini →</span>
                   <span class="material-symbols-outlined text-[16px]">menu_book</span>
                 </div>
               </div>
             </div>
 
             <!-- Book 4 -->
-            <div onclick="askBookPrompt('himne_renungan')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
+            <div onclick="askBookPrompt('refleksi_harmoni')" class="cursor-pointer group bg-surface rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col">
               <div class="h-48 overflow-hidden bg-surface-container-high relative">
                 <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Himne & Renungan" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpDgSVFOWVCSG_IwlKxXfNVSchsCyEa1ICpZ9rdemw_w1cj0sj9k967WtX-vTG34KcpTVUXUDjkkpBWb2EV5e04EAHtTtGO_pil0135qZHz_BV7PmMxDp3kb3v8t5wQ0j4ZssSz-du887N8THCIAu8QxigrBDcYZHQ3jz7tnWcDJbT9QXgbGjQ0Z89l-HN9wpyo86JITXzwRD6r5B0ZpxHf_zqmbGVQ3JqmmbGfcYl"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-transparent to-transparent"></div>
                 <div class="absolute bottom-3 left-3 right-3 text-on-primary">
-                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book4-tag">Esai &amp; Lagu • Jilid IV</span>
+                  <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed" id="book4-tag">Pilar IV • Refleksi &amp; Harmoni</span>
                 </div>
               </div>
               <div class="p-space-md flex-1 flex flex-col justify-between space-y-space-sm">
                 <div class="space-y-1">
                   <h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-primary-container transition-colors" id="book4-title">
-                    Himne &amp; Renungan Kepemimpinan
+                    Refleksi Nurani &amp; Lagu Kepemimpinan (Reflections &amp; Songs)
                   </h3>
                   <p class="font-body-sm text-body-sm text-on-surface-variant" id="book4-desc">
-                    Kumpulan esai dan lirik lagu reflektif mengenai ketenangan batin seorang pemimpin di tengah badai perubahan.
+                    Kumpulan renungan batin dan lagu gubahan Pak Andrew yang mengingatkan bahwa ketenangan hati adalah kompas sejati dalam memimpin.
                   </p>
                 </div>
                 <div class="pt-space-xs font-label-sm text-label-sm text-primary flex items-center justify-between">
-                  <span id="book4-cta">Diskusikan Buku Ini →</span>
+                  <span id="book4-cta">Diskusikan Pilar Ini →</span>
                   <span class="material-symbols-outlined text-[16px]">menu_book</span>
                 </div>
               </div>
@@ -758,7 +697,7 @@
                       “Sahabatku, pertanyaan Anda menunjukkan bahwa nurani kepemimpinan Anda masih sangat terjaga. Jangan pernah mempertentangkan ketegasan tujuan dengan empati, seolah keduanya adalah dua kutub yang saling menjatuhkan.”
                     </p>
                     <p class="font-body-md text-body-md text-on-surface-variant font-sans leading-relaxed">
-                      Dalam buku <em class="italic text-primary font-serif">The Tani Method</em>, saya selalu mengingatkan bahwa kepemimpinan kebapakan (<em class="italic">Paternal Stewardship</em>) bukanlah pemakluman atas ketidaktercapaian hasil, melainkan pemberian kejelasan arah yang melindungi anggota tim dari kebingungan. Ketegasan pada tujuan adalah wujud kepedulian kita; sementara kehangatan tutur kata dan kesediaan mendengarkan adalah jembatan agar ketegasan itu diterima dengan hati yang lapang.
+                      Dalam berbagai kesempatan mendampingi para pemimpin eksekutif, saya selalu mengingatkan bahwa kepemimpinan yang mengayomi (<em class="italic">Empathetic Leadership</em>) bukanlah pemakluman atas ketidaktercapaian hasil, melainkan pemberian kejelasan arah yang melindungi anggota tim dari kebingungan. Ketegasan pada tujuan adalah wujud kepedulian kita; sementara kehangatan tutur kata dan kesediaan mendengarkan adalah jembatan agar ketegasan itu diterima dengan hati yang lapang.
                     </p>
                     <div class="p-space-md bg-surface-container-low rounded-lg space-y-2 font-sans">
                       <div class="font-label-sm text-label-sm uppercase tracking-wider text-on-tertiary-container font-bold">Langkah Sederhana Pekan Ini:</div>
@@ -776,7 +715,7 @@
                   </div>
 
                   <div class="pt-space-xs text-outline font-label-sm text-[11px] flex items-center justify-between">
-                    <span id="fp-sample-cite">Disarikan dari: Bab IV • Himne &amp; Renungan Kepemimpinan</span>
+                    <span id="fp-sample-cite">Disarikan dari: Bab IV • Refleksi Nurani &amp; Lagu Kepemimpinan (Reflections &amp; Songs)</span>
                     <span id="fp-sample-author">Andrew Tani • Teman Diskusi Digital</span>
                   </div>
                 </div>
@@ -892,28 +831,23 @@
               </div>
             </div>
 
-            <!-- Mobile Messaging Pairing Card -->
-            <div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+            <!-- Secretariat Direct Advisory Card -->
+            <div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm border border-outline-variant/30">
               <div class="flex items-center justify-between mb-space-xs">
                 <div class="flex items-center gap-space-xs">
-                  <span class="material-symbols-outlined text-primary text-[18px]">chat</span>
-                  <span class="font-label-md text-label-md text-primary font-bold" id="chamber-pairing-title">Kiriman Memo Suara &amp; Pesan</span>
+                  <span class="material-symbols-outlined text-primary text-[18px]">support_agent</span>
+                  <span class="font-label-md text-label-md text-primary font-bold" id="chamber-pairing-title">Pendampingan &amp; Sesi Langsung</span>
                 </div>
               </div>
               <p class="font-body-sm text-body-sm text-on-surface-variant mb-space-sm" id="chamber-pairing-desc">
-                Terima rekaman suara dan catatan refleksi Pak Andrew langsung melalui WhatsApp atau Telegram pribadi Anda.
+                Ingin merencanakan sesi konsultasi atau mengundang Pak Andrew Tani untuk sesi dewan? Hubungi Sekretariat Andrew Tani &amp; Co.
               </p>
               <div class="flex items-center gap-space-xs">
-                <button onclick="pairChannel('whatsapp')" class="flex-1 bg-surface-container hover:bg-surface-container-high transition-colors text-primary font-label-sm text-label-sm py-space-xs px-space-sm rounded flex items-center justify-center gap-space-xs" type="button">
-                  <span class="material-symbols-outlined text-[16px]">chat</span>
-                  <span id="wa-pair-label">WhatsApp</span>
-                </button>
-                <button onclick="pairChannel('telegram')" class="flex-1 bg-surface-container hover:bg-surface-container-high transition-colors text-primary font-label-sm text-label-sm py-space-xs px-space-sm rounded flex items-center justify-center gap-space-xs" type="button">
-                  <span class="material-symbols-outlined text-[16px]">send</span>
-                  <span id="tg-pair-label">Telegram</span>
-                </button>
+                <a href="https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani,%20saya%20ingin%20berkonsultasi%20mengenai%20sesi%20pendampingan%20eksekutif" target="_blank" rel="noopener noreferrer" class="w-full bg-surface-container hover:bg-surface-container-high transition-colors text-primary font-label-sm text-label-sm py-2.5 px-space-sm rounded flex items-center justify-center gap-space-xs font-semibold shadow-xs">
+                  <span class="material-symbols-outlined text-[16px] text-on-tertiary-container">chat</span>
+                  <span>Hubungi Sekretariat (WhatsApp)</span>
+                </a>
               </div>
-              <div id="channel-pair-status" class="mt-2 font-label-sm text-label-sm text-on-tertiary-container"></div>
             </div>
 
             <!-- Past Reflections List -->
@@ -927,15 +861,15 @@
               <div id="chamber-history-list" class="flex flex-col gap-space-xs font-body-sm text-body-sm">
                 <button onclick="submitChamberPrompt(1)" class="text-left block p-space-sm rounded bg-surface-container-high text-primary hover:bg-surface-variant transition-colors" type="button">
                   <p class="font-headline-sm text-[15px] leading-snug font-semibold text-primary" id="ch-hist1-title">Menyelaraskan Suksesi Lintas Generasi</p>
-                  <span class="font-label-sm text-[11px] text-on-surface-variant" id="ch-hist1-sub">Buku: The Tani Method, Bab 4</span>
+                  <span class="font-label-sm text-[11px] text-on-surface-variant" id="ch-hist1-sub">Pokok Pemikiran: Estafet Kepemimpinan Usaha</span>
                 </button>
                 <button onclick="submitChamberPrompt(2)" class="text-left block p-space-sm rounded bg-surface-container-lowest hover:bg-surface-container transition-colors" type="button">
                   <p class="font-title-md text-[14px] leading-snug font-medium text-on-surface" id="ch-hist2-title">“Tut Wuri Handayani” &amp; Seni Mendengarkan</p>
-                  <span class="font-label-sm text-[11px] text-on-surface-variant" id="ch-hist2-sub">Buku: Harmoni Nusantara</span>
+                  <span class="font-label-sm text-[11px] text-on-surface-variant" id="ch-hist2-sub">Pokok Pemikiran: Budaya Kerja yang Tulus</span>
                 </button>
                 <button onclick="submitChamberPrompt(3)" class="text-left block p-space-sm rounded bg-surface-container-lowest hover:bg-surface-container transition-colors" type="button">
                   <p class="font-title-md text-[14px] leading-snug font-medium text-on-surface" id="ch-hist3-title">Menumbuhkan Budaya Kerja yang Tulus</p>
-                  <span class="font-label-sm text-[11px] text-on-surface-variant" id="ch-hist3-sub">Buku: Wadah Mandiri</span>
+                  <span class="font-label-sm text-[11px] text-on-surface-variant" id="ch-hist3-sub">Pokok Pemikiran: Penataan Organisasi</span>
                 </button>
               </div>
             </div>
@@ -991,29 +925,24 @@
                   </div>
                 </div>
 
-                <!-- Embedded Voice Playback Bar -->
-                <div class="bg-primary text-on-primary p-space-md rounded-lg mb-space-lg shadow-sm flex flex-col sm:flex-row items-center gap-space-md">
-                  <div class="flex items-center gap-space-sm w-full sm:w-auto">
-                    <button onclick="toggleVoiceMemo(this)" class="w-10 h-10 rounded-full bg-surface-bright text-primary flex items-center justify-center hover:scale-105 transition-transform shrink-0" type="button">
-                      <span class="material-symbols-outlined text-[24px] voice-icon" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
-                    </button>
-                    <div class="flex flex-col min-w-0">
-                      <span class="font-label-md text-label-md text-surface-bright font-bold flex items-center gap-1">
-                        <span id="ch-voice-title">Rekaman Suara Refleksi</span>
-                        <span class="text-tertiary-fixed-dim text-[11px]" id="ch-voice-voice">• Suara Bariton</span>
+                <!-- Warkah Pembuka Refleksi Andrew Tani -->
+                <div class="bg-surface-container-low border border-outline-variant/40 p-space-md rounded-lg mb-space-lg shadow-xs flex items-center justify-between gap-space-md">
+                  <div class="flex items-center gap-space-sm">
+                    <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-xs">
+                      <span class="material-symbols-outlined text-[20px]">auto_stories</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="font-label-md text-label-md text-primary font-bold flex items-center gap-1.5" id="ch-voice-title">
+                        Warkah Refleksi Pembuka • Andrew Tani
                       </span>
-                      <span class="font-body-sm text-body-sm text-on-primary-container text-[12px]" id="ch-voice-lang">Bahasa Indonesia • 01:45</span>
+                      <span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]" id="ch-voice-lang">
+                        Ditulis dari Ruang Kerja Mentor • Panduan Lintas Generasi
+                      </span>
                     </div>
                   </div>
-                  <div class="flex-1 w-full flex items-center gap-space-xs">
-                    <svg class="w-full h-8 text-tertiary-fixed-dim" preserveAspectRatio="none" viewBox="0 0 300 32">
-                      <path d="M0 16 Q 15 2, 30 16 T 60 16 T 90 4 T 120 28 T 150 16 T 180 6 T 210 26 T 240 16 T 270 10 T 300 16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
-                      <circle cx="90" cy="4" fill="currentColor" r="4"></circle>
-                    </svg>
-                  </div>
-                  <div class="flex items-center gap-space-xs shrink-0">
-                    <span class="font-label-sm text-label-sm text-on-primary-container">00:24 / 01:45</span>
-                    <div class="bg-primary-container px-space-xs py-0.5 rounded text-tertiary-fixed-dim font-label-sm text-label-sm font-bold">1.0x</div>
+                  <div class="hidden sm:flex items-center gap-space-xs text-on-tertiary-container text-label-sm font-label-sm font-semibold">
+                    <span class="material-symbols-outlined text-[16px]">verified</span>
+                    <span>Otentik Sejak 1983</span>
                   </div>
                 </div>
 
@@ -1049,7 +978,7 @@
                       <div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
                         <div>
                           <div class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md font-bold mb-space-xs">I</div>
-                          <h4 class="font-title-md text-title-md text-primary font-bold mb-1" id="ch-p1-title">Wadah Mandiri</h4>
+                          <h4 class="font-title-md text-title-md text-primary font-bold mb-1" id="ch-p1-title">Ruang Tumbuh Generasi Penerus</h4>
                           <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="ch-p1-desc">
                             Berikan ruang inisiatif baru kepada generasi penerus sebagai tempat belajar dan membuktikan diri tanpa langsung mengubah fondasi utama yang dibangun pendiri.
                           </p>
@@ -1059,7 +988,7 @@
                       <div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
                         <div>
                           <div class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md font-bold mb-space-xs">II</div>
-                          <h4 class="font-title-md text-title-md text-primary font-bold mb-1" id="ch-p2-title">Musyawarah Keluarga</h4>
+                          <h4 class="font-title-md text-title-md text-primary font-bold mb-1" id="ch-p2-title">Forum Komunikasi Terjadwal</h4>
                           <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="ch-p2-desc">
                             Bedakan waktu berkumpul yang hangat sebagai keluarga dengan forum diskusi perusahaan yang terjadwal dan terarah.
                           </p>
@@ -1069,7 +998,7 @@
                       <div class="bg-surface-container-lowest p-space-md rounded shadow-sm flex flex-col justify-between">
                         <div>
                           <div class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-label-md text-label-md font-bold mb-space-xs">III</div>
-                          <h4 class="font-title-md text-title-md text-primary font-bold mb-1" id="ch-p3-title">Peran Pamong/Sepuh</h4>
+                          <h4 class="font-title-md text-title-md text-primary font-bold mb-1" id="ch-p3-title">Penghormatan Nilai &amp; Kebijaksanaan Perintis</h4>
                           <p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed" id="ch-p3-desc">
                             Hormati pendiri sebagai <em>Pamong</em> (Penjaga Nilai &amp; Kompas Moral), sehingga tim pelaksana dapat menjalankan roda harian dengan lincah.
                           </p>
@@ -1079,19 +1008,19 @@
                     </div>
                   </div>
 
-                  <!-- Book References -->
-                  <div class="bg-surface-container-low p-space-md rounded-lg my-space-xs">
+                  <!-- Foundation References -->
+                  <div class="bg-surface-container-low p-space-md rounded-lg my-space-xs border-l-2 border-primary">
                     <span class="font-label-sm text-label-sm text-primary font-bold uppercase tracking-wider block mb-space-xs" id="ch-refs-title">
-                      Bacaan Lebih Lanjut dari Buku Andrew Tani:
+                      Rujukan Pokok Pemikiran Andrew Tani:
                     </span>
                     <ul class="flex flex-col gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
                       <li class="flex items-start gap-space-xs">
-                        <span class="material-symbols-outlined text-[16px] text-on-tertiary-container shrink-0 mt-0.5">menu_book</span>
-                        <span id="ch-ref1"><strong>The Tani Method: Architecture of Enterprise Governance</strong> — Bab 4: <em>The Sacred Transition: From Founder Heroism to Institutional Stewardship</em> (hlm. 112–128).</span>
+                        <span class="material-symbols-outlined text-[16px] text-on-tertiary-container shrink-0 mt-0.5">verified</span>
+                        <span id="ch-ref1"><strong>Refleksi Tata Kelola &amp; Kepemimpinan</strong> — Pilar Suksesi &amp; Estafet Usaha Keluarga (Pengalaman Pendampingan Dewan Komisaris &amp; Direksi sejak 1983).</span>
                       </li>
                       <li class="flex items-start gap-space-xs">
-                        <span class="material-symbols-outlined text-[16px] text-on-tertiary-container shrink-0 mt-0.5">menu_book</span>
-                        <span id="ch-ref2"><strong>Harmoni Nusantara: Kepemimpinan Kolektif (1994)</strong> — Bagian B: <em>Merawat Kehormatan Sesepuh Tanpa Menyandera Kemajuan</em>.</span>
+                        <span class="material-symbols-outlined text-[16px] text-on-tertiary-container shrink-0 mt-0.5">verified</span>
+                        <span id="ch-ref2"><strong>Budaya Kerja &amp; Kepemimpinan Kolektif</strong> — Menyelaraskan Arah Perusahaan dengan Penghormatan Luhur Antar-Generasi.</span>
                       </li>
                     </ul>
                   </div>
@@ -1235,54 +1164,102 @@
   <!-- ========================================================================= -->
   <!-- MODAL 2: MASUK & AKSES UNDANGAN KHUSUS (Humanized Stitch Modal)           -->
   <!-- ========================================================================= -->
-  <div id="ring1-auth-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-space-md bg-primary/70 backdrop-blur-sm overflow-y-auto">
+  <div id="auth-signin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-space-md bg-primary/70 backdrop-blur-sm overflow-y-auto">
     <div class="relative w-full max-w-xl bg-surface-bright rounded-xl shadow-2xl border border-outline-variant/60 overflow-hidden my-space-md">
       <div class="h-1.5 w-full bg-gradient-to-r from-primary via-on-tertiary-container to-secondary"></div>
       <div class="p-space-lg sm:p-space-xl flex flex-col gap-space-md">
         <div class="flex items-start justify-between gap-space-sm border-b border-surface-variant pb-space-md">
           <div>
             <div class="flex items-center gap-space-xs mb-space-xs">
-              <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
-              <span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-bold" id="r1-modal-tag">Ruang Diskusi Pribadi</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+              <span class="font-label-sm text-label-sm uppercase tracking-widest text-primary font-bold" id="auth-modal-tag">Akses Rekan &amp; Anggota</span>
             </div>
-            <h2 class="font-headline-md text-headline-md text-primary font-serif font-semibold tracking-tight" id="r1-modal-title">Masuk dengan Kode Undangan Khusus</h2>
-            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed" id="r1-modal-desc">
-              Dikhususkan bagi sahabat dekat, keluarga pendiri, dan rekan pendamping Pak Andrew Tani. Menggunakan nama panggilan khusus demi menjaga kenyamanan dan privasi Anda.
+            <h2 class="font-headline-md text-headline-md text-primary font-serif font-semibold tracking-tight" id="auth-modal-title">Masuk ke Ruang Diskusi</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-relaxed" id="auth-modal-desc">
+              Silakan gunakan kredensial keanggotaan Anda untuk melanjutkan percakapan dan membuka arsip refleksi kepemimpinan.
             </p>
           </div>
-          <button onclick="closeModal('ring1-auth-modal')" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-primary transition-colors shrink-0" title="Tutup" type="button">
+          <button onclick="closeModal('auth-signin-modal')" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline hover:text-primary transition-colors shrink-0" title="Tutup" type="button">
             <span class="material-symbols-outlined text-[18px]">close</span>
           </button>
         </div>
 
-        <form id="ring1-login-form" onsubmit="event.preventDefault(); submitRing1Login();" class="flex flex-col gap-space-md pt-space-xs">
+        <!-- Auth Tabs -->
+        <div class="flex items-center border-b border-outline-variant/40 gap-space-sm font-label-md text-label-md">
+          <button id="tab-btn-member" onclick="switchAuthTab('member')" type="button" class="pb-2 px-1 border-b-2 border-primary text-primary font-bold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">badge</span>
+            <span>Rekan Anggota</span>
+          </button>
+          <button id="tab-btn-code" onclick="switchAuthTab('code')" type="button" class="pb-2 px-1 border-b-2 border-transparent text-outline hover:text-primary font-medium flex items-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-[18px]">key</span>
+            <span>Kode Akses Personal</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Member Login Form -->
+        <form id="auth-member-form" onsubmit="event.preventDefault(); submitMemberLogin();" class="flex flex-col gap-space-md pt-space-xs">
           <div class="flex flex-col gap-1.5">
-            <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider flex items-center justify-between">
-              <span id="r1-label-code">Nama Panggilan / Kode Undangan</span>
-              <span class="text-outline font-normal text-[11px]" id="r1-hint-code">Tanpa Nama Asli</span>
-            </label>
+            <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider block">Alamat Email Anggota</label>
+            <div class="relative flex items-center">
+              <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">alternate_email</span>
+              <input id="member-login-email" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm text-body-md text-primary" placeholder="nama@organisasi.com" type="email" required/>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider block">Kata Sandi / PIN Keamanan</label>
+            <div class="relative flex items-center">
+              <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">lock</span>
+              <input id="member-login-pass" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm text-body-md text-primary" placeholder="Kata sandi atau PIN Anda" type="password" required/>
+            </div>
+          </div>
+          <div id="member-login-error" class="hidden p-space-xs bg-error-container/20 border border-error/30 text-error rounded font-body-sm text-body-sm"></div>
+          <button type="submit" class="w-full py-3 rounded bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm font-semibold flex items-center justify-center gap-2">
+            <span>Masuk sebagai Anggota</span>
+            <span class="material-symbols-outlined text-[18px]">login</span>
+          </button>
+        </form>
+
+        <!-- Tab 2: Access Code Login Form -->
+        <form id="auth-code-form" onsubmit="event.preventDefault(); submitRing1Login();" class="hidden flex flex-col gap-space-md pt-space-xs">
+          <div class="flex flex-col gap-1.5">
+            <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider block">Kode Akses / Nama Panggilan</label>
             <div class="relative flex items-center">
               <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">fingerprint</span>
-              <input id="r1-codename" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm font-mono text-body-md text-primary" placeholder="Contoh: BEGAPAL-92 atau Begapal" type="text" value="BEGAPAL-92" required/>
+              <input id="r1-codename" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm font-mono text-body-md text-primary" placeholder="Masukkan kode akses Anda" type="text" required/>
             </div>
           </div>
-
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
             <div>
-              <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider block mb-1.5" id="r1-label-otp">Kode Verifikasi (6 Angka)</label>
+              <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider block mb-1.5">Kode Verifikasi (6 Angka)</label>
               <div class="relative flex items-center">
                 <span class="material-symbols-outlined absolute left-3 text-on-tertiary-container text-[18px]">vpn_key</span>
-                <input id="r1-otp" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm font-mono font-bold tracking-widest text-primary text-body-md" placeholder="749 203" type="text" value="749 203" required/>
+                <input id="r1-otp" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm font-mono font-bold tracking-widest text-primary text-body-md" placeholder="6 Angka OTP" type="text" required/>
               </div>
             </div>
             <div>
-              <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider block mb-1.5" id="r1-label-pass">Kata Sandi Pribadi</label>
+              <label class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider block mb-1.5">Kata Sandi Personal</label>
               <div class="relative flex items-center">
                 <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">lock</span>
-                <input id="r1-passphrase" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm font-body-md text-primary" type="password" value="SecretPassphrase1983" required/>
+                <input id="r1-passphrase" class="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:outline-none rounded py-space-sm pl-10 pr-space-sm font-body-md text-primary" placeholder="Kata Sandi Personal" type="password" required/>
               </div>
             </div>
           </div>
+          <div id="r1-login-error" class="hidden p-space-xs bg-error-container/20 border border-error/30 text-error rounded font-body-sm text-body-sm"></div>
+          <button type="submit" class="w-full py-3 rounded bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-colors shadow-sm font-semibold flex items-center justify-center gap-2">
+            <span>Masuk dengan Kode Akses</span>
+            <span class="material-symbols-outlined text-[18px]">key</span>
+          </button>
+        </form>
+
+        <div class="pt-space-xs text-center border-t border-outline-variant/30 font-body-sm text-body-sm text-on-surface-variant">
+          <span>Belum memiliki keanggotaan? </span>
+          <button onclick="closeModal('auth-signin-modal'); openModal('ring2-membership-modal');" type="button" class="text-primary font-bold hover:underline">
+            Bergabung sebagai Rekan Eksekutif (Bebas Biaya) →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
           <div class="flex flex-col gap-1.5">
             <span class="font-label-sm text-label-sm text-primary font-semibold uppercase tracking-wider" id="r1-label-channel">Pilihan Koneksi Pesan Pribadi</span>
@@ -1313,7 +1290,7 @@
           <div id="r1-login-error" class="hidden text-secondary font-label-sm text-label-sm"></div>
 
           <div class="pt-space-xs flex flex-col sm:flex-row items-center justify-between gap-space-sm">
-            <button onclick="closeModal('ring1-auth-modal')" class="w-full sm:w-auto px-space-md py-space-sm rounded text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors" type="button">
+            <button onclick="closeModal('auth-signin-modal')" class="w-full sm:w-auto px-space-md py-space-sm rounded text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors" type="button">
               <span id="r1-btn-cancel">Kembali ke Halaman Depan</span>
             </button>
             <button class="w-full sm:w-auto px-space-lg py-space-sm rounded bg-secondary hover:bg-on-secondary-container text-on-secondary font-label-md text-label-md shadow-md transition-colors flex items-center justify-center gap-space-xs" type="submit">
@@ -1359,7 +1336,7 @@
             </li>
             <li class="flex items-center gap-2">
               <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-              <button onclick="openModal('ring1-auth-modal')" class="text-on-surface-variant hover:text-primary transition-colors" type="button" id="footer-nav-invite">Undangan Khusus</button>
+              
             </li>
           </ul>
         </div>
@@ -1416,16 +1393,17 @@
         "top-bar-status": "Disarikan dari 40+ Tahun Pengalaman & Karya Tulis Beliau",
         "top-bar-home-btn": "Halaman Depan",
         "top-bar-chamber-btn": "Buka Ruang Konsultasi Penuh",
-        "hero-badge": "Teman Diskusi & Refleksi Kepemimpinan Nusantara",
-        "hero-title": "Mengapa iCoachAndrew Hadir: Mewariskan Empat Dekade Kearifan Manajemen & Kepemimpinan Nusantara.",
-        "hero-subtitle": { html: "Bukan sekadar kecerdasan buatan biasa, melainkan teman berpikir (<em class=\"italic text-primary font-serif\">Digital Twin</em>) dari Pak Andrew Tani yang dirangkai langsung dari pengalaman mendampingi para pemimpin, buku-buku, esai kepemimpinan pamong, hingga karya lagu beliau sejak 1983." },
+        "hero-badge": "Teman Diskusi & Refleksi Kepemimpinan",
+        "hero-title": "Mengapa iCoachAndrew Hadir: Mewariskan Empat Dekade Kearifan Manajemen & Kepemimpinan.",
+        "html": "• <strong>Masa Perkenalan:</strong> Aktif langsung tanpa biaya keanggotaan.",
         "hero-cta-primary": "Mulai Berbincang Sekarang",
-        "hero-cta-member": "Bergabung sebagai Anggota",
+        "hero-cta-member": "Bergabung sebagai Rekan",
         "hero-cta-invite": "Masuk dengan Kode Undangan",
-        "hero-note": "Terbuka langsung tanpa perlu mendaftar • Mari berdiskusi seputar kepemimpinan, budaya kerja, dan keselarasan organisasi",
-        "portrait-subtitle": "Mentor Kepemimpinan & Penulis",
-        "portrait-quote-label": "PESAN PAK ANDREW",
-        "portrait-quote": "“Teknologi tidak boleh melucuti marwah kebijaksanaan; ia harus menjadi bahtera yang membawanya utuh.”",
+        "hero-note": "Terbuka langsung tanpa perlu mendaftar • Mari berdiskusi seputar kepemimpinan, budaya kerja, dan penyelarasan tim",
+        "portrait-subtitle": "SENIOR MANAGEMENT ADVISOR & AUTHOR",
+        "portrait-sub-meta": "Co-author, Organizing for Business Excellence and Brain Quotient",
+        "portrait-quote-label": "OTORISASI KEMBARAN DIGITAL",
+        "portrait-quote": "“Teknologi tidak boleh melucuti marwah kebijaksanaan: ia harus menjadi bahtera yang menyampaikannya secara utuh.”",
         "stat1-num": "40+ Tahun",
         "stat1-title": "Pendampingan Nyata",
         "stat1-desc": "Sejak 1983 mendampingi para pemimpin menata organisasi, suksesi, dan budaya kerja.",
@@ -1449,7 +1427,6 @@
         "cardB-ribbon": "Inti Pendampingan",
         "cardB-tag": "Kepemimpinan yang Membumi",
         "cardB-title": "Kearifan yang Menemani Anda Berpikir",
-        "cardB-body": { html: "Pak Andrew Tani menuangkan empat dekade pengalaman lapangan ke dalam ruang refleksi ini—menimbang semangat <em class=\"italic font-serif\">Ing Ngarso Sung Tulodo, Ing Madyo Mangun Karso, Tut Wuri Handayani</em> dalam setiap langkah menata tim dan organisasi." },
         "cardB-foot-label": "Suasana Diskusi",
         "cardB-foot-text": "Bertutur tenang, jernih, bersahabat, dan mengajak kita merenungkan langkah terbaik.",
         "cardC-tag": "Ketulusan & Privasi",
@@ -1459,22 +1436,22 @@
         "cardC-foot-text": "Menghormati batas privasi dan menjaga kepercayaan setiap rekan diskusi.",
         "sec3-eyebrow": "Cara Kita Terhubung",
         "sec3-title": "Pilih Ruang Diskusi yang Sesuai dengan Kebutuhan Anda",
-        "sec3-desc": "Mulai dari obrolan terbuka seputar kepemimpinan sehari-hari hingga ruang pendampingan khusus bagi anggota dan rekan dekat.",
+        "sec3-desc": "Mulai dari obrolan terbuka seputar dinamika kepemimpinan sehari-hari hingga ruang pendampingan berkala bagi rekan eksekutif.",
         "tier1-ribbon": "Anda Ada Di Sini",
-        "tier1-badge": "Terbuka untuk Umum",
+        "tier1-badge": "Akses Terbuka",
         "tier1-title": "Ruang Diskusi Terbuka",
-        "tier1-desc": "Terbuka bagi para pemimpin muda, manajer, maupun siapa saja yang ingin bertukar pikiran mengenai kepemimpinan, budaya kerja, dan manajemen dasar.",
-        "tier1-f1": "Tanya-jawab seputar buku & pemikiran publik",
-        "tier1-f2": "Refleksi kepemimpinan sehari-hari",
-        "tier1-f3": "Langsung digunakan tanpa registrasi",
-        "tier1-cta": "Mulai Berbincang",
-        "tier2-badge": "Sahabat & Anggota",
-        "tier2-title": "Keanggotaan Eksekutif",
-        "tier2-desc": "Bagi jajaran direksi, komisaris, dan pemimpin organisasi yang menginginkan pendampingan lebih mendalam, kerangka kerja lengkap, serta penyimpanan riwayat diskusi.",
+        "tier1-desc": "Terbuka bagi setiap insan pemimpin, manajer, dan pembelajar yang ingin bertukar pikiran mengenai kepemimpinan, penyelarasan tim, dan budaya kerja.",
+        "tier1-f1": "Tanya-jawab seputar konsep & pokok pemikiran kepemimpinan",
+        "tier1-f2": "Refleksi kepemimpinan sehari-hari yang membumi",
+        "tier1-f3": "Akses langsung tanpa perlu mendaftar",
+        "tier1-cta": "Mulai Berbincang Sekarang",
+        "tier2-badge": "Sahabat & Rekan Eksekutif",
+        "tier2-title": "Keanggotaan Rekan Eksekutif",
+        "tier2-desc": "Bagi jajaran direksi, komisaris, pendiri usaha, dan pimpinan organisasi yang menginginkan ruang refleksi terstruktur, arsip percakapan, dan pendampingan berkala.",
         "tier2-f1": "50 sesi diskusi mendalam setiap bulan",
-        "tier2-f2": "Rekaman memo suara khas Pak Andrew Tani",
-        "tier2-f3": "Koneksi ke WhatsApp & Telegram Anda",
-        "tier2-cta": "Bergabung sebagai Anggota",
+        "tier2-f2": "Penyimpanan arsip percakapan & catatan refleksi terstruktur",
+        "tier2-f3": "Akses prioritas ke ruang bincang mendalam",
+        "tier2-cta": "Bergabung sebagai Rekan (Bebas Biaya)",
         "tier3-badge": "Undangan Pribadi",
         "tier3-title": "Lingkaran Sahabat Dekat",
         "tier3-desc": "Ruang diskusi khusus bagi para pendiri usaha, sesepuh keluarga, dan rekan pendamping yang telah menerima kode undangan pribadi dari Pak Andrew Tani.",
@@ -1488,26 +1465,26 @@
         "tier4-f1": "Menjaga keaslian suara & nilai pemikiran",
         "tier4-f2": "Terpisah dari jaringan publik umum",
         "tier4-cta": "Khusus Pengelola & Kurator",
-        "sec4-eyebrow": "Pustaka & Karya Tulis",
-        "sec4-title": "Buku & Renungan yang Menghidupkan Pemikiran iCoachAndrew",
-        "sec4-desc": "Setiap tanggapan di ruang diskusi ini berakar pada karya tulis orisinal, pengalaman menata organisasi, serta esai reflektif yang ditulis langsung oleh Pak Andrew Tani. Klik salah satu buku untuk mendiskusikannya.",
-        "sec4-stat": "4 Jilid Utama • 1.840 Halaman Karya",
-        "book1-tag": "Karya Utama • Jilid I",
-        "book1-title": "The Tani Method: Architecture of Enterprise Governance",
-        "book1-desc": "Kejelasan peran kepemimpinan, keselarasan strategi dan manusia, serta perancangan organisasi lintas generasi.",
-        "book1-cta": "Diskusikan Buku Ini →",
-        "book2-tag": "Falsafah Kepemimpinan • Jilid II",
-        "book2-title": "Harmoni Nusantara: Kepemimpinan Kolektif",
-        "book2-desc": "Menghidupkan nilai Tut Wuri Handayani dan ketulusan mendengarkan di tengah dinamika dunia usaha modern.",
-        "book2-cta": "Diskusikan Buku Ini →",
-        "book3-tag": "Regenerasi & Tim • Jilid III",
-        "book3-title": "Wadah Mandiri & Dinamika Antar-Generasi",
-        "book3-desc": "Cara menjembatani semangat generasi baru dengan kebijaksanaan para pendiri secara harmonis dan saling menghormati.",
-        "book3-cta": "Diskusikan Buku Ini →",
-        "book4-tag": "Esai & Lagu • Jilid IV",
-        "book4-title": "Himne & Renungan Kepemimpinan",
-        "book4-desc": "Kumpulan esai dan lirik lagu reflektif mengenai ketenangan batin seorang pemimpin di tengah badai perubahan.",
-        "book4-cta": "Diskusikan Buku Ini →",
+        "sec4-eyebrow": "Khazanah Pemikiran & Praktik",
+        "sec4-title": "Empat Pilar Khazanah Pemikiran Andrew Tani",
+        "sec4-desc": "Setiap tanggapan di ruang diskusi ini berakar pada pengalaman empat dekade mendampingi para pemimpin, karya tulis, dan refleksi kepemimpinan yang digagas langsung oleh Andrew Tani sejak 1983.",
+        "sec4-stat": "4 Pilar Utama • 40+ Tahun Pengalaman",
+        "book1-tag": "Karya Buku • Co-author Andrew Tani",
+        "book1-title": "Organizing for Business Excellence",
+        "book1-desc": "Arsitektur perancangan organisasi dan tata kelola korporat untuk mencapai keunggulan bisnis yang berkesinambungan serta penyelarasan strategi dewan direksi dengan eksekusi tim.",
+        "book1-cta": "Diskusikan Karya Ini →",
+        "book2-tag": "Penerbit Gramedia • Limited Edition",
+        "book2-title": "Brain Quotient: Pahami Kemampuan Otak Anda",
+        "book2-desc": "Karya bersama Heru Wiryanto & Andrew Tani, SR. Terbitan PT Gramedia Widiasarana Indonesia (Limited Edition). Menyelami kapasitas kognitif otak dalam kepemimpinan dan ketahanan mental para pengambil keputusan di bawah tekanan.",
+        "book2-cta": "Diskusikan Karya Ini →",
+        "book3-tag": "Pilar III • Estafet Generasi",
+        "book3-title": "Suksesi & Keberlanjutan Nilai (Generational Stewardship)",
+        "book3-desc": "Menjembatani kebijaksanaan para perintis dengan inovasi generasi penerus tanpa mencederai nilai luhur yang telah dibangun puluhan tahun.",
+        "book3-cta": "Diskusikan Pilar Ini →",
+        "book4-tag": "Pilar IV • Refleksi & Harmoni",
+        "book4-title": "Refleksi Nurani & Lagu Kepemimpinan (Reflections & Songs)",
+        "book4-desc": "Kumpulan renungan batin dan lagu gubahan Pak Andrew yang mengingatkan bahwa ketenangan hati adalah kompas sejati dalam memimpin.",
+        "book4-cta": "Diskusikan Pilar Ini →",
         "sec5-eyebrow": "Ruang Bincang Bersama Andrew",
         "sec5-title": "Mari Bertukar Pikiran Mengenai Tantangan Kepemimpinan Anda",
         "sec5-desc": "Simak cuplikan obrolan di bawah ini, atau langsung tulis cerita dan pertanyaan Anda pada kotak diskusi untuk berbincang dengan Digital Twin Pak Andrew.",
@@ -1521,10 +1498,9 @@
         "fp-sample-user-q": "“Bagaimana menyeimbangkan ketegasan target kerja dengan empati kebapakan saat tim inti sedang kelelahan pasca perubahan organisasi?”",
         "fp-sample-andrew-role": "Teman Diskusi Digital",
         "fp-sample-voice-label": "Dengarkan Suara • 01:20",
-        "fp-sample-andrew-body": { html: "<p>“Sahabatku, pertanyaan Anda menunjukkan bahwa nurani kepemimpinan Anda masih sangat terjaga. Jangan pernah mempertentangkan ketegasan tujuan dengan empati, seolah keduanya adalah dua kutub yang saling menjatuhkan.”</p><p class=\"font-body-md text-body-md text-on-surface-variant font-sans leading-relaxed\">Dalam buku <em class=\"italic text-primary font-serif\">The Tani Method</em>, saya selalu mengingatkan bahwa kepemimpinan kebapakan (<em class=\"italic\">Paternal Stewardship</em>) bukanlah pemakluman atas ketidaktercapaian hasil, melainkan pemberian kejelasan arah yang melindungi anggota tim dari kebingungan. Ketegasan pada tujuan adalah wujud kepedulian kita; sementara kehangatan tutur kata dan kesediaan mendengarkan adalah jembatan agar ketegasan itu diterima dengan hati yang lapang.</p><div class=\"p-space-md bg-surface-container-low rounded-lg space-y-2 font-sans\"><div class=\"font-label-sm text-label-sm uppercase tracking-wider text-on-tertiary-container font-bold\">Langkah Sederhana Pekan Ini:</div><ul class=\"space-y-1.5 font-body-sm text-body-sm text-on-surface\"><li class=\"flex items-start gap-2\"><span class=\"text-on-tertiary-container font-bold\">1.</span><span>Ajak para ketua tim duduk bersama bukan untuk menagih angka, melainkan mendengarkan hambatan sehari-hari yang paling menguras tenaga mereka.</span></li><li class=\"flex items-start gap-2\"><span class=\"text-on-tertiary-container font-bold\">2.</span><span>Bantu jernihkan prioritas mana yang benar-benar utama, agar tim Anda dapat kembali bekerja dengan irama yang sehat dan manusiawi.</span></li></ul></div>" },
-        "fp-sample-cite": "Disarikan dari: Bab IV • Himne & Renungan Kepemimpinan",
+        "fp-sample-cite": "Disarikan dari: Intisari Refleksi Kepemimpinan Andrew Tani (1983–Sekarang)",
         "fp-sample-author": "Andrew Tani • Teman Diskusi Digital",
-        "frontpage-chat-input": { placeholder: "Tulis pertanyaan atau cerita kepemimpinan yang sedang Anda hadapi..." },
+        "placeholder": "Contoh: BEGAPAL-92 atau Begapal",
         "frontpage-send-label": "Kirim Pesan",
         "sec6-eyebrow": "Pengabdian Pemikiran Andrew Tani & Co.",
         "sec6-title": "Mari Melangkah dengan Kejernihan Berpikir dan Hati yang Tenang.",
@@ -1533,59 +1509,53 @@
         "sec6-cta-member": "Daftar Keanggotaan Eksekutif (Bebas Biaya)",
         "sec6-covenant-title": "Catatan Persahabatan & Etika Diskusi",
         "sec6-covenant-desc": "iCoachAndrew merupakan Digital Twin dari Pak Andrew Tani yang menyajikan refleksi kepemimpinan, kerangka kerja manajemen, serta pandangan hidup berdasarkan buku dan karya tulis beliau. Ruang ini hadir sebagai teman berpikir Anda, dan bukan merupakan pengganti nasihat hukum atau keuangan formal.",
-        "chamber-banner-title": "RUANG DISKUSI & PENDAMPINGAN KEPEMIMPINAN",
+        "chamber-banner-title": "RUANG BINCANG & REFLEKSI MENDALAM",
         "chamber-banner-sub": "Teman Berpikir Digital Andrew Tani",
         "chamber-back-btn": "Kembali ke Halaman Depan",
         "chamber-meter-title": "Sesi Diskusi Bulan Ini",
-        "chamber-pairing-title": "Kiriman Memo Suara & Pesan",
-        "chamber-pairing-desc": "Terima rekaman suara dan catatan refleksi Pak Andrew langsung melalui WhatsApp atau Telegram pribadi Anda.",
-        "chamber-history-title": "Topik & Riwayat Diskusi",
+        "chamber-pairing-title": "Pendampingan & Sesi Langsung",
+        "chamber-pairing-desc": "Ingin menyelenggarakan sesi pendampingan langsung atau mengundang Pak Andrew Tani? Hubungi Sekretariat Andrew Tani & Co.",
+        "chamber-history-title": "Topik & Pokok Pemikiran",
         "ch-hist1-title": "Menyelaraskan Suksesi Lintas Generasi",
-        "ch-hist1-sub": "Buku: The Tani Method, Bab 4",
+        "ch-hist1-sub": "Pokok Pemikiran: Estafet Kepemimpinan Usaha",
         "ch-hist2-title": "“Tut Wuri Handayani” & Seni Mendengarkan",
-        "ch-hist2-sub": "Buku: Harmoni Nusantara",
+        "ch-hist2-sub": "Pokok Pemikiran: Budaya Kerja yang Tulus",
         "ch-hist3-title": "Menumbuhkan Budaya Kerja yang Tulus",
-        "ch-hist3-sub": "Buku: Wadah Mandiri",
-        "chamber-hero-tag": "Ruang Diskusi Personal • Digital Twin",
+        "ch-hist3-sub": "Pokok Pemikiran: Penataan Organisasi",
+        "chamber-hero-tag": "Ruang Refleksi Personal • Digital Twin",
         "chamber-hero-title": "Berbincang Bersama Andrew Tani",
         "chamber-hero-desc": "Sampaikan tantangan kepemimpinan, penataan organisasi, atau dilema budaya kerja yang sedang Anda pikirkan hari ini.",
         "ch-sample-user-label": "PERTANYAAN SAHABAT DISKUSI",
         "ch-sample-user-q": "“Pak Andrew, bagaimana cara menyelaraskan suksesi kepemimpinan generasi kedua tanpa memicu benturan budaya dengan para pendiri di perusahaan kami?”",
         "ch-sample-andrew-sub": "Teman Diskusi Digital • 40+ Tahun Pengalaman Kepemimpinan",
         "ch-voice-title": "Rekaman Suara Refleksi",
-        "ch-voice-voice": "• Suara Bariton",
+        "ch-voice-voice": "• Panduan Personal",
         "ch-voice-lang": "Bahasa Indonesia • 01:45",
         "ch-greeting": "Selamat pagi, Sahabatku. Semoga ketenangan dan kebajikan senantiasa menyertai langkah Anda bersama seluruh tim.",
-        "ch-para1": { html: "Persoalan regenerasi dalam perusahaan keluarga di Nusantara jarang sekali bertumpu pada kurangnya kecakapan teknis generasi kedua. Tantangan sesungguhnya adalah <em>perbedaan cara memandang</em> arti kepemimpinan dan pengabdian." },
         "ch-quote": "“Ketika kita memperkenalkan sistem manajemen baru secara mendadak kepada seorang pendiri, hati kecil beliau sering kali membacanya bukan sebagai perbaikan, melainkan kekhawatiran bahwa nilai-nilai luhur yang merintis usaha tersebut akan terlupakan.”",
         "ch-quote-cite": "— Andrew Tani, Catatan Suksesi Usaha Keluarga (1998)",
         "ch-intro-pillars": "Untuk menjembatani perbedaan ini dengan penuh rasa hormat dan tanpa menimbulkan ketegangan batin, mari kita terapkan tiga langkah penyelarasan:",
         "ch-pillars-title": "Tiga Pilar Keselarasan Lintas Generasi",
-        "ch-p1-title": "Wadah Mandiri",
+        "ch-p1-title": "Ruang Tumbuh Generasi Penerus",
         "ch-p1-desc": "Berikan ruang inisiatif baru kepada generasi penerus sebagai tempat belajar dan membuktikan diri tanpa langsung mengubah fondasi utama yang dibangun pendiri.",
         "ch-p1-tag": "Ruang Tumbuh Bersama",
-        "ch-p2-title": "Musyawarah Keluarga",
+        "ch-p2-title": "Forum Komunikasi Terjadwal",
         "ch-p2-desc": "Bedakan waktu berkumpul yang hangat sebagai keluarga dengan forum diskusi perusahaan yang terjadwal dan terarah.",
         "ch-p2-tag": "Menjaga Kehangatan Hati",
-        "ch-p3-title": "Peran Pamong/Sepuh",
-        "ch-p3-desc": { html: "Hormati pendiri sebagai <em>Pamong</em> (Penjaga Nilai & Kompas Moral), sehingga tim pelaksana dapat menjalankan roda harian dengan lincah." },
+        "ch-p3-title": "Penghormatan Nilai & Kebijaksanaan Perintis",
         "ch-p3-tag": "Semangat Tut Wuri Handayani",
         "ch-refs-title": "Bacaan Lebih Lanjut dari Buku Andrew Tani:",
-        "ch-ref1": { html: "<strong>The Tani Method: Architecture of Enterprise Governance</strong> — Bab 4: <em>The Sacred Transition: From Founder Heroism to Institutional Stewardship</em> (hlm. 112–128)." },
-        "ch-ref2": { html: "<strong>Harmoni Nusantara: Kepemimpinan Kolektif (1994)</strong> — Bagian B: <em>Merawat Kehormatan Sesepuh Tanpa Menyandera Kemajuan</em>." },
         "chamber-form-title": "Tulis Pesan atau Pertanyaan Anda untuk Pak Andrew",
         "chamber-mood-label": "Suasana Diskusi:",
         "ch-mood-opt1": "Refleksi & Bertukar Pikiran",
         "ch-mood-opt2": "Pendampingan Dewan & Organisasi",
         "ch-mood-opt3": "Nasihat Kebapakan (Pamong)",
-        "chamber-chat-input": { placeholder: "Ceritakan tantangan kepemimpinan atau hal yang sedang Anda renungkan... (misal: 'Bagaimana membangun budaya saling mendengarkan di dalam tim?')" },
-        "chamber-form-privacy": "Percakapan Anda bersifat pribadi dan dijaga kerahasiaannya.",
+        "chamber-form-privacy": "Percakapan Anda bersifat pribadi, aman, dan dijaga kerahasiaannya.",
         "chamber-send-label": "Kirim Pesan",
         "r2-modal-tag": "Komunitas Sahabat & Pemimpin",
         "r2-modal-title": "Bergabung sebagai Anggota Eksekutif",
         "r2-modal-desc": "Nikmati akses penuh ke seluruh pemikiran dan kerangka kerja manajemen Pak Andrew Tani, 50 sesi diskusi mendalam setiap bulan, serta kiriman memo suara. Terbuka tanpa biaya pada masa perkenalan ini.",
         "r2-label-name": "Nama Lengkap / Panggilan",
-        "r2-name": { placeholder: "Contoh: Raden S. Wiryawan" },
         "r2-label-email": "Alamat Email",
         "r2-label-company": "Organisasi / Perusahaan",
         "r2-label-role": "Peran / Tanggung Jawab",
@@ -1596,9 +1566,6 @@
         "r2-opt5": "Manajer & Pemimpin Tim",
         "r2-label-pass": "Kata Sandi / PIN Keamanan",
         "r2-benefit-title": "Manfaat Keanggotaan Sahabat iCoachAndrew",
-        "r2-benefit-1": { html: "• <strong>Sesi Diskusi Bulanan:</strong> Tersedia 50 sesi diskusi mendalam setiap bulan." },
-        "r2-benefit-2": { html: "• <strong>Pustaka Kerangka Kerja:</strong> Akses penuh ke pendekatan manajemen dan keselarasan organisasi Pak Andrew Tani." },
-        "r2-benefit-3": { html: "• <strong>Masa Perkenalan:</strong> Aktif langsung tanpa biaya keanggotaan." },
         "r2-btn-cancel": "Kembali ke Halaman Depan",
         "r2-btn-submit": "Aktifkan Keanggotaan (Bebas Biaya)",
         "r1-modal-tag": "Ruang Diskusi Pribadi",
@@ -1606,7 +1573,6 @@
         "r1-modal-desc": "Dikhususkan bagi sahabat dekat, keluarga pendiri, dan rekan pendamping Pak Andrew Tani. Menggunakan nama panggilan khusus demi menjaga kenyamanan dan privasi Anda.",
         "r1-label-code": "Nama Panggilan / Kode Undangan",
         "r1-hint-code": "Tanpa Nama Asli",
-        "r1-codename": { placeholder: "Contoh: BEGAPAL-92 atau Begapal" },
         "r1-label-otp": "Kode Verifikasi (6 Angka)",
         "r1-label-pass": "Kata Sandi Pribadi",
         "r1-label-channel": "Pilihan Koneksi Pesan Pribadi",
@@ -1616,20 +1582,25 @@
         "r1-guarantee-text": " Seluruh percakapan di ruang undangan khusus ini tidak pernah menyimpan nama asli maupun isi pembicaraan Anda.",
         "r1-btn-cancel": "Kembali ke Halaman Depan",
         "r1-btn-submit": "Masuk ke Ruang Pribadi",
-        "footer-desc": "Teman Diskusi Digital & Warisan Pemikiran Kepemimpinan dari Andrew Tani. Dirancang untuk menemani para pemimpin menata organisasi dengan kejernihan arah, ketulusan mendengarkan, dan budaya kerja yang sehat.",
+        "footer-desc": "Teman Diskusi Digital & Warisan Pemikiran Kepemimpinan dari Andrew Tani. Dirancang untuk menemani para pemimpin membangun organisasi yang sehat, selaras, dan manusiawi.",
         "footer-badge": "Andrew Tani & Co. • Sejak 1983",
         "footer-nav-title": "Navigasi Ruang",
         "footer-nav-home": "Beranda & Sambutan",
         "footer-nav-books": "Karya Tulis & Buku",
-        "footer-nav-member": "Keanggotaan Eksekutif",
+        "footer-nav-member": "Keanggotaan Rekan Eksekutif",
         "footer-nav-invite": "Undangan Khusus",
         "footer-about-title": "Tentang Pendampingan Ini",
-        "footer-about-desc": "Seluruh pemikiran, kerangka kerja manajemen, dan cerita reflektif dikurasi langsung di bawah naungan Andrew Tani & Co. Setiap diskusi dijaga kerahasiaannya demi kenyamanan Anda bertukar pikiran.",
+        "footer-about-desc": "Seluruh pemikiran, kerangka kerja manajemen, dan refleksi kepemimpinan dikurasi langsung dari karya dan pengalaman Andrew Tani. Ruang ini hadir sebagai teman berpikir Anda, dan bukan merupakan pengganti nasihat hukum atau keuangan formal.",
         "footer-locations": "Jakarta • Singapura • Nusantara",
         "footer-copyright": "© 2026 Andrew Tani & Co. Hak Cipta Dilindungi Undang-Undang.",
         "footer-link-ethics": "Etika Diskusi",
-        "footer-link-privacy": "Kerahasiaan & Privasi"
-      },
+        "footer-link-privacy": "Kerahasiaan & Privasi",
+        "notice": "Ruang refleksi ini ditenagai oleh Digital Twin Andrew Tani—dirancang dari pengalaman mendampingi para pemimpin sejak 1983, buku, esai, dan karya lagu beliau. Ruang ini hadir sebagai teman berpikir Anda, dan bukan merupakan pengganti nasihat hukum atau keuangan formal.",
+        "scopeNote": "Seluruh tanggapan disarikan langsung dari karya tulis, esai, dan refleksi pengalaman Andrew Tani. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.",
+        "hero-subtitle": {
+                "html": "Bukan sekadar kecerdasan buatan biasa, melainkan teman berpikir (<em class=\"italic text-primary font-serif\">Digital Twin</em>) dari Andrew Tani yang dirangkai langsung dari pengalaman mendampingi para pemimpin, buku-buku, esai kepemimpinan, hingga karya lagu beliau sejak 1983."
+        }
+},
       en: {
         "header-subtitle": "Leadership Reflections & Mentoring with Andrew Tani",
         "nav-why": "Why iCoachAndrew",
@@ -1645,16 +1616,17 @@
         "top-bar-status": "Drawn from 40+ Years of Experience & Published Works",
         "top-bar-home-btn": "Frontpage",
         "top-bar-chamber-btn": "Open Full Consultation Room",
-        "hero-badge": "A Personal Thinking Partner for Nusantara Leaders",
+        "hero-badge": "A Personal Thinking Partner for Leadership Reflection",
         "hero-title": "Why iCoachAndrew Exists: Passing On Four Decades of Management & Leadership Wisdom.",
-        "hero-subtitle": { html: "More than generic artificial intelligence—this is the personal <em class=\"italic text-primary font-serif\">Digital Twin</em> of Andrew Tani, shaped directly from four decades of walking alongside leaders, his books, essays, and songs since 1983." },
+        "html": "• <strong>Introductory Period:</strong> Activated immediately with zero membership fees.",
         "hero-cta-primary": "Start a Conversation Now",
         "hero-cta-member": "Join as Executive Member",
         "hero-cta-invite": "Enter with Private Invitation",
         "hero-note": "Directly accessible with no registration required • Let’s discuss leadership, work culture, and organizational alignment",
-        "portrait-subtitle": "Leadership Mentor & Author",
-        "portrait-quote-label": "A MESSAGE FROM ANDREW",
-        "portrait-quote": "“Technology must never strip the dignity of wisdom; it must be the vessel that carries it whole.”",
+        "portrait-subtitle": "SENIOR MANAGEMENT ADVISOR & AUTHOR",
+        "portrait-sub-meta": "Co-author, Organizing for Business Excellence and Brain Quotient",
+        "portrait-quote-label": "DIGITAL TWIN AUTHORIZATION",
+        "portrait-quote": "“Technology must never strip the dignity of wisdom: it must be the vessel that conveys it in its fullness.”",
         "stat1-num": "40+ Years",
         "stat1-title": "Practical Mentorship",
         "stat1-desc": "Walking alongside leaders since 1983 to guide organizations, succession, and corporate culture.",
@@ -1678,7 +1650,6 @@
         "cardB-ribbon": "Core Philosophy",
         "cardB-tag": "Grounded Leadership",
         "cardB-title": "Wisdom That Accompanies Your Thoughts",
-        "cardB-body": { html: "Andrew Tani pours four decades of field experience into this sanctuary—integrating <em class=\"italic font-serif\">Ing Ngarso Sung Tulodo, Ing Madyo Mangun Karso, Tut Wuri Handayani</em> into every stage of organizational development." },
         "cardB-foot-label": "Advisory Tone",
         "cardB-foot-text": "Calm, articulate, fraternal, and encouraging deep reflection on the wisest path forward.",
         "cardC-tag": "Discretion & Trust",
@@ -1687,23 +1658,23 @@
         "cardC-foot-label": "Our Covenant",
         "cardC-foot-text": "Honoring privacy boundaries and safeguarding the sacred trust of every colleague.",
         "sec3-eyebrow": "Ways to Connect",
-        "sec3-title": "Choose the Discussion Circle That Fits Your Needs",
-        "sec3-desc": "From open dialogues on daily leadership to dedicated counsel circles for members and close confidants.",
+        "sec3-title": "Choose the Discussion Space That Fits Your Needs",
+        "sec3-desc": "From open dialogues on daily leadership challenges to dedicated ongoing reflection spaces for executive members.",
         "tier1-ribbon": "You Are Here",
         "tier1-badge": "Open Public Access",
-        "tier1-title": "Open Discussion Folio",
-        "tier1-desc": "Open to emerging leaders, managers, and anyone seeking to explore leadership, work culture, and practical management.",
-        "tier1-f1": "Q&A on published books & core concepts",
-        "tier1-f2": "Daily leadership reflections",
-        "tier1-f3": "Direct access with no sign-up required",
-        "tier1-cta": "Start Talking",
-        "tier2-badge": "Colleagues & Members",
+        "tier1-title": "Open Discussion Space",
+        "tier1-desc": "Open to emerging leaders, managers, and anyone seeking to explore leadership practices, team alignment, and organizational culture.",
+        "tier1-f1": "Q&A on core leadership concepts & reflections",
+        "tier1-f2": "Daily grounded leadership reflections",
+        "tier1-f3": "Direct access with no registration required",
+        "tier1-cta": "Start a Conversation",
+        "tier2-badge": "Executive Colleagues & Members",
         "tier2-title": "Executive Membership",
-        "tier2-desc": "For directors, commissioners, and enterprise leaders who seek deeper mentoring, full frameworks, and saved conversation archives.",
+        "tier2-desc": "For directors, commissioners, founders, and enterprise leaders who seek structured reflection, saved conversation archives, and regular mentoring.",
         "tier2-f1": "50 in-depth discussion sessions per month",
-        "tier2-f2": "Voice memos in Andrew Tani's signature baritone",
-        "tier2-f3": "Integration with your WhatsApp & Telegram",
-        "tier2-cta": "Join as Executive Member",
+        "tier2-f2": "Structured conversation archive & reflection notes",
+        "tier2-f3": "Priority access to deep consultation space",
+        "tier2-cta": "Join as Executive Member (Complimentary)",
         "tier3-badge": "Private Invitation",
         "tier3-title": "Inner Circle of Confidants",
         "tier3-desc": "A private sanctuary for enterprise founders, family elders, and long-standing colleagues holding an invitation code from Andrew Tani.",
@@ -1717,26 +1688,26 @@
         "tier4-f1": "Preserving authenticity of voice and core principles",
         "tier4-f2": "Isolated from public network access",
         "tier4-cta": "Reserved for Curators & Sovereign Staff",
-        "sec4-eyebrow": "Library & Published Works",
-        "sec4-title": "Books & Reflections That Breathe Life Into iCoachAndrew",
-        "sec4-desc": "Every insight in this discussion chamber is rooted in original books, organizational practice, and reflective essays authored by Andrew Tani. Click any volume to converse about it.",
-        "sec4-stat": "4 Core Volumes • 1,840 Pages of Original Thought",
-        "book1-tag": "Master Work • Volume I",
-        "book1-title": "The Tani Method: Architecture of Enterprise Governance",
-        "book1-desc": "Clarity in leadership roles, strategic human alignment, and cross-generational enterprise design.",
-        "book1-cta": "Discuss This Book →",
-        "book2-tag": "Leadership Philosophy • Volume II",
-        "book2-title": "Harmoni Nusantara: Collective Leadership",
-        "book2-desc": "Embodying the spirit of Tut Wuri Handayani and empathetic listening in the modern enterprise.",
-        "book2-cta": "Discuss This Book →",
-        "book3-tag": "Regeneration & Teams • Volume III",
-        "book3-title": "Autonomous Spheres & Intergenerational Dynamics",
-        "book3-desc": "Bridging the vitality of next-gen leaders with the wisdom of founders in mutual harmony.",
-        "book3-cta": "Discuss This Book →",
-        "book4-tag": "Essays & Songs • Volume IV",
-        "book4-title": "Leadership Hymns & Reflections",
-        "book4-desc": "Reflective essays and lyrical poetry on inner equanimity amidst turbulent business transformations.",
-        "book4-cta": "Discuss This Book →",
+        "sec4-eyebrow": "Thought Foundations & Practice",
+        "sec4-title": "Four Pillars of Andrew Tani’s Thought & Practice",
+        "sec4-desc": "Every reflection in this discussion space is rooted in four decades of walking alongside leaders, original essays, and management frameworks developed by Andrew Tani since 1983.",
+        "sec4-stat": "4 Core Pillars • 40+ Years of Experience",
+        "book1-tag": "Published Book • Co-author Andrew Tani",
+        "book1-title": "Organizing for Business Excellence",
+        "book1-desc": "Enterprise governance architecture and organizational design to achieve sustainable business excellence and strategy-execution alignment.",
+        "book1-cta": "Explore This Work →",
+        "book2-tag": "Gramedia Publishing • Limited Edition",
+        "book2-title": "Brain Quotient: Pahami Kemampuan Otak Anda",
+        "book2-desc": "Co-authored by Heru Wiryanto & Andrew Tani, SR. (Published by PT Gramedia Widiasarana Indonesia - Limited Edition). Exploring cognitive neuroscience in executive leadership and mental resilience under pressure.",
+        "book2-cta": "Explore This Work →",
+        "book3-tag": "Pillar III • Generational Stewardship",
+        "book3-title": "Succession & Generational Stewardship",
+        "book3-desc": "Harmonizing founder wisdom with the innovation of next-generation leaders without compromising enduring family values.",
+        "book3-cta": "Explore This Pillar →",
+        "book4-tag": "Pillar IV • Reflection & Harmony",
+        "book4-title": "Leadership Reflections & Compositions",
+        "book4-desc": "A collection of personal essays and songs reminding leaders that inner stillness is their ultimate moral anchor.",
+        "book4-cta": "Explore This Pillar →",
         "sec5-eyebrow": "Conversations with Andrew",
         "sec5-title": "Let’s Exchange Perspectives on Your Leadership Challenges",
         "sec5-desc": "Read the featured dialogue below, or enter your question directly into the conversation box to converse with Andrew’s Digital Twin.",
@@ -1750,10 +1721,9 @@
         "fp-sample-user-q": "“How can a leader balance firmness on deliverables with paternal empathy when the core team is exhausted following an organizational restructuring?”",
         "fp-sample-andrew-role": "Digital Thinking Partner",
         "fp-sample-voice-label": "Listen to Voice • 01:20",
-        "fp-sample-andrew-body": { html: "<p>“My friend, your question reveals that your leadership conscience is fully intact. Never pit firmness of purpose against empathy, as though they were opposing forces at war.”</p><p class=\"font-body-md text-body-md text-on-surface-variant font-sans leading-relaxed\">In <em class=\"italic text-primary font-serif\">The Tani Method</em>, I always teach that paternal stewardship is not an indulgence of missed goals, but the provision of crystal-clear direction that protects your team from doubt and paralysis. Firmness on the destination is our duty of care; warmth in speech and humble listening are the bridges that enable that firmness to be embraced with an open heart.</p><div class=\"p-space-md bg-surface-container-low rounded-lg space-y-2 font-sans\"><div class=\"font-label-sm text-label-sm uppercase tracking-wider text-on-tertiary-container font-bold\">Practical Steps for This Week:</div><ul class=\"space-y-1.5 font-body-sm text-body-sm text-on-surface\"><li class=\"flex items-start gap-2\"><span class=\"text-on-tertiary-container font-bold\">1.</span><span>Gather your team leads together not to interrogate numbers, but to uncover the day-to-day friction points draining their energy.</span></li><li class=\"flex items-start gap-2\"><span class=\"text-on-tertiary-container font-bold\">2.</span><span>Clarify what is truly essential right now, restoring a healthy, dignified, and sustainable rhythm of work.</span></li></ul></div>" },
-        "fp-sample-cite": "Drawn from: Chapter IV • Leadership Hymns & Reflections",
+        "fp-sample-cite": "Drawn from: Andrew Tani’s Leadership Reflections (1983–Present)",
         "fp-sample-author": "Andrew Tani • Digital Thinking Partner",
-        "frontpage-chat-input": { placeholder: "Share a leadership question or story on your mind..." },
+        "placeholder": "e.g. BEGAPAL-92 or Begapal",
         "frontpage-send-label": "Send Message",
         "sec6-eyebrow": "The Living Legacy of Andrew Tani & Co.",
         "sec6-title": "Walk Forward with Clarity of Thought and a Peaceful Heart.",
@@ -1762,30 +1732,29 @@
         "sec6-cta-member": "Register Executive Membership (Complimentary)",
         "sec6-covenant-title": "Advisory Ethics & Covenant of Friendship",
         "sec6-covenant-desc": "iCoachAndrew is the Digital Twin of Andrew Tani, offering leadership reflections, management frameworks, and life insights based on his books and writings. This space is designed as your thinking companion and does not substitute for formal legal or financial counsel.",
-        "chamber-banner-title": "LEADERSHIP ADVISORY & CONSULTATION CHAMBER",
-        "chamber-banner-sub": "Digital Thinking Partner of Andrew Tani",
+        "chamber-banner-title": "DEEP DIALOGUE & REFLECTION STUDIO",
+        "chamber-banner-sub": "Digital Thinking Partner with Andrew Tani",
         "chamber-back-btn": "Back to Frontpage",
-        "chamber-meter-title": "Monthly Discussion Sessions",
-        "chamber-pairing-title": "Voice Memos & Messaging Pairing",
-        "chamber-pairing-desc": "Receive voice dispatches and reflective notes from Andrew directly via your personal WhatsApp or Telegram.",
-        "chamber-history-title": "Topics & Discussion History",
+        "chamber-meter-title": "Monthly Discussion Allowance",
+        "chamber-pairing-title": "Direct Mentoring & Advisory Sessions",
+        "chamber-pairing-desc": "Looking to plan an in-person advisory session or invite Andrew Tani for an executive engagement? Reach out to the Secretariat of Andrew Tani & Co.",
+        "chamber-history-title": "Key Topics & Past Discussions",
         "ch-hist1-title": "Harmonizing Multi-Generational Succession",
-        "ch-hist1-sub": "Book: The Tani Method, Ch. 4",
+        "ch-hist1-sub": "Core Thought: Generational Stewardship",
         "ch-hist2-title": "“Tut Wuri Handayani” & The Art of Listening",
-        "ch-hist2-sub": "Book: Harmoni Nusantara",
+        "ch-hist2-sub": "Core Thought: Empathetic Leadership",
         "ch-hist3-title": "Fostering an Authentic Workplace Culture",
-        "ch-hist3-sub": "Book: Wadah Mandiri",
-        "chamber-hero-tag": "Personal Consultation Sanctuary • Digital Twin",
-        "chamber-hero-title": "Conversations with Andrew Tani",
-        "chamber-hero-desc": "Share the leadership challenges, organizational designs, or cultural dilemmas on your mind today.",
+        "ch-hist3-sub": "Core Thought: Organizational Alignment",
+        "chamber-hero-tag": "Personal Reflection Sanctuary • Digital Twin",
+        "chamber-hero-title": "A Conversation with Andrew Tani",
+        "chamber-hero-desc": "Share what is on your mind, a challenge your team is facing, or a question you are reflecting on today.",
         "ch-sample-user-label": "COLLEAGUE INQUIRY",
         "ch-sample-user-q": "“Pak Andrew, how do we align second-generation leadership succession without triggering cultural clashes with our company founders?”",
         "ch-sample-andrew-sub": "Digital Thinking Partner • 40+ Years Leadership Experience",
         "ch-voice-title": "Reflective Voice Memo",
-        "ch-voice-voice": "• Baritone Voice",
+        "ch-voice-voice": "• Personal Guidance",
         "ch-voice-lang": "English / Indonesian • 01:45",
         "ch-greeting": "Good day, my friend. May peace and wisdom always accompany your steps and your team.",
-        "ch-para1": { html: "The dilemma of succession in family enterprises rarely hinges on technical capability. The real challenge is the difference in how each generation views leadership and stewardship." },
         "ch-quote": "“When we abruptly introduce a new management system to a founder, they often perceive it not as progress, but as a fear that the foundational virtues which built the enterprise will be discarded.”",
         "ch-quote-cite": "— Andrew Tani, Family Business Succession Notes (1998)",
         "ch-intro-pillars": "To bridge this divide with deep mutual respect, let us apply three alignment pillars:",
@@ -1796,25 +1765,20 @@
         "ch-p2-title": "Family Deliberation",
         "ch-p2-desc": "Separate warm informal family gatherings from structured, scheduled enterprise governance forums.",
         "ch-p2-tag": "Preserving Heartfelt Warmth",
-        "ch-p3-title": "Elder Stewardship (Pamong)",
-        "ch-p3-desc": { html: "Honor founders as <em>Pamong</em> (Custodians of Values & Moral Compass), empowering executives to run daily operations with agility." },
+        "ch-p3-title": "Honoring Founder Wisdom",
         "ch-p3-tag": "Spirit of Tut Wuri Handayani",
         "ch-refs-title": "Further Reading from Andrew Tani's Works:",
-        "ch-ref1": { html: "<strong>The Tani Method: Architecture of Enterprise Governance</strong> — Chapter 4: <em>The Sacred Transition: From Founder Heroism to Institutional Stewardship</em> (pp. 112–128)." },
-        "ch-ref2": { html: "<strong>Harmoni Nusantara: Collective Leadership (1994)</strong> — Part B: <em>Honoring Elders Without Paralyzing Progress</em>." },
         "chamber-form-title": "Write Your Message or Question for Andrew",
         "chamber-mood-label": "Conversation Mood:",
         "ch-mood-opt1": "Reflection & Exchange",
         "ch-mood-opt2": "Board & Governance Mentoring",
         "ch-mood-opt3": "Paternal Counsel (Pamong)",
-        "chamber-chat-input": { placeholder: "Share your leadership dilemma or what is on your mind... (e.g. 'How do we cultivate mutual listening across teams?')" },
         "chamber-form-privacy": "Your conversation is private, secure, and confidential.",
         "chamber-send-label": "Send Message",
         "r2-modal-tag": "Community of Leaders & Colleagues",
         "r2-modal-title": "Join as an Executive Member",
         "r2-modal-desc": "Enjoy full access to Andrew Tani's complete management frameworks, 50 in-depth discussion sessions per month, and voice memo dispatches. Complimentary during this introductory period.",
         "r2-label-name": "Full Name / Preferred Name",
-        "r2-name": { placeholder: "e.g. Robert S. Smith" },
         "r2-label-email": "Email Address",
         "r2-label-company": "Organization / Company",
         "r2-label-role": "Role / Position",
@@ -1825,9 +1789,6 @@
         "r2-opt5": "Manager & Team Leader",
         "r2-label-pass": "Password / Security PIN",
         "r2-benefit-title": "iCoachAndrew Executive Member Benefits",
-        "r2-benefit-1": { html: "• <strong>Monthly Sessions:</strong> 50 in-depth discussion sessions every month." },
-        "r2-benefit-2": { html: "• <strong>Framework Library:</strong> Full access to Andrew Tani’s organizational alignment frameworks." },
-        "r2-benefit-3": { html: "• <strong>Introductory Period:</strong> Activated immediately with zero membership fees." },
         "r2-btn-cancel": "Back to Frontpage",
         "r2-btn-submit": "Activate Membership (Complimentary)",
         "r1-modal-tag": "Private Advisory Chamber",
@@ -1835,7 +1796,6 @@
         "r1-modal-desc": "Reserved for close associates, founder families, and long-standing colleagues of Andrew Tani. Access using pseudonyms for your ultimate comfort and privacy.",
         "r1-label-code": "Codename / Invitation Code",
         "r1-hint-code": "No Real Name Required",
-        "r1-codename": { placeholder: "e.g. BEGAPAL-92 or Begapal" },
         "r1-label-otp": "Verification Code (6 Digits)",
         "r1-label-pass": "Personal Passphrase",
         "r1-label-channel": "Personal Messaging Channel Selection",
@@ -1853,30 +1813,74 @@
         "footer-nav-member": "Executive Membership",
         "footer-nav-invite": "Private Invitation",
         "footer-about-title": "About This Mentorship",
-        "footer-about-desc": "All reflections, management frameworks, and leadership insights are curated under the guidance of Andrew Tani & Co. Every conversation is kept strictly confidential for your peace of mind.",
+        "footer-about-desc": "All reflections, management frameworks, and leadership insights are curated under the guidance of Andrew Tani & Co. This space is a thinking partner, not formal legal or financial counsel.",
         "footer-locations": "Jakarta • Singapore • Nusantara",
         "footer-copyright": "© 2026 Andrew Tani & Co. All Rights Reserved.",
         "footer-link-ethics": "Advisory Ethics",
-        "footer-link-privacy": "Privacy & Confidentiality"
-      }
+        "footer-link-privacy": "Privacy & Confidentiality",
+        "id": "Bagaimana cara membangun budaya kerja yang sehat dan tulus?",
+        "en": "id",
+        "behavior": "smooth",
+        "pause": "play_arrow",
+        "Tani": "Disarikan dari Karya &amp; Pengalaman Andrew Tani",
+        "none": "",
+        "Guest": "Sahabat Diskusi Kepemimpinan",
+        "Colleague": "Tamu Ruang Terbuka",
+        "Invitation": "Undangan Khusus",
+        "Member": "Sahabat & Anggota",
+        "Space": "Ruang Terbuka",
+        "Access": "Akses Terbuka",
+        "Question": " : ",
+        "Anda": "}</div>
+            <p class=\"font-body-lg text-body-lg text-primary font-medium\">${escapeHtml(text)}</p>
+          </div>
+        `;
+      } else {
+        div.innerHTML = `
+          <div class=\"w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-md overflow-hidden\">
+            <img class=\"w-full h-full object-cover\" alt=\"Andrew Tani\" src=\"https://lh3.googleusercontent.com/aida-public/AB6AXuATRfPTe1NLOZcIL0oYaXUE2K-Gwsiqe05txIieRTd_8NNWNIAuNCI7kwxGh_dJL689N1cILr0n0wbkR7fHSSYB9aKH7dGD3tHcrQVy8EXBvhIeM11d3-tSbtlEersbivdYqQVpzyN8R1--mlHGdbOZMXsElTY4YHw9a4r8IQDWYp_H6YWWtC2CAK1MVKenTI3fQr8BiAzajG47JhDBQ92-pFkv8tnds0ZoCDjjJHOM\"/>
+          </div>
+          <div class=\"space-y-space-md bg-surface p-space-lg rounded-xl rounded-tl-none shadow-md max-w-3xl\">
+            <div class=\"flex flex-wrap items-center justify-between gap-space-xs pb-space-xs\">
+              <div class=\"flex items-center gap-2\">
+                <span class=\"font-headline-sm text-headline-sm text-primary\">Andrew Tani</span>
+                <span class=\"px-2 py-0.5 rounded text-[10px] font-label-sm uppercase bg-tertiary-container/10 text-on-tertiary-container font-semibold\">${isEn ? ",
+        "Partner": "Teman Diskusi Digital",
+        "QUESTION": "PERTANYAAN ANDA",
+        "now": "Baru saja",
+        "font-variation-settings": "FILL",
+        "Experience": "Teman Diskusi Digital • Disarikan dari Karya &amp; Pengalaman Beliau",
+        "block": "nearest",
+        "chamber-chat-input": "frontpage-chat-input",
+        "chamber-send-btn": "frontpage-send-btn",
+        "value": "whatsapp",
+        "method": "POST",
+        "Content-Type": "application/json",
+        "WhatsApp": "Telegram",
+        "notice": "This reflection space is powered by Andrew Tani’s Digital Twin—shaped from four decades of walking alongside enterprise leaders since 1983, his writings, essays, and songs. This space is a thinking partner, not formal legal or financial counsel.",
+        "scopeNote": "Every reflection is drawn directly from Andrew Tani’s essays, management frameworks, and lived experience. This space is a thinking partner, not formal legal or financial counsel.",
+        "hero-subtitle": {
+                "html": "More than generic artificial intelligence—this is the personal <em class=\"italic text-primary font-serif\">Digital Twin</em> of Andrew Tani, shaped from his four decades of walking alongside leaders, his writings, essays, and songs since 1983."
+        }
+}
     };
 
     const BOOK_PROMPTS = {
-      the_tani_method: {
-        id: "Bagaimana menyelaraskan strategi perusahaan dengan keseharian tim menurut The Tani Method?",
-        en: "How do we align enterprise strategy with daily team execution according to The Tani Method?"
+      kepemimpinan_mendengarkan: {
+        id: "Apa arti mendengarkan dalam kepemimpinan sehari-hari dan bagaimana memahami manusia di balik keputusan bisnis?",
+        en: "What does listening mean in everyday leadership and how do we understand the human beings behind business decisions?"
       },
-      harmoni_nusantara: {
-        id: "Apa arti mendengarkan dalam kepemimpinan sehari-hari dan bagaimana membangun budaya kerja yang sehat?",
-        en: "What does listening mean in everyday leadership and how do we build a healthy work culture?"
+      penyelarasan_organisasi: {
+        id: "Bagaimana cara menyelaraskan strategi perusahaan dengan kebiasaan kerja sehari-hari insan tim?",
+        en: "How do we align enterprise strategy with daily team habits and work culture?"
       },
-      wadah_mandiri: {
-        id: "Bagaimana membangun budaya organisasi dan menyiapkan regenerasi kepemimpinan dengan bijaksana?",
-        en: "How do we build organizational culture and prepare leadership succession wisely?"
+      suksesi_keberlanjutan: {
+        id: "Bagaimana menjembatani kebijaksanaan para pendiri dengan visi generasi penerus tanpa memicu benturan budaya?",
+        en: "How do we bridge founder wisdom with next-generation vision without triggering cultural friction?"
       },
-      himne_renungan: {
-        id: "Apakah saya sedang berbicara dengan Pak Andrew atau digital twin?",
-        en: "Are you really Andrew Tani or a digital twin?"
+      refleksi_harmoni: {
+        id: "Apakah saya sedang berbicara dengan Pak Andrew atau digital twin beliau?",
+        en: "Am I speaking with Andrew Tani himself or with his digital twin?"
       }
     };
 
@@ -2233,6 +2237,55 @@
       }
     }
 
+    
+    function switchAuthTab(tab) {
+      const memberTab = document.getElementById('tab-btn-member');
+      const codeTab = document.getElementById('tab-btn-code');
+      const memberForm = document.getElementById('auth-member-form');
+      const codeForm = document.getElementById('auth-code-form');
+      if (tab === 'member') {
+        memberTab.className = 'pb-2 px-1 border-b-2 border-primary text-primary font-bold flex items-center gap-1.5';
+        codeTab.className = 'pb-2 px-1 border-b-2 border-transparent text-outline hover:text-primary font-medium flex items-center gap-1.5 transition-colors';
+        memberForm.classList.remove('hidden');
+        codeForm.classList.add('hidden');
+      } else {
+        codeTab.className = 'pb-2 px-1 border-b-2 border-primary text-primary font-bold flex items-center gap-1.5';
+        memberTab.className = 'pb-2 px-1 border-b-2 border-transparent text-outline hover:text-primary font-medium flex items-center gap-1.5 transition-colors';
+        codeForm.classList.remove('hidden');
+        memberForm.classList.add('hidden');
+      }
+    }
+
+    async function submitMemberLogin() {
+      const email = (document.getElementById('member-login-email').value || '').trim();
+      const credential = (document.getElementById('member-login-pass').value || '').trim();
+      const errEl = document.getElementById('member-login-error');
+      if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+      try {
+        const res = await fetch('/api/auth/member/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, credential })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          if (errEl) {
+            errEl.textContent = currentLang === 'en' ? 'Invalid email or security PIN.' : 'Alamat email atau PIN keamanan belum sesuai.';
+            errEl.classList.remove('hidden');
+          }
+          return;
+        }
+        closeModal('auth-signin-modal');
+        await syncSession();
+        openChamberView();
+      } catch (e) {
+        if (errEl) {
+          errEl.textContent = currentLang === 'en' ? 'Unable to connect to server.' : 'Gagal menghubungi server.';
+          errEl.classList.remove('hidden');
+        }
+      }
+    }
+
     async function submitRing1Login() {
       const errEl = document.getElementById('r1-login-error');
       if (errEl) errEl.classList.add('hidden');
@@ -2248,7 +2301,7 @@
         body: JSON.stringify({ codeName, otpCode, passphrase, channel })
       });
       if (res.ok) {
-        closeModal('ring1-auth-modal');
+        closeModal('auth-signin-modal');
         await syncSession();
         openChamberView();
       } else {

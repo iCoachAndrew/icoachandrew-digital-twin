@@ -748,6 +748,13 @@ const userServer = http.createServer(async (req, res) => {
     }
 
     // Frontend pages, media & localization files
+    // Allow serving static alternative versions and public html
+    if (req.method === 'GET' && (pathname.startsWith('/versi_') || pathname.endsWith('_hbs.html') || pathname.endsWith('_wharton.html') || pathname === '/alternatif-1' || pathname === '/alternatif-2')) {
+      const fileName = pathname === '/alternatif-1' ? 'versi_alternatif_1_hbs.html' : (pathname === '/alternatif-2' ? 'versi_alternatif_2_wharton.html' : path.basename(pathname));
+      const p = fs.existsSync(path.join(PUBLIC_DIR, fileName)) ? path.join(PUBLIC_DIR, fileName) : path.join(__dirname, fileName);
+      if (fs.existsSync(p)) return sendFile(res, p, 'text/html; charset=utf-8');
+    }
+
     if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html' || pathname === '/member')) {
       const idxPath = fs.existsSync(path.join(__dirname, 'index.html'))
         ? path.join(__dirname, 'index.html')
@@ -1012,8 +1019,11 @@ userServer.on('error', (err) => {
 
 function start() {
   ensureStores();
-  userServer.listen(USER_PORT, () => console.log('user site on', USER_PORT));
-  if (ADMIN_PORT && ADMIN_PORT !== USER_PORT) {
+  if (process.env.NODE_ENV === 'test') return;
+  if (!userServer.listening) {
+    userServer.listen(USER_PORT, () => console.log('user site on', USER_PORT));
+  }
+  if (ADMIN_PORT && ADMIN_PORT !== USER_PORT && !adminServer.listening) {
     try {
       adminServer.listen(ADMIN_PORT, () => console.log('admin site on', ADMIN_PORT));
     } catch (e) {
