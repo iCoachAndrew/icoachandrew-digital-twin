@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
+process.env.NODE_ENV = 'test';
 process.env.ICOACH_DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'icoach-'));
 process.env.ADMIN_PASSPHRASE = 'test-passphrase';
 delete process.env.ANTHROPIC_API_KEY;

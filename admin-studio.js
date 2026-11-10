@@ -57,7 +57,13 @@ async function adminLogin() {
   errEl.classList.add('hidden');
   const r = await api('POST', '/admin/login', { passphrase: pass });
   if (!r.ok) {
-    errEl.textContent = 'Passphrase Ring 0 tidak sesuai.';
+    if (r.status === 429) {
+      errEl.textContent = 'Terlalu banyak percobaan login. Silakan tunggu 1 menit lalu coba kembali.';
+    } else if (r.status === 503) {
+      errEl.textContent = 'ADMIN_PASSPHRASE belum dikonfigurasi pada server.';
+    } else {
+      errEl.textContent = 'Passphrase Ring 0 tidak sesuai.';
+    }
     errEl.classList.remove('hidden');
     return;
   }
@@ -205,7 +211,7 @@ function updateDirtyIndicator() {
 
 function postToCanvas(msg) {
   const iframe = document.getElementById('ve-preview-iframe');
-  if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(msg, '*');
+  if (iframe && iframe.contentWindow) iframe.contentWindow.postMessage(msg, window.location.origin);
 }
 
 function refreshCanvasInventory() {
@@ -245,6 +251,8 @@ function setEditorViewport(w) {
 }
 
 window.addEventListener('message', (e) => {
+  const iframe = document.getElementById('ve-preview-iframe');
+  if (e.origin !== window.location.origin || !iframe || e.source !== iframe.contentWindow) return;
   const msg = e.data || {};
   if (msg.type === 'cms:inventory') {
     canvasInventory = { images: msg.images || [], sections: msg.sections || [], lang: msg.lang || 'id' };

@@ -157,3 +157,31 @@ test('SEC-12 a browser-supplied ring is ignored by /api/chat', async () => {
   assert.strictEqual(r.json.ring, 'public');
   assert.strictEqual(r.json.reply, 'I’m sorry. That is private. Hope you understand.');
 });
+
+test('SEC-13 /versi_* route only serves allowlisted templates and blocks arbitrary file disclosure', async () => {
+  for (const p of ['/versi_x/server.js', '/versi_/package.json', '/versi_/.gitignore', '/versi_/.env']) {
+    const r = await fetch(U + p);
+    assert.strictEqual(r.status, 404, `must block ${p}`);
+  }
+  const ok = await fetch(U + '/alternatif-1');
+  assert.strictEqual(ok.status, 200);
+});
+
+test('SEC-14 Ring 0 extraInstructions never leak into Ring 1..3 prompts and are guarded by leakGuard', async () => {
+  await admin('POST', '/admin/api/ai/config', { extraInstructions: 'BLUEHERON confidential board acquisition terms settled at USD 42M' });
+  const p0 = await admin('GET', '/admin/api/ai/prompt-preview?ring=0&lang=en');
+  assert.match(p0.json.system, /BLUEHERON/);
+  for (const r of [1, 2, 3]) {
+    const pr = await admin('GET', `/admin/api/ai/prompt-preview?ring=${r}&lang=en`);
+    assert.doesNotMatch(pr.json.system, /BLUEHERON/, `ring ${r} prompt must not contain Ring 0 extraInstructions`);
+    assert.strictEqual(app.leakGuard(r, 'The BLUEHERON confidential board acquisition terms settled at USD 42M').ok, false, `leakGuard blocks Ring 0 extraInstructions for ring ${r}`);
+  }
+});
+
+test('SEC-15 admin HTML carries clickjacking protection (X-Frame-Options DENY) and member signup accepts passkey', async () => {
+  const admHtml = await fetch(U + '/admin');
+  assert.strictEqual(admHtml.headers.get('x-frame-options'), 'DENY');
+  assert.match(admHtml.headers.get('content-security-policy') || '', /frame-ancestors 'none'/);
+  const s = await user('POST', '/api/auth/member/signup', { displayName: 'UI User', email: 'ui-passkey@example.com', passkey: 'pin-987654' });
+  assert.strictEqual(s.status, 200);
+});

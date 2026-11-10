@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  const isStudio = new URLSearchParams(window.location.search).get('studio') === '1';
+  const isStudio = window.self !== window.top && new URLSearchParams(window.location.search).get('studio') === '1';
   let siteDoc = null;
   let worksList = null;
   let pricingData = null;
@@ -11,6 +11,39 @@
   let hoverEl = null;
   let studioMode = 'inspect'; // 'inspect' | 'navigate'
   const originals = new Map();
+
+  function sanitizeHtml(raw) {
+    if (raw == null) return '';
+    const str = String(raw);
+    if (typeof DOMParser === 'undefined') {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    const doc = new DOMParser().parseFromString('<body>' + str + '</body>', 'text/html');
+    const blockedTags = new Set(['script', 'iframe', 'object', 'embed', 'svg', 'math', 'style', 'link', 'meta', 'base', 'form', 'template', 'noscript']);
+    const walk = (node) => {
+      for (const child of Array.from(node.childNodes)) {
+        if (child.nodeType === 1) {
+          const tag = child.tagName.toLowerCase();
+          if (blockedTags.has(tag)) {
+            child.remove();
+            continue;
+          }
+          for (const attr of Array.from(child.attributes)) {
+            const name = attr.name.toLowerCase();
+            const val = String(attr.value || '').trim();
+            if (name.startsWith('on') || name === 'srcdoc' || name === 'formaction') {
+              child.removeAttribute(attr.name);
+            } else if ((name === 'href' || name === 'src' || name === 'xlink:href' || name === 'action') && /^(javascript|vbscript|data\s*:\s*text\/html)/i.test(val)) {
+              child.removeAttribute(attr.name);
+            }
+          }
+          walk(child);
+        }
+      }
+    };
+    walk(doc.body);
+    return doc.body.innerHTML;
+  }
 
   // ---------- Stable DOM key generator & resolver ----------
   function computeKey(el) {
@@ -84,8 +117,10 @@
       if (el.tagName === 'A' && orig.href !== null) el.setAttribute('href', orig.href);
       if (orig.styleCss) el.setAttribute('style', orig.styleCss);
       else el.removeAttribute('style');
-      el.classList.remove('hidden');
-      el.removeAttribute('data-cms-hidden');
+      if (el.hasAttribute('data-cms-hidden')) {
+        el.classList.remove('hidden');
+        el.removeAttribute('data-cms-hidden');
+      }
     }
   }
 
@@ -126,7 +161,7 @@
         if (ph !== undefined) el.setAttribute('placeholder', ph);
       } else {
         const txt = pickI18n(entry.text, lang);
-        if (txt !== undefined) el.innerHTML = txt;
+        if (txt !== undefined) el.innerHTML = sanitizeHtml(txt);
       }
 
       if (el.tagName === 'A' && entry.href) el.setAttribute('href', entry.href);
@@ -183,7 +218,7 @@
       wrapper.setAttribute('data-cms-block-label', b.label || 'Blok Kustom');
       if (b.hidden) wrapper.setAttribute('data-cms-section-hidden', 'true');
       wrapper.className = 'w-full py-space-xl px-6 md:px-margin bg-surface';
-      wrapper.innerHTML = '<div class="max-w-[1360px] mx-auto">' + (b.html || '') + '</div>';
+      wrapper.innerHTML = '<div class="max-w-[1360px] mx-auto">' + sanitizeHtml(b.html || '') + '</div>';
       const anchor = b.after ? byId.get(b.after) : null;
       if (anchor && anchor.parentNode === fp) anchor.insertAdjacentElement('afterend', wrapper);
       else fp.appendChild(wrapper);
@@ -284,7 +319,7 @@
       bar.className = 'w-full bg-primary text-on-primary text-center py-2 px-4 text-xs font-medium tracking-wide';
       document.body.insertBefore(bar, document.body.firstChild);
     }
-    bar.innerHTML = txt;
+    bar.innerHTML = sanitizeHtml(txt);
   }
 
   // ---------- Dynamic Works Repository & Pricing Cards ----------
@@ -572,13 +607,14 @@
         t.removeEventListener('blur', onBlur);
         const key = computeKey(t);
         if (key) {
-          window.parent.postMessage({ type: 'cms:inline-edit', key, lang: activeLang(), html: t.innerHTML }, '*');
+          window.parent.postMessage({ type: 'cms:inline-edit', key, lang: activeLang(), html: sanitizeHtml(t.innerHTML) }, window.location.origin);
         }
       };
       t.addEventListener('blur', onBlur);
     }, true);
 
     window.addEventListener('message', (e) => {
+      if (e.origin !== window.location.origin || e.source !== window.parent) return;
       const msg = e.data || {};
       if (msg.type === 'cms:apply-doc' && msg.doc) {
         applySiteDoc(msg.doc);
@@ -639,7 +675,7 @@
           borderRadius: cs.borderRadius,
           padding: cs.padding
         }
-      }, '*');
+      }, window.location.origin);
     }
   }
 
@@ -685,7 +721,7 @@
 
   function notifyParentState() {
     if (!isStudio || window.parent === window) return;
-    window.parent.postMessage({ type: 'cms:inventory', ...scanPageInventory() }, '*');
+    window.parent.postMessage({ type: 'cms:inventory', ...scanPageInventory() }, window.location.origin);
   }
 
   // ---------- Boot ----------

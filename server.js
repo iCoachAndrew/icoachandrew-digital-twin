@@ -43,7 +43,7 @@ const FIXED_DUTIES = [
 ];
 
 const createStudio = require('./lib/studio');
-const createDatabase = fs.existsSync(path.join(__dirname, 'db.js')) ? require('./db') : require('./lib/db');
+const createDatabase = require('./lib/db');
 const db = createDatabase(DATA);
 let studio;
 
@@ -99,10 +99,15 @@ function quarantineDefaultCredentials() {
   const list = loadCodenames();
   let changed = 0;
   for (const c of list) {
-    if (c.status !== 'active') continue;
-    const defaultPass = KNOWN_DEFAULT_SECRETS.some((p) => verifySecret(p, c.passphraseHash).ok);
-    const defaultOtp = c.otpCode && KNOWN_DEFAULT_OTPS.includes(String(c.otpCode).replace(/\s+/g, ''));
-    if (defaultPass || defaultOtp) { c.status = 'needs_rotation'; changed++; }
+    if (c.status === 'active') {
+      const defaultPass = KNOWN_DEFAULT_SECRETS.some((p) => verifySecret(p, c.passphraseHash).ok);
+      const defaultOtp = c.otpCode && KNOWN_DEFAULT_OTPS.includes(String(c.otpCode).replace(/\s+/g, ''));
+      if (defaultPass || defaultOtp) { c.status = 'needs_rotation'; changed++; }
+    }
+    if ((c.status === 'needs_rotation' || c.status === 'revoked') && c.otpCode) {
+      delete c.otpCode;
+      changed++;
+    }
   }
   if (changed) {
     saveCodenames(list);
@@ -191,6 +196,11 @@ function leakGuard(askerRing, reply) {
       for (const sh of shingles(m.text)) if (rl.includes(sh)) return { ok: false, ring: m.ring, doc: m.id };
     }
   }
+  if (studio && studio.ai && typeof studio.ai.stricterTexts === 'function') {
+    for (const m of studio.ai.stricterTexts(askerRing)) {
+      for (const sh of shingles(m.text)) if (rl.includes(sh)) return { ok: false, ring: m.ring, doc: m.id };
+    }
+  }
   return { ok: true };
 }
 
@@ -199,12 +209,12 @@ function checkSpecialRules(askerRing, question, lang) {
   const q = String(question).toLowerCase();
 
   // 1. Prompt injection / rule-override attempts
-  if (/(ignore (all |previous )?(instructions|rules)|disregard (your )?rules|system prompt|abaikan (semua )?(aturan|instruksi)|bocorkan ring 0)/i.test(q)) {
+  if (/(ignore (all )?(the )?(previous |prior )?(instructions|rules|guidelines)|disregard (all )?(your )?(rules|instructions)|system prompt|abaikan (semua |seluruh )?(aturan|instruksi)|bocorkan ring 0)/i.test(q)) {
     return { matched: true, text: REFUSAL[lang], refused: true, outcome: 'guard_triggered', topic: 'prompt_injection' };
   }
 
   // 2. Sincere inquiry about whether this is Andrew or his digital twin
-  if (/(are you (really )?andrew|speaking with andrew or|are you a digital twin|apakah (ini|anda) (benar )?(pak )?andrew|apakah anda digital twin)/i.test(q)) {
+  if (/(are you (really )?(andrew|an ai|a bot|a digital twin)|am i (speaking|talking) (with|to) (the real )?andrew|or (with )?(his |a )?digital twin|is this (really )?andrew|apakah (ini|anda|kamu|saya sedang berbicara dengan) (benar )?(pak )?andrew|atau (dengan )?kembaran digital|apakah (anda|kamu) (digital twin|ai|manusia|bot)|kamu (ini )?(ai|manusia|bot)|ini andrew asli)/i.test(q)) {
     return { matched: true, text: DISCLOSURE[lang], refused: false, outcome: 'answered', topic: 'identity_disclosure' };
   }
 
@@ -283,9 +293,13 @@ const USER_COOKIE = 'icoach_session';
 const ADMIN_COOKIE = 'icoach_admin';
 
 function newSession(ring, meta = {}) {
+  const now = Date.now();
+  if (sessions.size > 1000) {
+    for (const [k, v] of sessions.entries()) if (!v || v.exp < now) sessions.delete(k);
+  }
   const t = crypto.randomBytes(32).toString('hex');
   const sid = 's_' + crypto.randomBytes(4).toString('hex');
-  sessions.set(t, { id: sid, ring, exp: Date.now() + 30 * 60 * 1000, ...meta });
+  sessions.set(t, { id: sid, ring, exp: now + 30 * 60 * 1000, ...meta });
   return t;
 }
 
@@ -327,9 +341,21 @@ function resolveUserSession(req) {
   if (s.ring === 2 && s.memberId) {
     const member = loadMembers().find((m) => m.id === s.memberId);
     const freeActive = FREE_FOR_NOW && (!studio || studio.commerce.isFreeForNow());
-    if (!member || (member.entitlement !== 'active' && !freeActive)) {
-      // Lapsed subscription drops the session to public access on the next request
+    if (!member) {
+      sessions.delete(t);
       return { ring: 3, sessionId: s.id, label: 'public', lapsed: true };
+    }
+    const isBlocked = member.entitlement === 'suspended' || member.entitlement === 'lapsed';
+    if (isBlocked || (member.entitlement !== 'active' && !freeActive)) {
+      // Lapsed or pending_payment subscription drops chat/knowledge access to public Ring 3,
+      // while preserving memberId for pending_payment so /api/checkout can complete payment.
+      return {
+        ring: 3,
+        sessionId: s.id,
+        label: 'public',
+        lapsed: true,
+        ...(member.entitlement === 'pending_payment' ? { memberId: member.id, pendingPayment: true } : {})
+      };
     }
     return { ring: 2, sessionId: s.id, label: 'member', memberId: member.id };
   }
@@ -340,8 +366,11 @@ function resolveUserSession(req) {
 const attempts = new Map(); // bucketKey -> { n, reset }
 function rateLimited(key, max = 180, windowMs = 60000) {
   const now = Date.now();
+  if (attempts.size > 2000) {
+    for (const [k, v] of attempts.entries()) if (!v || v.reset < now) attempts.delete(k);
+  }
   const a = attempts.get(key) || { n: 0, reset: now + windowMs };
-  if (a.reset < now) { a.n = 0; a.reset = now + windowMs; }
+  if (a.reset < now) { a.n = 0, a.reset = now + windowMs; }
   a.n++; attempts.set(key, a);
   return a.n > max;
 }
@@ -398,7 +427,8 @@ function sendFile(res, filePath, contentType = 'text/html; charset=utf-8', req =
 
 function clientIp(req) {
   const sock = (req && req.socket && req.socket.remoteAddress) || '?';
-  const xf = req && req.headers ? req.headers['x-forwarded-for'] : null;
+  const trustProxy = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
+  const xf = trustProxy && req && req.headers ? req.headers['x-forwarded-for'] : null;
   if (xf) return String(xf).split(',')[0].trim();
   return sock;
 }
@@ -483,7 +513,7 @@ async function handleAdmin(req, res) {
     const sock = (req.socket && req.socket.remoteAddress) || 'sock';
     const ip = clientIp(req);
     const isAuthedAdmin = sessionRing(req, ADMIN_COOKIE) === 0;
-    if (rateLimited('admin_sock:' + sock, isAuthedAdmin ? 600 : 10) || rateLimited('admin:' + ip, isAuthedAdmin ? 600 : 60)) {
+    if (rateLimited('admin_sock:' + sock, isAuthedAdmin ? 600 : 120) || rateLimited('admin:' + ip, isAuthedAdmin ? 600 : 120)) {
       return send(res, 429, { error: 'slow_down' }, {}, req);
     }
 
@@ -504,26 +534,33 @@ async function handleAdmin(req, res) {
     const pathname = urlObj.pathname;
 
     if (req.method === 'GET' && (pathname === '/' || pathname === '/admin' || pathname === '/admin.html')) {
-      const adminHtmlPath = fs.existsSync(path.join(__dirname, 'admin.html'))
-        ? path.join(__dirname, 'admin.html')
-        : path.join(PUBLIC_DIR, 'admin.html');
+      const adminHtmlPath = fs.existsSync(path.join(PUBLIC_DIR, 'admin.html'))
+        ? path.join(PUBLIC_DIR, 'admin.html')
+        : path.join(__dirname, 'admin.html');
       try {
         const html = fs.readFileSync(adminHtmlPath, 'utf8')
           .replace('href="http://localhost:3000"', 'href="/" onclick="if(location.port===\'3001\'){this.href=location.protocol+\'//\'+location.hostname+\':3000\';}"');
-        res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
+        const baseHeaders = defaultSecurityHeaders(req);
+        res.writeHead(200, {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-store',
+          ...baseHeaders,
+          'x-frame-options': 'DENY',
+          'content-security-policy': "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'none';"
+        });
         return res.end(html);
       } catch (_) {
-        return sendFile(res, adminHtmlPath);
+        return sendFile(res, adminHtmlPath, 'text/html; charset=utf-8', req);
       }
     }
     if (req.method === 'GET' && pathname === '/admin-studio.js') {
-      const adminJsPath = fs.existsSync(path.join(__dirname, 'admin-studio.js'))
-        ? path.join(__dirname, 'admin-studio.js')
-        : path.join(PUBLIC_DIR, 'admin-studio.js');
-      return sendFile(res, adminJsPath, 'application/javascript; charset=utf-8');
+      const adminJsPath = fs.existsSync(path.join(PUBLIC_DIR, 'admin-studio.js'))
+        ? path.join(PUBLIC_DIR, 'admin-studio.js')
+        : path.join(__dirname, 'admin-studio.js');
+      return sendFile(res, adminJsPath, 'application/javascript; charset=utf-8', req);
     }
     if (req.method === 'GET' && pathname === '/cms-runtime.js') {
-      return sendFile(res, path.join(PUBLIC_DIR, 'cms-runtime.js'), 'application/javascript; charset=utf-8');
+      return sendFile(res, path.join(PUBLIC_DIR, 'cms-runtime.js'), 'application/javascript; charset=utf-8', req);
     }
     if (req.method === 'GET' && studio && studio.serveMedia(req, res, pathname)) {
       return;
@@ -531,12 +568,17 @@ async function handleAdmin(req, res) {
 
     const pass = process.env.ADMIN_PASSPHRASE;
     if (req.method === 'POST' && pathname === '/admin/login') {
-      if (!pass) return send(res, 503, { error: 'admin_not_configured' }); // fail closed
+      if (rateLimited('admin_login_sock:' + sock, 10) || rateLimited('admin_login_ip:' + ip, 10)) {
+        return send(res, 429, { error: 'slow_down' }, {}, req);
+      }
+      if (!pass) return send(res, 503, { error: 'admin_not_configured' }, {}, req); // fail closed
       const b = await body(req, 2000);
       if (!safeEq(String(b.passphrase || ''), pass)) {
         audit({ event: 'admin_login_failed', ring: 0 });
-        return send(res, 401, { error: 'denied' });
+        return send(res, 401, { error: 'denied' }, {}, req);
       }
+      attempts.delete('admin_login_sock:' + sock);
+      attempts.delete('admin_login_ip:' + ip);
       const t = newSession(0);
       audit({ event: 'admin_login', ring: 0 });
       return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=${t}; ${cookieAttributes(req, 1800)}` }, req);
@@ -550,26 +592,26 @@ async function handleAdmin(req, res) {
 
     if (!isAuthedAdmin) {
       audit({ event: 'admin_unauthorized_attempt', path: pathname });
-      return send(res, 401, { error: 'denied' });
+      return send(res, 401, { error: 'denied' }, {}, req);
     }
 
     // Same-origin Visual Website Editor preview routes on the Admin port
     if (req.method === 'GET' && pathname === '/preview-site') {
-      const idxPath = fs.existsSync(path.join(__dirname, 'index.html'))
-        ? path.join(__dirname, 'index.html')
-        : path.join(PUBLIC_DIR, 'index.html');
-      return sendFile(res, idxPath);
+      const idxPath = fs.existsSync(path.join(PUBLIC_DIR, 'index.html'))
+        ? path.join(PUBLIC_DIR, 'index.html')
+        : path.join(__dirname, 'index.html');
+      return sendFile(res, idxPath, 'text/html; charset=utf-8', req);
     }
     if (req.method === 'GET' && pathname === '/i18n/en.json') {
-      const p = fs.existsSync(path.join(__dirname, 'i18n', 'en.json')) ? path.join(__dirname, 'i18n', 'en.json') : path.join(PUBLIC_DIR, 'i18n', 'en.json');
-      return sendFile(res, p, 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(PUBLIC_DIR, 'i18n', 'en.json')) ? path.join(PUBLIC_DIR, 'i18n', 'en.json') : path.join(__dirname, 'i18n', 'en.json');
+      return sendFile(res, p, 'application/json; charset=utf-8', req);
     }
     if (req.method === 'GET' && pathname === '/i18n/id.json') {
-      const p = fs.existsSync(path.join(__dirname, 'i18n', 'id.json')) ? path.join(__dirname, 'i18n', 'id.json') : path.join(PUBLIC_DIR, 'i18n', 'id.json');
-      return sendFile(res, p, 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(PUBLIC_DIR, 'i18n', 'id.json')) ? path.join(PUBLIC_DIR, 'i18n', 'id.json') : path.join(__dirname, 'i18n', 'id.json');
+      return sendFile(res, p, 'application/json; charset=utf-8', req);
     }
     if (req.method === 'GET' && pathname === '/api/session') {
-      return send(res, 200, { ring: 3, label: 'public', studioPreview: true });
+      return send(res, 200, { ring: 3, label: 'public', studioPreview: true }, {}, req);
     }
 
     if (studio && await studio.dispatchAdmin(req, res, { url: urlObj })) {
@@ -798,36 +840,55 @@ const userServer = http.createServer(async (req, res) => {
       return handleAdmin(req, res);
     }
 
+    if (['POST', 'PUT', 'DELETE'].includes(req.method) && !pathname.startsWith('/api/payments/webhook')) {
+      const origin = req.headers.origin;
+      if (origin) {
+        let originHost = '';
+        try { originHost = new URL(origin).host; } catch (_) {}
+        const reqHost = req.headers.host;
+        if (originHost && reqHost && originHost !== reqHost) {
+          audit({ event: 'user_csrf_blocked', origin, host: reqHost });
+          return send(res, 403, { error: 'cross_origin_denied' }, {}, req);
+        }
+      }
+    }
+
     // Frontend pages, media & localization files
-    // Allow serving static alternative versions and public html
-    if (req.method === 'GET' && (pathname.startsWith('/versi_') || pathname.endsWith('_hbs.html') || pathname.endsWith('_wharton.html') || pathname === '/alternatif-1' || pathname === '/alternatif-2')) {
-      const fileName = pathname === '/alternatif-1' ? 'versi_alternatif_1_hbs.html' : (pathname === '/alternatif-2' ? 'versi_alternatif_2_wharton.html' : path.basename(pathname));
+    // Strictly allowlist only the two alternative frontend templates
+    const ALT_PAGES = {
+      '/alternatif-1': 'versi_alternatif_1_hbs.html',
+      '/versi_alternatif_1_hbs.html': 'versi_alternatif_1_hbs.html',
+      '/alternatif-2': 'versi_alternatif_2_wharton.html',
+      '/versi_alternatif_2_wharton.html': 'versi_alternatif_2_wharton.html'
+    };
+    if (req.method === 'GET' && Object.prototype.hasOwnProperty.call(ALT_PAGES, pathname)) {
+      const fileName = ALT_PAGES[pathname];
       const p = fs.existsSync(path.join(PUBLIC_DIR, fileName)) ? path.join(PUBLIC_DIR, fileName) : path.join(__dirname, fileName);
-      if (fs.existsSync(p)) return sendFile(res, p, 'text/html; charset=utf-8');
+      if (fs.existsSync(p)) return sendFile(res, p, 'text/html; charset=utf-8', req);
     }
 
     if (req.method === 'GET' && (pathname === '/' || pathname === '/index.html' || pathname === '/member')) {
-      const idxPath = fs.existsSync(path.join(__dirname, 'index.html'))
-        ? path.join(__dirname, 'index.html')
-        : path.join(PUBLIC_DIR, 'index.html');
-      return sendFile(res, idxPath);
+      const idxPath = fs.existsSync(path.join(PUBLIC_DIR, 'index.html'))
+        ? path.join(PUBLIC_DIR, 'index.html')
+        : path.join(__dirname, 'index.html');
+      return sendFile(res, idxPath, 'text/html; charset=utf-8', req);
     }
     if (req.method === 'GET' && pathname === '/cms-runtime.js') {
-      const cmsPath = fs.existsSync(path.join(__dirname, 'cms-runtime.js'))
-        ? path.join(__dirname, 'cms-runtime.js')
-        : path.join(PUBLIC_DIR, 'cms-runtime.js');
-      return sendFile(res, cmsPath, 'application/javascript; charset=utf-8');
+      const cmsPath = fs.existsSync(path.join(PUBLIC_DIR, 'cms-runtime.js'))
+        ? path.join(PUBLIC_DIR, 'cms-runtime.js')
+        : path.join(__dirname, 'cms-runtime.js');
+      return sendFile(res, cmsPath, 'application/javascript; charset=utf-8', req);
     }
     if (req.method === 'GET' && studio && studio.serveMedia(req, res, pathname)) {
       return;
     }
     if (req.method === 'GET' && pathname === '/i18n/en.json') {
-      const p = fs.existsSync(path.join(__dirname, 'i18n', 'en.json')) ? path.join(__dirname, 'i18n', 'en.json') : path.join(PUBLIC_DIR, 'i18n', 'en.json');
-      return sendFile(res, p, 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(PUBLIC_DIR, 'i18n', 'en.json')) ? path.join(PUBLIC_DIR, 'i18n', 'en.json') : path.join(__dirname, 'i18n', 'en.json');
+      return sendFile(res, p, 'application/json; charset=utf-8', req);
     }
     if (req.method === 'GET' && pathname === '/i18n/id.json') {
-      const p = fs.existsSync(path.join(__dirname, 'i18n', 'id.json')) ? path.join(__dirname, 'i18n', 'id.json') : path.join(PUBLIC_DIR, 'i18n', 'id.json');
-      return sendFile(res, p, 'application/json; charset=utf-8');
+      const p = fs.existsSync(path.join(PUBLIC_DIR, 'i18n', 'id.json')) ? path.join(PUBLIC_DIR, 'i18n', 'id.json') : path.join(__dirname, 'i18n', 'id.json');
+      return sendFile(res, p, 'application/json; charset=utf-8', req);
     }
     if (studio && await studio.dispatchPublic(req, res, { url: urlObj, getSess: () => resolveUserSession(req) })) {
       return;
@@ -862,7 +923,7 @@ const userServer = http.createServer(async (req, res) => {
     if (req.method === 'POST' && pathname === '/api/auth/member/signup') {
       const b = await body(req, 4000);
       const email = String(b.email || '').trim().toLowerCase();
-      const credential = String(b.credential || '').trim();
+      const credential = String(b.credential || b.passkey || '').trim();
       const displayName = String(b.displayName || 'Raden S. Wiryawan').trim();
       const corporateHolding = String(b.corporateHolding || 'Group CEO, Bimasakti Holdings').trim();
       if (!email || !email.includes('@') || !credential) return send(res, 400, { error: 'bad_request' }, {}, req);
@@ -1127,7 +1188,7 @@ userServer.on('error', (err) => {
 
 function start() {
   ensureStores();
-  if (process.env.NODE_ENV === 'test') return;
+  if (process.env.NODE_ENV === 'test' || process.env.NODE_TEST_CONTEXT) return;
   if (!userServer.listening) {
     userServer.listen(USER_PORT, () => console.log('user site on', USER_PORT));
   }

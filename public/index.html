@@ -1047,7 +1047,7 @@
     "fp-sample-voice-label": "Dengarkan Suara • 01:20",
     "fp-sample-cite": "Disarikan dari: Intisari Refleksi Kepemimpinan Andrew Tani (1983–Sekarang)",
     "fp-sample-author": "Andrew Tani • Teman Diskusi Digital",
-    "placeholder": "Contoh: BEGAPAL-92 atau Begapal",
+    "placeholder": "Contoh: KODE-UNDANGAN",
     "frontpage-send-label": "Kirim Pesan",
     "sec6-eyebrow": "Pengabdian Pemikiran Andrew Tani & Co.",
     "sec6-title": "Mari Melangkah dengan Kejernihan Berpikir dan Hati yang Tenang.",
@@ -1307,7 +1307,7 @@
     "fp-sample-voice-label": "Listen to Voice • 01:20",
     "fp-sample-cite": "Drawn from: Andrew Tani’s Leadership Reflections (1983–Present)",
     "fp-sample-author": "Andrew Tani • Digital Thinking Partner",
-    "placeholder": "e.g. BEGAPAL-92 or Begapal",
+    "placeholder": "e.g. INVITE-CODE",
     "frontpage-send-label": "Send Message",
     "sec6-eyebrow": "The Living Legacy of Andrew Tani & Co.",
     "sec6-title": "Walk Forward with Clarity of Thought and a Peaceful Heart.",
@@ -1712,6 +1712,7 @@
       if (role === 'user') {
         const userBubble = document.createElement('div');
         userBubble.className = 'flex items-start gap-4 justify-end';
+        userBubble.setAttribute('data-chat-turn', '1');
         userBubble.innerHTML = `
           <div class="bg-hbs-crimson text-white rounded-lg p-4 shadow-xs max-w-2xl">
             <div class="text-[11px] font-mono text-red-200 mb-1">${isEn ? 'YOUR QUESTION' : 'PERTANYAAN ANDA'}</div>
@@ -1725,6 +1726,7 @@
       } else {
         const replyBubble = document.createElement('div');
         replyBubble.className = 'flex items-start gap-4';
+        replyBubble.setAttribute('data-chat-turn', '1');
         replyBubble.innerHTML = `
           <div class="w-9 h-9 rounded-full bg-hbs-charcoal text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">AT</div>
           <div class="bg-white border border-hbs-stoneDark rounded-lg p-5 shadow-xs max-w-3xl space-y-2">
@@ -1752,6 +1754,7 @@
       if (role === 'user') {
         const userBubble = document.createElement('div');
         userBubble.className = 'flex items-start gap-4 justify-end';
+        userBubble.setAttribute('data-chat-turn', '1');
         userBubble.innerHTML = `
           <div class="bg-hbs-charcoal text-white rounded-lg p-4 shadow-xs max-w-2xl">
             <div class="text-[11px] font-mono text-gray-300 mb-1">${isEn ? 'EXECUTIVE INQUIRY' : 'CATATAN KONSULTASI ANDA'}</div>
@@ -1765,6 +1768,7 @@
       } else {
         const replyBubble = document.createElement('div');
         replyBubble.className = 'flex items-start gap-4';
+        replyBubble.setAttribute('data-chat-turn', '1');
         replyBubble.innerHTML = `
           <div class="w-9 h-9 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">AT</div>
           <div class="bg-white border border-hbs-stoneDark rounded-lg p-5 shadow-xs max-w-3xl space-y-2">
@@ -1793,8 +1797,8 @@
       if (!message) return;
       input.value = '';
 
-      appendFrontpageTurn('user', message);
-      appendChamberTurn('user', message);
+      if (source === 'chamber') appendChamberTurn('user', message);
+      else appendFrontpageTurn('user', message);
 
       if (btn) btn.disabled = true;
 
@@ -1835,16 +1839,16 @@
         const reply = data.reply || (currentLang === 'id'
           ? 'Mohon maaf. Itu bersifat pribadi. Semoga Anda mengerti.'
           : 'I’m sorry. That is private. Hope you understand.');
-        appendFrontpageTurn('twin', reply);
-        appendChamberTurn('twin', reply);
+        if (source === 'chamber') appendChamberTurn('twin', reply);
+        else appendFrontpageTurn('twin', reply);
       } catch (_) {
         const lb = document.getElementById('loading-bubble-' + source);
         if (lb) lb.remove();
         const fallback = currentLang === 'id'
           ? 'Mohon maaf. Terjadi gangguan koneksi ke ruang diskusi. Silakan coba kembali sesaat lagi.'
           : 'I’m sorry. A connection error occurred with the advisory chamber. Please try again in a moment.';
-        appendFrontpageTurn('twin', fallback);
-        appendChamberTurn('twin', fallback);
+        if (source === 'chamber') appendChamberTurn('twin', fallback);
+        else appendFrontpageTurn('twin', fallback);
       } finally {
         if (btn) btn.disabled = false;
       }
@@ -1945,12 +1949,20 @@
         const res = await fetch('/api/auth/member/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ displayName: name, email, corporateHolding: company, role, passkey })
+          body: JSON.stringify({ displayName: name, email, corporateHolding: company, role, credential: passkey, passkey })
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {
           if (errEl) {
-            errEl.textContent = data.error || (currentLang === 'en' ? 'Failed to complete registration.' : 'Gagal mendaftar keanggotaan.');
+            if (res.status === 401) {
+              errEl.textContent = currentLang === 'en'
+                ? 'This email is already registered with a different PIN. Please sign in or use your registered PIN.'
+                : 'Email ini sudah terdaftar dengan PIN berbeda. Silakan masuk atau gunakan PIN yang sesuai.';
+            } else {
+              errEl.textContent = currentLang === 'en'
+                ? 'Please complete a valid email address and security PIN.'
+                : 'Mohon lengkapi alamat email dan PIN keamanan dengan benar.';
+            }
             errEl.classList.remove('hidden');
           }
           return;
@@ -1984,7 +1996,14 @@
     }
 
     async function logoutSession() {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch (_) {}
+      document.querySelectorAll('#frontpage-messages [data-chat-turn="1"], #chamber-messages [data-chat-turn="1"]').forEach((n) => n.remove());
+      const fpIn = document.getElementById('frontpage-chat-input');
+      const chIn = document.getElementById('chamber-chat-input');
+      if (fpIn) fpIn.value = '';
+      if (chIn) chIn.value = '';
       await syncSession();
       showFrontpageView();
     }
