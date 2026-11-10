@@ -139,7 +139,15 @@ test('Ring 2 member signup, Ring 2 access, and Ring 1 isolation', async () => {
 });
 
 test('Ring 1 three-factor login, channel pairing, and mid-session revocation', async () => {
-  // Login as Begapal (seeded from Protocol v0.3)
+  // Provision Begapal via Ring 0 admin first
+  const prov = await admin('POST', '/admin/api/codenames', {
+    codeName: 'Begapal',
+    otpCode: '111222',
+    passphrase: 'begapal-passphrase'
+  });
+  assert.strictEqual(prov.status, 200);
+
+  // Login as Begapal
   const r1Login = await user('POST', '/api/auth/ring1/login', {
     codeName: 'Begapal',
     otpCode: '111222',
@@ -577,7 +585,7 @@ test('Relational SQLite Multi-File Database & PostgreSQL RLS Schema verification
     assert.ok(rs.sizeBytes > 0);
   }
   assert.ok(dbInfo.json.coreDatabase.tables.audit_logs > 10);
-  assert.ok(dbInfo.json.coreDatabase.tables.ring1_codenames >= 6);
+  assert.ok(dbInfo.json.coreDatabase.tables.ring1_codenames >= 1);
   assert.ok(dbInfo.json.coreDatabase.tables.subscription_plans >= 4);
 
   // 3. Verify live SQL isolation constraints & append-only audit log triggers

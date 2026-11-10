@@ -1,11 +1,12 @@
 [
   {
     "id": "wk_02a395d862",
-    "subtitle": "Karya Utama • Jilid I",
+    "subtitle": "Karya Buku • Co-author Andrew Tani",
     "link": "",
     "tags": [
-      "tata kelola",
-      "strategi"
+      "kepemimpinan",
+      "empati",
+      "mendengarkan"
     ],
     "content": "",
     "lang": "id",
@@ -15,19 +16,21 @@
     "createdAt": "2026-11-09T17:45:39.210Z",
     "updatedAt": "2026-11-09T17:45:39.210Z",
     "ringHistory": [],
-    "title": "The Tani Method: Architecture of Enterprise Governance",
+    "title": "Organizing for Business Excellence",
     "type": "buku",
     "ring": 3,
-    "year": 2019,
+    "year": 2018,
     "status": "published",
-    "summary": "Kejelasan peran kepemimpinan, keselarasan strategi dan manusia, serta perancangan organisasi lintas generasi.",
+    "summary": "Arsitektur tata kelola dan perancangan organisasi untuk mencapai keunggulan bisnis yang berkesinambungan serta penyelarasan strategi dengan eksekusi tim.",
     "coverUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuD8rxr1n17bjKezwrzdsW2GS-f1c1nFeAMgZGX9BZDVC-3VFll0ZQvggCLMb9vDfQplYbrHrgJ72EaUq8or48lkulgDKthdUCwJ73zaiJsllvQoksLQMMJDnWrnZbIFV5Uiv5IT3TGDUBiNbC3rhI_T1qXAQtGAEzB23qfCX4hJghDJ3RdLgp0SG1nMjDiUndXIHGTr1RBAGmhGKI9YfxA1slmWiA8H4nejxx_w75Kr"
   },
   {
     "id": "wk_e62ec15f66",
-    "subtitle": "Memimpin Lintas Budaya",
+    "subtitle": "Penerbit Gramedia • Heru Wiryanto & Andrew Tani, SR.",
     "link": "",
     "tags": [
+      "tata kelola",
+      "struktur",
       "budaya"
     ],
     "content": "",
@@ -38,21 +41,22 @@
     "createdAt": "2026-11-09T17:45:39.210Z",
     "updatedAt": "2026-11-09T17:45:39.210Z",
     "ringHistory": [],
-    "title": "Harmoni Nusantara",
+    "title": "Brain Quotient: Pahami Kemampuan Otak Anda",
     "type": "buku",
     "ring": 3,
-    "year": 2015,
+    "year": 2021,
     "status": "published",
-    "summary": "Seni mendengarkan dan membangun budaya kerja yang sehat di tengah keberagaman Nusantara.",
-    "coverUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBI3_vsyVFul0uJCOcpoBKyo0pxFKj4XQvIHzZcWA_ORw3on1V5jtNxUNz6VCGQrREA9zg-RedEXp5coDxKiwBh65orDjPGiX1xxpDaGoXGMyptkDOHPzGgvcaQpZ3aD-nhFIF8l0ZnLadQopbIKCTulBrP3zPjkxnDVKl5RJppIx0C-YuYVu99wDJLf1soKQxabhHe130SlZxH2EVWBE5rz7qSyE54gwTm8Tk1UfaZ"
+    "summary": "Menyelami fungsi kognitif otak dalam kepemimpinan, pengambilan keputusan di bawah tekanan, dan pengelolaan energi mental untuk performa eksekutif puncak.",
+    "coverUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuD8rxr1n17bjKezwrzdsW2GS-f1c1nFeAMgZGX9BZDVC-3VFll0ZQvggCLMb9vDfQplYbrHrgJ72EaUq8or48lkulgDKthdUCwJ73zaiJsllvQoksLQMMJDnWrnZbIFV5Uiv5IT3TGDUBiNbC3rhI_T1qXAQtGAEzB23qfCX4hJghDJ3RdLgp0SG1nMjDiUndXIHGTr1RBAGmhGKI9YfxA1slmWiA8H4nejxx_w75Kr"
   },
   {
     "id": "wk_4e8e05894e",
-    "subtitle": "Bisnis Keluarga",
+    "subtitle": "Praktik Eksekutif • 28 Grup Usaha Terkemuka",
     "link": "",
     "tags": [
       "suksesi",
-      "keluarga"
+      "generasi",
+      "keluarga bisnis"
     ],
     "content": "",
     "lang": "id",
@@ -62,20 +66,22 @@
     "createdAt": "2026-11-09T17:45:39.210Z",
     "updatedAt": "2026-11-09T17:45:39.210Z",
     "ringHistory": [],
-    "title": "Wadah Mandiri & Dinamika Antar-Generasi",
-    "type": "buku",
+    "title": "Empat Dekade Pendampingan Direksi & Komisaris (1983–Sekarang)",
+    "type": "praktik",
     "ring": 3,
-    "year": 2012,
+    "year": 1983,
     "status": "published",
-    "summary": "Menjaga keharmonisan bisnis keluarga dan menyiapkan suksesi generasi berikutnya.",
+    "summary": "Catatan lapangan dan intisari pendampingan tata kelola, suksesi kepemimpinan lintas generasi, serta perumusan arah strategis konglomerasi.",
     "coverUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuCPzyuAc0DetSZ0O6smud7RQ39-kJzIX-Rf-u-7JRrraEqg9F7Ii4AqX3Z3LOlqYYilf_v9vThqqBa1DYLn8vPsZiH4oM730kB-6F1eDcP3Q9siAKRU_whAifMsi9EV6igOsab9eShKGIsZ1i2h8o3tCYuZNZlFRzhBChK60sACj00INFQYG3hOlI8Zo04ioA_YrZCjxsLg8dqdOuyBLAfaQnyn_9C34e6E8s_AA3Lg"
   },
   {
     "id": "wk_6455404016",
-    "subtitle": "Karya Lagu & Puisi",
+    "subtitle": "Esai Reflektif & Komposisi Musik",
     "link": "",
     "tags": [
-      "himne"
+      "lagu",
+      "renungan",
+      "nurani"
     ],
     "content": "",
     "lang": "id",
@@ -85,12 +91,12 @@
     "createdAt": "2026-11-09T17:45:39.210Z",
     "updatedAt": "2026-11-09T17:45:39.210Z",
     "ringHistory": [],
-    "title": "Himne & Renungan Kepemimpinan",
+    "title": "Refleksi Nurani & Lagu Kepemimpinan",
     "type": "himne",
     "ring": 3,
     "year": 1983,
     "status": "published",
-    "summary": "Lagu dan renungan yang menemani perjalanan kepemimpinan sejak 1983.",
+    "summary": "Kumpulan renungan batin dan lagu gubahan Pak Andrew yang mengingatkan bahwa ketenangan hati adalah kompas sejati dalam memimpin.",
     "coverUrl": "https://lh3.googleusercontent.com/aida-public/AB6AXuBpDgSVFOWVCSG_IwlKxXfNVSchsCyEa1ICpZ9rdemw_w1cj0sj9k967WtX-vTG34KcpTVUXUDjkkpBWb2EV5e04EAHtTtGO_pil0135qZHz_BV7PmMxDp3kb3v8t5wQ0j4ZssSz-du887N8THCIAu8QxigrBDcYZHQ3jz7tnWcDJbT9QXgbGjQ0Z89l-HN9wpyo86JITXzwRD6r5B0ZpxHf_zqmbGVQ3JqmmbGfcYl"
   },
   {

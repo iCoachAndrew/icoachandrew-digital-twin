@@ -90,7 +90,12 @@
   }
 
   function activeLang() {
-    return (typeof window.currentLang === 'string' && window.currentLang === 'en') ? 'en' : 'id';
+    if (typeof window.currentLang === 'string') return window.currentLang;
+    try {
+      const stored = localStorage.getItem('icoachandrew_lang');
+      if (stored === 'en' || stored === 'id') return stored;
+    } catch (_) {}
+    return (document.documentElement && document.documentElement.lang === 'en') ? 'en' : 'id';
   }
 
   function pickI18n(obj, lang) {
@@ -291,8 +296,12 @@
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const featured = works.filter((w) => w.featured);
     const list = (featured.length ? featured : works).slice(0, 8);
+    const lang = activeLang();
+    const isEn = lang === 'en';
     grid.innerHTML = list.map((w) => {
-      const prompt = `Mari berdiskusi tentang karya "${w.title}": ${w.summary || ''}`.replace(/\s+/g, ' ').slice(0, 220).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const prompt = isEn
+        ? `Let's discuss the work "${w.title}": ${w.summary || ''}`.replace(/\s+/g, ' ').slice(0, 220).replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+        : `Mari berdiskusi tentang karya "${w.title}": ${w.summary || ''}`.replace(/\s+/g, ' ').slice(0, 220).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       const cover = w.coverUrl
         ? `<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${esc(w.title)}" src="${esc(w.coverUrl)}"/>`
         : `<div class="w-full h-full flex items-center justify-center bg-primary-container text-tertiary-fixed font-serif text-xl px-4 text-center">${esc(w.title)}</div>`;
@@ -302,7 +311,7 @@
             ${cover}
             <div class="absolute inset-0 bg-gradient-to-t from-primary/90 via-transparent to-transparent"></div>
             <div class="absolute bottom-3 left-3 right-3 text-on-primary">
-              <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed">${esc(w.subtitle || (w.type || 'Karya').toUpperCase() + (w.year ? ' • ' + w.year : ''))}</span>
+              <span class="font-label-sm text-[10px] uppercase tracking-wider text-tertiary-fixed">${esc(w.subtitle || (w.type || (isEn ? 'Work' : 'Karya')).toUpperCase() + (w.year ? ' • ' + w.year : ''))}</span>
             </div>
           </div>
           <div class="p-space-md flex-1 flex flex-col justify-between space-y-space-sm">
@@ -311,7 +320,7 @@
               <p class="font-body-sm text-body-sm text-on-surface-variant">${esc(w.summary || '')}</p>
             </div>
             <div class="pt-space-xs font-label-sm text-label-sm text-primary flex items-center justify-between">
-              <span>Diskusikan Karya Ini →</span>
+              <span>${isEn ? 'Discuss This Work →' : 'Diskusikan Karya Ini →'}</span>
               <span class="material-symbols-outlined text-[16px]">menu_book</span>
             </div>
           </div>
@@ -342,9 +351,13 @@
       if (anchor && anchor.parentNode === fp) anchor.insertAdjacentElement('afterend', sec);
       else fp.appendChild(sec);
     }
+    const lang = activeLang();
+    const isEn = lang === 'en';
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const cards = pricing.plans.map((p) => {
-      const priceLabel = p.priceMonthly > 0 ? `${formatMoney(p.priceMonthly, pricing.currency)}<span class="text-xs font-normal text-outline"> / bulan</span>` : (p.ring === 1 ? 'Undangan Pribadi' : 'Terbuka');
+      const priceLabel = p.priceMonthly > 0
+        ? `${formatMoney(p.priceMonthly, pricing.currency)}<span class="text-xs font-normal text-outline"> / ${isEn ? 'month' : 'bulan'}</span>`
+        : (p.ring === 1 ? (isEn ? 'Private Invitation' : 'Undangan Pribadi') : (isEn ? 'Open Space' : 'Terbuka'));
       const action = p.purchasable
         ? `window.__cmsOpenCheckout('${esc(p.id)}')`
         : p.ring === 1 ? "openModal('ring1-auth-modal')" : "openChamberView()";
@@ -353,8 +366,8 @@
         <div class="rounded-2xl p-6 flex flex-col justify-between border ${p.highlight ? 'bg-primary text-on-primary border-primary shadow-lg' : 'bg-surface-container-lowest text-on-surface border-outline-variant/30 shadow-sm'}">
           <div class="space-y-4">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-widest font-bold ${p.highlight ? 'text-tertiary-fixed' : 'text-on-tertiary-container'}">${esc(p.badge || (p.highlight ? 'Rekomendasi Utama' : 'Lingkaran Pendampingan'))}</span>
-              ${p.messageCap > 0 ? `<span class="text-xs px-2 py-0.5 rounded-full ${p.highlight ? 'bg-white/10 text-white' : 'bg-surface-container text-primary'}">${p.messageCap} sesi/bln</span>` : ''}
+              <span class="text-[11px] uppercase tracking-widest font-bold ${p.highlight ? 'text-tertiary-fixed' : 'text-on-tertiary-container'}">${esc(p.badge || (p.highlight ? (isEn ? 'Top Recommendation' : 'Rekomendasi Utama') : (isEn ? 'Advisory Circle' : 'Lingkaran Pendampingan')))}</span>
+              ${p.messageCap > 0 ? `<span class="text-xs px-2 py-0.5 rounded-full ${p.highlight ? 'bg-white/10 text-white' : 'bg-surface-container text-primary'}">${p.messageCap} ${isEn ? 'sessions/mo' : 'sesi/bln'}</span>` : ''}
             </div>
             <div>
               <h3 class="font-headline-sm text-xl ${p.highlight ? 'text-white' : 'text-primary'}">${esc(p.name)}</h3>
@@ -364,15 +377,15 @@
             <ul class="space-y-2 pt-2 ${p.highlight ? '[&_li]:text-white/90 [&_span]:text-tertiary-fixed' : ''}">${feats}</ul>
           </div>
           <button onclick="${action}" class="mt-6 w-full py-2.5 px-4 rounded-lg font-label-md text-label-md font-semibold transition-all ${p.highlight ? 'bg-tertiary-fixed text-on-tertiary-fixed hover:opacity-95' : 'bg-primary text-on-primary hover:bg-primary-container'}">
-            ${esc(p.ctaLabel || 'Pilih Paket')}
+            ${esc(p.ctaLabel || (isEn ? 'Select Circle' : 'Pilih Paket'))}
           </button>
         </div>`;
     }).join('');
     sec.innerHTML = `
       <div class="max-w-[1360px] mx-auto space-y-8">
         <div class="max-w-2xl space-y-2">
-          <div class="font-label-sm text-label-sm uppercase tracking-widest text-on-tertiary-container font-bold">Keanggotaan &amp; Kontribusi</div>
-          <h2 class="font-headline-xl text-headline-xl-mobile md:text-headline-xl text-primary leading-tight">Pilih Lingkaran Pendampingan yang Sesuai dengan Perjalanan Anda</h2>
+          <div class="font-label-sm text-label-sm uppercase tracking-widest text-on-tertiary-container font-bold">${isEn ? 'Membership &amp; Contribution' : 'Keanggotaan &amp; Kontribusi'}</div>
+          <h2 class="font-headline-xl text-headline-xl-mobile md:text-headline-xl text-primary leading-tight">${isEn ? 'Choose the Advisory Circle That Fits Your Journey' : 'Pilih Lingkaran Pendampingan yang Sesuai dengan Perjalanan Anda'}</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">${cards}</div>
       </div>`;

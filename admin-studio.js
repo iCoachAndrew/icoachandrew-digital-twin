@@ -1678,7 +1678,7 @@ async function loadGovernanceData() {
     document.getElementById('gov-codenames-list').innerHTML = (cnRes.data.codenames || []).map((c) => `
       <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface border border-outline-variant/40 text-xs">
         <div>
-          <div class="font-mono font-bold text-primary">${esc(c.codeName)} <span class="text-[10px] font-normal text-outline">(OTP: ${esc(c.otpCode)})</span></div>
+          <div class="font-mono font-bold text-primary">${esc(c.codeName)} ${c.otpCode ? `<span class="text-[10px] font-normal text-outline">(OTP: ${esc(c.otpCode)})</span>` : '<span class="text-[10px] font-mono text-outline font-normal">(OTP Salted &amp; Terkunci)</span>'}</div>
           <div class="text-[11px] text-on-surface-variant">Status: <strong>${esc(c.status)}</strong> ${c.channel ? '• Kanal: ' + esc(c.channel.provider) : ''}</div>
         </div>
         ${c.status === 'active' ? `<button onclick="revokeCodename('${escJs(c.codeName)}')" class="px-2.5 py-1 rounded bg-secondary text-white text-[11px] font-semibold">Cabut Akses</button>` : '<span class="text-[10px] font-mono text-secondary">REVOKED</span>'}
@@ -1763,6 +1763,9 @@ async function createOrRotateCodename() {
     document.getElementById('gov-cn-pass').value = '';
     await loadGovernanceData();
     toast(`Kode nama Ring 1 "${codeName}" aktif.`);
+    if (r.data && r.data.otpCode) {
+      alert(`Kode nama Ring 1 "${codeName}" berhasil diterbitkan / dirotasi!\n\nOTP 6-Digit Rahasia: ${r.data.otpCode}\n\nHarap salin OTP ini sekarang dan serahkan kepada eksekutor secara aman (Air-Gap / Tatap Muka). Nilai OTP ini telah di-hash dengan Salted Scrypt dan tidak akan pernah ditampilkan lagi di dasbor.`);
+    }
   }
 }
 

@@ -1,2 +1,3 @@
 {"ts":"2026-11-09T15:37:43.097Z","event":"chat","site":"user","ring":3,"sessionId":"anon","topic":"Kepemimpinan dan Budaya Organisasi","outcome":"answered","qlen":41,"sources":["doc_r3_id"],"refused":false}
 {"ts":"2026-11-09T17:45:39.222Z","event":"db_isolation_probe","ring":0}
+{"ts":"2026-11-10T05:47:16.326Z","event":"default_credentials_quarantined","ring":0,"count":5}

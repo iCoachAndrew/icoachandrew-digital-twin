@@ -63,8 +63,52 @@ function precedentsFile() { return path.join(DATA, 'precedents.json'); }
 function codenamesFile() { return path.join(DATA, 'codenames.json'); }
 function membersFile() { return path.join(DATA, 'members.json'); }
 
-function hashSecret(s) {
+// Legacy unsalted SHA-256 (kept only to verify & upgrade old records).
+function legacyHash(s) {
   return crypto.createHash('sha256').update(String(s)).digest('hex');
+}
+// Salted, memory-hard hash for every new secret: scrypt$<salt-hex>$<hash-hex>
+function hashSecret(s) {
+  const salt = crypto.randomBytes(16);
+  const h = crypto.scryptSync(String(s), salt, 32, { N: 16384, r: 8, p: 1 });
+  return 'scrypt$' + salt.toString('hex') + '$' + h.toString('hex');
+}
+// Constant-time verification for both formats. Returns { ok, legacy }.
+function verifySecret(plain, stored) {
+  const st = String(stored || '');
+  if (st.startsWith('scrypt$')) {
+    const [, saltHex, hashHex] = st.split('$');
+    if (!saltHex || !hashHex) return { ok: false };
+    const h = crypto.scryptSync(String(plain), Buffer.from(saltHex, 'hex'), 32, { N: 16384, r: 8, p: 1 });
+    const want = Buffer.from(hashHex, 'hex');
+    return { ok: want.length === h.length && crypto.timingSafeEqual(want, h), legacy: false };
+  }
+  if (/^[a-f0-9]{64}$/.test(st)) {
+    const a = Buffer.from(legacyHash(plain)), b = Buffer.from(st);
+    return { ok: a.length === b.length && crypto.timingSafeEqual(a, b), legacy: true };
+  }
+  return { ok: false };
+}
+
+// Credentials that were once hardcoded in this public source file. Any register entry still using
+// one of them is frozen ("needs_rotation") at startup and can only be re-opened by Ring 0 rotation.
+const KNOWN_DEFAULT_SECRETS = ['begapal-passphrase', 'peacock-passphrase', 'SecretPassphrase1983', 'revoked'];
+const KNOWN_DEFAULT_OTPS = ['111222', '333444', '749203', '000000'];
+
+function quarantineDefaultCredentials() {
+  const list = loadCodenames();
+  let changed = 0;
+  for (const c of list) {
+    if (c.status !== 'active') continue;
+    const defaultPass = KNOWN_DEFAULT_SECRETS.some((p) => verifySecret(p, c.passphraseHash).ok);
+    const defaultOtp = c.otpCode && KNOWN_DEFAULT_OTPS.includes(String(c.otpCode).replace(/\s+/g, ''));
+    if (defaultPass || defaultOtp) { c.status = 'needs_rotation'; changed++; }
+  }
+  if (changed) {
+    saveCodenames(list);
+    audit({ event: 'default_credentials_quarantined', ring: 0, count: changed });
+  }
+  return changed;
 }
 
 function ensureStores() {
@@ -76,67 +120,13 @@ function ensureStores() {
   if (!fs.existsSync(precedentsFile())) fs.writeFileSync(precedentsFile(), '[]');
   if (!fs.existsSync(membersFile())) fs.writeFileSync(membersFile(), '[]');
   if (!fs.existsSync(codenamesFile())) {
-    // Seed the Ring 1 register from Digital Twin Ring Protocol v0.3 & Stitch Blueprint (no real identities stored)
-    const initialCodenames = [
-      {
-        codeName: 'Begapal',
-        ring: 1,
-        passphraseHash: hashSecret(process.env.RING1_DEFAULT_PASSPHRASE || 'begapal-passphrase'),
-        otpCode: '111222',
-        status: 'active',
-        channel: { provider: 'signal', linkedAt: '2026-10-19', label: 'Signal Enclave #812' },
-        addedAt: '2026-10-19'
-      },
-      {
-        codeName: 'BEGAPAL-92',
-        ring: 1,
-        passphraseHash: hashSecret('SecretPassphrase1983'),
-        otpCode: '749203',
-        status: 'active',
-        channel: { provider: 'signal', linkedAt: '2023-10-14', label: 'Signal Enclave #812' },
-        addedAt: '14 Oct 2023'
-      },
-      {
-        codeName: 'King Peacock',
-        ring: 1,
-        passphraseHash: hashSecret(process.env.RING1_DEFAULT_PASSPHRASE || 'peacock-passphrase'),
-        otpCode: '333444',
-        status: 'active',
-        channel: { provider: 'whatsapp', linkedAt: '2026-10-19', label: 'WhatsApp HSM-Proxy' },
-        addedAt: '2026-10-19'
-      },
-      {
-        codeName: 'BANYU-VENTURE',
-        ring: 1,
-        passphraseHash: hashSecret('SecretPassphrase1983'),
-        otpCode: '749203',
-        status: 'active',
-        channel: { provider: 'whatsapp', linkedAt: '2024-02-02', label: 'WhatsApp HSM-Proxy' },
-        addedAt: '02 Feb 2024'
-      },
-      {
-        codeName: 'GOLDEN-FALCON',
-        ring: 1,
-        passphraseHash: hashSecret('SecretPassphrase1983'),
-        otpCode: '749203',
-        status: 'active',
-        channel: { provider: 'airterm', linkedAt: '2024-03-19', label: 'Direct Air-Term 4' },
-        addedAt: '19 Mar 2024'
-      },
-      {
-        codeName: 'MERPATI-CAUCUS',
-        ring: 1,
-        passphraseHash: hashSecret('revoked'),
-        otpCode: '000000',
-        status: 'revoked',
-        channel: null,
-        addedAt: '11 Jan 2023'
-      }
-    ];
-    fs.writeFileSync(codenamesFile(), JSON.stringify(initialCodenames, null, 2));
+    // The Ring 1 register starts EMPTY. Code names are issued by Ring 0 in the Admin Studio
+    // (Arsip Ring & Audit -> Ring 1 Pseudonymous Register). No credential ever lives in source code.
+    fs.writeFileSync(codenamesFile(), '[]');
   }
   fs.mkdirSync(DATA, { recursive: true });
   db.ensureAll();
+  quarantineDefaultCredentials();
   if (studio) studio.ensure();
 }
 
@@ -357,19 +347,60 @@ function rateLimited(key, max = 180, windowMs = 60000) {
 }
 
 // ---------- helpers ----------
-function send(res, code, obj, headers = {}) {
-  res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...headers });
+function defaultSecurityHeaders(req) {
+  const isHttps = Boolean(
+    (req && req.socket && req.socket.encrypted) ||
+    (req && req.headers && String(req.headers['x-forwarded-proto'] || '').toLowerCase() === 'https')
+  );
+  const h = {
+    'x-content-type-options': 'nosniff',
+    'x-frame-options': 'SAMEORIGIN',
+    'referrer-policy': 'strict-origin-when-cross-origin',
+    'content-security-policy': "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';"
+  };
+  if (isHttps) {
+    h['strict-transport-security'] = 'max-age=31536000; includeSubDomains';
+  }
+  return h;
+}
+
+function cookieAttributes(req, maxAgeSec = 1800) {
+  const isHttps = Boolean(
+    (req && req.socket && req.socket.encrypted) ||
+    (req && req.headers && String(req.headers['x-forwarded-proto'] || '').toLowerCase() === 'https')
+  );
+  let c = `HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAgeSec}`;
+  if (isHttps) c += '; Secure';
+  return c;
+}
+
+function send(res, code, obj, headers = {}, req = null) {
+  const baseHeaders = defaultSecurityHeaders(req);
+  res.writeHead(code, {
+    'content-type': 'application/json; charset=utf-8',
+    'cache-control': 'no-store',
+    ...baseHeaders,
+    ...headers
+  });
   res.end(JSON.stringify(obj));
 }
-function sendFile(res, filePath, contentType = 'text/html; charset=utf-8') {
-  if (!fs.existsSync(filePath)) return send(res, 404, { error: 'not_found' });
-  res.writeHead(200, { 'content-type': contentType, 'cache-control': 'no-store' });
+
+function sendFile(res, filePath, contentType = 'text/html; charset=utf-8', req = null) {
+  if (!fs.existsSync(filePath)) return send(res, 404, { error: 'not_found' }, {}, req);
+  const baseHeaders = defaultSecurityHeaders(req);
+  res.writeHead(200, {
+    'content-type': contentType,
+    'cache-control': 'no-store',
+    ...baseHeaders
+  });
   res.end(fs.readFileSync(filePath, 'utf8'));
 }
+
 function clientIp(req) {
-  const xf = req.headers['x-forwarded-for'];
+  const sock = (req && req.socket && req.socket.remoteAddress) || '?';
+  const xf = req && req.headers ? req.headers['x-forwarded-for'] : null;
   if (xf) return String(xf).split(',')[0].trim();
-  return req.socket.remoteAddress || '?';
+  return sock;
 }
 function body(req, limit = 5 * 1024 * 1024) {
   return new Promise((resolve, reject) => {
@@ -449,9 +480,25 @@ function seedSampleKnowledge() {
 // ---------- admin site: Ring 0 only, separate port/hostname, own login and cookie ----------
 async function handleAdmin(req, res) {
   try {
+    const sock = (req.socket && req.socket.remoteAddress) || 'sock';
     const ip = clientIp(req);
     const isAuthedAdmin = sessionRing(req, ADMIN_COOKIE) === 0;
-    if (rateLimited('admin:' + ip, isAuthedAdmin ? 600 : 60)) return send(res, 429, { error: 'slow_down' });
+    if (rateLimited('admin_sock:' + sock, isAuthedAdmin ? 600 : 10) || rateLimited('admin:' + ip, isAuthedAdmin ? 600 : 60)) {
+      return send(res, 429, { error: 'slow_down' }, {}, req);
+    }
+
+    if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+      const origin = req.headers.origin;
+      if (origin) {
+        let originHost = '';
+        try { originHost = new URL(origin).host; } catch (_) {}
+        const reqHost = req.headers.host;
+        if (originHost && reqHost && originHost !== reqHost) {
+          audit({ event: 'admin_csrf_blocked', origin, host: reqHost });
+          return send(res, 403, { error: 'cross_origin_denied' }, {}, req);
+        }
+      }
+    }
 
     const urlObj = new URL(req.url, 'http://localhost');
     const pathname = urlObj.pathname;
@@ -492,13 +539,13 @@ async function handleAdmin(req, res) {
       }
       const t = newSession(0);
       audit({ event: 'admin_login', ring: 0 });
-      return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=${t}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800` });
+      return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=${t}; ${cookieAttributes(req, 1800)}` }, req);
     }
 
     if (req.method === 'POST' && pathname === '/admin/logout') {
       const t = getCookieToken(req, ADMIN_COOKIE);
       if (t) sessions.delete(t);
-      return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0` });
+      return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=; ${cookieAttributes(req, 0)}` }, req);
     }
 
     if (!isAuthedAdmin) {
@@ -648,31 +695,32 @@ async function handleAdmin(req, res) {
 
     // Ring 1 code name management (no real identities ever stored)
     if (req.method === 'GET' && pathname === '/admin/api/codenames') {
-      const list = loadCodenames().map(({ passphraseHash, ...rest }) => rest);
-      return send(res, 200, { codenames: list });
+      const list = loadCodenames().map(({ passphraseHash, otpCode, otpHash, ...rest }) => rest);
+      return send(res, 200, { codenames: list }, {}, req);
     }
 
     if (req.method === 'POST' && pathname === '/admin/api/codenames') {
       const b = await body(req, 2000);
       const codeName = String(b.codeName || '').trim();
       const passphrase = String(b.passphrase || '').trim();
-      const otpCode = String(b.otpCode || Math.floor(100000 + Math.random() * 900000));
-      if (!codeName || !passphrase) return send(res, 400, { error: 'bad_request' });
+      const otpCode = String(b.otpCode || Math.floor(100000 + Math.random() * 900000)).replace(/\s+/g, '');
+      if (!codeName || !passphrase || !otpCode) return send(res, 400, { error: 'bad_request' }, {}, req);
       const list = loadCodenames();
       const existing = list.find((c) => c.codeName.toLowerCase() === codeName.toLowerCase());
       if (existing) {
         existing.passphraseHash = hashSecret(passphrase);
-        existing.otpCode = otpCode;
+        existing.otpHash = hashSecret(otpCode);
+        delete existing.otpCode;
         existing.status = 'active';
         saveCodenames(list);
         audit({ event: 'codename_rotated', codeName: existing.codeName });
-        return send(res, 200, { ok: true, codeName: existing.codeName, otpCode, status: existing.status, rotated: true });
+        return send(res, 200, { ok: true, codeName: existing.codeName, otpCode, status: existing.status, rotated: true }, {}, req);
       }
       const entry = {
         codeName,
         ring: 1,
         passphraseHash: hashSecret(passphrase),
-        otpCode,
+        otpHash: hashSecret(otpCode),
         status: 'active',
         channel: null,
         addedAt: new Date().toISOString().slice(0, 10)
@@ -680,7 +728,7 @@ async function handleAdmin(req, res) {
       list.push(entry);
       saveCodenames(list);
       audit({ event: 'codename_created', codeName });
-      return send(res, 200, { ok: true, codeName, otpCode, status: 'active' });
+      return send(res, 200, { ok: true, codeName, otpCode, status: 'active' }, {}, req);
     }
 
     if (req.method === 'POST' && pathname === '/admin/api/codenames/revoke') {
@@ -729,8 +777,11 @@ const userServer = http.createServer(async (req, res) => {
       return handleAdmin(req, res);
     }
 
+    const sock = (req.socket && req.socket.remoteAddress) || 'sock';
     const ip = clientIp(req);
-    if (rateLimited('user:' + ip, 240)) return send(res, 429, { error: 'slow_down' });
+    if (rateLimited('user_sock:' + sock, 300) || rateLimited('user:' + ip, 240)) {
+      return send(res, 429, { error: 'slow_down' }, {}, req);
+    }
 
     const urlObj = new URL(req.url, 'http://localhost');
     const pathname = urlObj.pathname;
@@ -814,13 +865,20 @@ const userServer = http.createServer(async (req, res) => {
       const credential = String(b.credential || '').trim();
       const displayName = String(b.displayName || 'Raden S. Wiryawan').trim();
       const corporateHolding = String(b.corporateHolding || 'Group CEO, Bimasakti Holdings').trim();
-      if (!email || !email.includes('@') || !credential) return send(res, 400, { error: 'bad_request' });
+      if (!email || !email.includes('@') || !credential) return send(res, 400, { error: 'bad_request' }, {}, req);
       const members = loadMembers();
       const freeActive = FREE_FOR_NOW && (!studio || studio.commerce.isFreeForNow());
       let member = members.find((m) => m.email === email);
-      if (member && !safeEq(member.credentialHash, hashSecret(credential))) {
-        audit({ event: 'member_signup_conflict', ring: 2 });
-        return send(res, 401, { error: 'denied' });
+      if (member) {
+        const v = verifySecret(credential, member.credentialHash);
+        if (!v.ok) {
+          audit({ event: 'member_signup_conflict', ring: 2 });
+          return send(res, 401, { error: 'denied' }, {}, req);
+        }
+        if (v.legacy) {
+          member.credentialHash = hashSecret(credential);
+          saveMembers(members);
+        }
       }
       if (!member) {
         member = {
@@ -830,12 +888,11 @@ const userServer = http.createServer(async (req, res) => {
           corporateHolding,
           credentialHash: hashSecret(credential),
           entitlement: freeActive ? 'active' : 'pending_payment',
-          used: 18,
+          used: b.startAtZero === false ? 18 : 0,
           cap: DEFAULT_MONTHLY_CAP,
           conversations: [],
           createdAt: new Date().toISOString()
         };
-        if (b.startAtZero !== false && !b.displayName) member.used = 0;
         members.push(member);
         saveMembers(members);
       }
@@ -847,7 +904,7 @@ const userServer = http.createServer(async (req, res) => {
         displayName: member.displayName,
         corporateHolding: member.corporateHolding,
         usage: { used: member.used, limit: member.cap }
-      }, { 'set-cookie': `${USER_COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600` });
+      }, { 'set-cookie': `${USER_COOKIE}=${token}; ${cookieAttributes(req, 3600)}` }, req);
     }
 
     // Ring 2 Member sign-in
@@ -855,10 +912,20 @@ const userServer = http.createServer(async (req, res) => {
       const b = await body(req, 4000);
       const email = String(b.email || '').trim().toLowerCase();
       const credential = String(b.credential || '').trim();
-      const member = loadMembers().find((m) => m.email === email);
-      if (!member || !safeEq(member.credentialHash, hashSecret(credential))) {
+      const members = loadMembers();
+      const member = members.find((m) => m.email === email);
+      if (!member) {
         audit({ event: 'member_login_failed', ring: 2 });
-        return send(res, 401, { error: 'denied' });
+        return send(res, 401, { error: 'denied' }, {}, req);
+      }
+      const v = verifySecret(credential, member.credentialHash);
+      if (!v.ok) {
+        audit({ event: 'member_login_failed', ring: 2 });
+        return send(res, 401, { error: 'denied' }, {}, req);
+      }
+      if (v.legacy) {
+        member.credentialHash = hashSecret(credential);
+        saveMembers(members);
       }
       const token = newSession(2, { memberId: member.id });
       audit({ event: 'member_login', ring: 2, sessionId: member.id });
@@ -868,7 +935,7 @@ const userServer = http.createServer(async (req, res) => {
         displayName: member.displayName || 'Raden S. Wiryawan',
         corporateHolding: member.corporateHolding || 'Group CEO, Bimasakti Holdings',
         usage: { used: member.used, limit: member.cap }
-      }, { 'set-cookie': `${USER_COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=3600` });
+      }, { 'set-cookie': `${USER_COOKIE}=${token}; ${cookieAttributes(req, 3600)}` }, req);
     }
 
     // Ring 1 Executor 3-factor login (Code Name + Passkey/Device OTP + Rotating Passphrase)
@@ -877,14 +944,49 @@ const userServer = http.createServer(async (req, res) => {
       const codeName = String(b.codeName || '').trim();
       const otpCode = String(b.otpCode || '').replace(/\s+/g, '');
       const passphrase = String(b.passphrase || '').trim();
-      if (!codeName || !otpCode || !passphrase) return send(res, 400, { error: 'bad_request' });
+      if (!codeName || !otpCode || !passphrase) return send(res, 400, { error: 'bad_request' }, {}, req);
+
+      const targetKey = 'r1_target:' + codeName.toLowerCase();
+      if (rateLimited(targetKey, 5, 300000)) {
+        audit({ event: 'ring1_login_throttled', ring: 1, codeName });
+        return send(res, 429, { error: 'account_locked', reply: REFUSAL[langOf(b.lang)] }, {}, req);
+      }
+
       const list = loadCodenames();
       const entry = list.find((c) => c.codeName.toLowerCase() === codeName.toLowerCase());
-      const cleanEntryOtp = entry ? String(entry.otpCode || '').replace(/\s+/g, '') : '';
-      if (!entry || entry.status !== 'active' || !safeEq(cleanEntryOtp, otpCode) || !safeEq(entry.passphraseHash, hashSecret(passphrase))) {
-        audit({ event: 'ring1_login_failed', ring: 1 });
-        return send(res, 401, { error: 'denied' });
+      if (!entry || entry.status !== 'active') {
+        rateLimited(targetKey, 5, 300000);
+        audit({ event: 'ring1_login_failed', ring: 1, codeName });
+        return send(res, 401, { error: 'denied' }, {}, req);
       }
+
+      let otpOk = false;
+      if (entry.otpHash) {
+        otpOk = verifySecret(otpCode, entry.otpHash).ok;
+      } else if (entry.otpCode) {
+        otpOk = safeEq(String(entry.otpCode).replace(/\s+/g, ''), otpCode);
+      }
+
+      const passResult = verifySecret(passphrase, entry.passphraseHash);
+
+      if (!otpOk || !passResult.ok) {
+        rateLimited(targetKey, 5, 300000);
+        audit({ event: 'ring1_login_failed', ring: 1, codeName: entry.codeName });
+        return send(res, 401, { error: 'denied' }, {}, req);
+      }
+
+      let upgraded = false;
+      if (passResult.legacy) {
+        entry.passphraseHash = hashSecret(passphrase);
+        upgraded = true;
+      }
+      if (entry.otpCode || !entry.otpHash) {
+        entry.otpHash = hashSecret(otpCode);
+        delete entry.otpCode;
+        upgraded = true;
+      }
+      if (upgraded) saveCodenames(list);
+
       if (b.channel) {
         entry.channel = { provider: String(b.channel), linkedAt: new Date().toISOString() };
         saveCodenames(list);
@@ -896,7 +998,7 @@ const userServer = http.createServer(async (req, res) => {
         ring: 1,
         codeName: entry.codeName,
         channel: entry.channel
-      }, { 'set-cookie': `${USER_COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=1800` });
+      }, { 'set-cookie': `${USER_COOKIE}=${token}; ${cookieAttributes(req, 1800)}` }, req);
     }
 
     // Ring 1 Messaging Channel Pairing (only after successful web login)
@@ -919,19 +1021,25 @@ const userServer = http.createServer(async (req, res) => {
     if (req.method === 'POST' && pathname === '/api/auth/logout') {
       const t = getCookieToken(req, USER_COOKIE);
       if (t) sessions.delete(t);
-      return send(res, 200, { ok: true }, { 'set-cookie': `${USER_COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0` });
+      return send(res, 200, { ok: true }, { 'set-cookie': `${USER_COOKIE}=; ${cookieAttributes(req, 0)}` }, req);
     }
 
-    // Dormant billing webhook (idempotent entitlement update)
+    // Dormant billing webhook (requires PAYMENT_INTERNAL_WEBHOOK_SECRET)
     if (req.method === 'POST' && pathname === '/api/payments/webhook') {
+      const secret = process.env.PAYMENT_INTERNAL_WEBHOOK_SECRET;
+      const auth = req.headers['x-webhook-secret'] || req.headers['authorization'];
+      if (!secret || !auth || !safeEq(String(auth).replace(/^Bearer\s+/i, ''), secret)) {
+        audit({ event: 'unauthorized_legacy_webhook_blocked', ring: 2 });
+        return send(res, 401, { error: 'unauthorized_webhook' }, {}, req);
+      }
       const b = await body(req, 10000);
       const members = loadMembers();
       const member = members.find((m) => m.id === b.memberId || m.email === b.email);
-      if (!member) return send(res, 404, { error: 'not_found' });
+      if (!member) return send(res, 404, { error: 'not_found' }, {}, req);
       member.entitlement = b.status === 'active' ? 'active' : 'lapsed';
       saveMembers(members);
       audit({ event: 'payment_webhook', ring: 2, sessionId: member.id, entitlement: member.entitlement });
-      return send(res, 200, { ok: true, entitlement: member.entitlement });
+      return send(res, 200, { ok: true, entitlement: member.entitlement }, {}, req);
     }
 
     // Chat endpoint
