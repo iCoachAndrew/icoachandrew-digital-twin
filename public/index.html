@@ -73,14 +73,14 @@
   <!-- ========================================== -->
   <!-- TOP ACADEMIC UTILITY BAR (HBS STYLE)      -->
   <!-- ========================================== -->
-  <div class="w-full bg-hbs-charcoal text-white text-xs border-b border-hbs-crimson py-2 px-6 lg:px-12 flex flex-wrap items-center justify-between gap-4 select-none">
-    <div class="flex items-center gap-3 font-mono tracking-wider text-[11px]">
-      <span class="inline-block w-2 h-2 rounded-full bg-hbs-crimson animate-pulse"></span>
-      <span id="top-bar-left">EXECUTIVE ADVISORY &amp; STRATEGIC DIALOGUE</span>
-      <span class="text-hbs-muted">|</span>
-      <span class="text-gray-300">JAKARTA • SINGAPORE</span>
+  <div class="w-full bg-hbs-charcoal text-white text-xs border-b border-hbs-crimson py-2 px-4 sm:px-6 lg:px-12 flex flex-wrap items-center justify-between gap-2 sm:gap-4 select-none">
+    <div class="flex items-center gap-2 sm:gap-3 font-mono tracking-wider text-[10px] sm:text-[11px]">
+      <span class="inline-block w-2 h-2 rounded-full bg-hbs-crimson animate-pulse shrink-0"></span>
+      <span id="top-bar-left" class="truncate max-w-[210px] sm:max-w-none">EXECUTIVE ADVISORY &amp; STRATEGIC DIALOGUE</span>
+      <span class="text-hbs-muted hidden sm:inline">|</span>
+      <span class="text-gray-300 hidden sm:inline">JAKARTA • SINGAPORE</span>
     </div>
-    <div class="flex items-center gap-4 text-xs font-sans">
+    <div class="flex items-center gap-3 sm:gap-4 text-[11px] sm:text-xs font-sans shrink-0">
       <!-- Language Switcher ID / EN -->
       <div class="flex items-center gap-1 border border-gray-700 rounded px-2 py-0.5 bg-black/30">
         <button id="lang-id-btn" onclick="setLanguage('id')" class="font-bold text-white hover:text-hbs-crimson transition-colors">ID</button>
@@ -91,7 +91,7 @@
       <span class="text-gray-600 hidden sm:inline">•</span>
       <button id="top-bar-auth-btn" onclick="openModal('auth-signin-modal')" class="text-hbs-crimson hover:text-white font-semibold transition-colors">Akses Rekan</button>
       <button id="top-bar-chamber-btn" onclick="openChamberView()" class="hidden text-amber-400 hover:text-white font-semibold transition-colors flex items-center gap-1">
-        <span>Ruang Penasihat</span>
+        <span id="top-bar-chamber-text">Ruang Penasihat</span>
         <span class="material-symbols-outlined text-[14px]">meeting_room</span>
       </button>
     </div>
@@ -101,15 +101,15 @@
   <!-- MAIN HEADER & BRAND NAVIGATION             -->
   <!-- ========================================== -->
   <header class="w-full bg-white border-b border-hbs-stoneDark sticky top-0 z-40 shadow-xs backdrop-blur-md bg-white/95">
-    <div class="max-w-7xl mx-auto px-6 lg:px-12 py-3.5 flex items-center justify-between gap-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-6">
       
       <!-- Brand Logo -->
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 sm:gap-4 min-w-0">
         <a href="#" onclick="showFrontpageView(); return false;" class="flex flex-col group">
-          <span class="font-serif text-2xl lg:text-3xl font-bold tracking-tight text-hbs-charcoal leading-none group-hover:text-hbs-crimson transition-colors">
+          <span class="font-serif text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-hbs-charcoal leading-none group-hover:text-hbs-crimson transition-colors">
             iCoachAndrew<span class="text-hbs-crimson">.</span>
           </span>
-          <span id="header-subtitle" class="text-[11px] font-mono uppercase tracking-widest text-hbs-muted mt-1">
+          <span id="header-subtitle" class="text-[9px] sm:text-[11px] font-mono uppercase tracking-widest text-hbs-muted mt-0.5 sm:mt-1 truncate max-w-[165px] sm:max-w-none">
             Executive Mentorship &amp; Thought Leadership
           </span>
         </a>
@@ -123,28 +123,28 @@
       </nav>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
         <!-- Guest controls (default) -->
-        <div id="header-guest-controls" class="flex items-center gap-3">
-          <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-hbs-charcoal border border-hbs-stoneDark rounded hover:border-hbs-crimson hover:text-hbs-crimson transition-all">
+        <div id="header-guest-controls" class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-charcoal border border-hbs-stoneDark rounded hover:border-hbs-crimson hover:text-hbs-crimson transition-all whitespace-nowrap">
             Masuk Rekan
           </button>
-          <a href="#ruang-diskusi" id="header-cta-btn" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-hbs-crimson rounded hover:bg-hbs-crimsonDark transition-all shadow-xs flex items-center gap-1.5">
+          <a href="#ruang-diskusi" id="header-cta-btn" class="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white bg-hbs-crimson rounded hover:bg-hbs-crimsonDark transition-all shadow-xs flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
             <span id="header-cta-text">Mulai Diskusi</span>
-            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <span class="material-symbols-outlined text-[14px] sm:text-[16px]">arrow_forward</span>
           </a>
         </div>
 
         <!-- Auth controls (shown when logged in) -->
-        <div id="header-auth-controls" class="hidden items-center gap-3">
-          <span id="header-status-badge" class="px-3 py-1 bg-hbs-crimsonLight text-hbs-crimson font-mono text-xs font-bold rounded border border-hbs-crimson/20">
+        <div id="header-auth-controls" class="hidden items-center gap-1.5 sm:gap-3 shrink-0">
+          <span id="header-status-badge" class="hidden sm:inline-block px-3 py-1 bg-hbs-crimsonLight text-hbs-crimson font-mono text-xs font-bold rounded border border-hbs-crimson/20">
             ANGGOTA EKSEKUTIF
           </span>
-          <button id="header-chamber-btn" onclick="openChamberView()" class="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-hbs-charcoal rounded hover:bg-black transition-all flex items-center gap-1.5 shadow-xs">
-            <span>Ruang Penasihat</span>
-            <span class="material-symbols-outlined text-[16px]">meeting_room</span>
+          <button id="header-chamber-btn" onclick="openChamberView()" class="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white bg-hbs-charcoal rounded hover:bg-black transition-all flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap">
+            <span id="header-chamber-text">Ruang Penasihat</span>
+            <span class="material-symbols-outlined text-[14px] sm:text-[16px]">meeting_room</span>
           </button>
-          <button id="header-logout-btn" onclick="logoutSession()" class="px-3 py-2 text-xs font-semibold text-hbs-muted hover:text-hbs-crimson transition-all">
+          <button id="header-logout-btn" onclick="logoutSession()" class="px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-hbs-muted hover:text-hbs-crimson transition-all whitespace-nowrap">
             Keluar
           </button>
         </div>
@@ -152,18 +152,6 @@
 
     </div>
   </header>
-
-  <!-- ========================================== -->
-  <!-- NOTICE BANNER: DIGITAL TWIN PROVENANCE     -->
-  <!-- ========================================== -->
-  <div class="w-full bg-hbs-stone border-b border-hbs-stoneDark py-2.5 px-6 lg:px-12 text-xs text-hbs-muted text-center">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-center gap-2">
-      <span class="material-symbols-outlined text-hbs-crimson text-[16px]">verified</span>
-      <span id="notice-text">
-        <strong>Pemberitahuan Resmi:</strong> Ruang ini ditenagai oleh <em>Digital Twin</em> Andrew Tani berdasarkan karya dan 40+ tahun pengalaman beliau. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.
-      </span>
-    </div>
-  </div>
 
   <main class="flex-1 w-full">
 
@@ -175,9 +163,9 @@
       <!-- ========================================== -->
       <!-- SECTION 1: HBS CASE-METHOD HERO SECTION   -->
       <!-- ========================================== -->
-      <section id="beranda" class="w-full bg-white py-12 lg:py-20 border-b border-hbs-stoneDark">
-        <div class="max-w-7xl mx-auto px-6 lg:px-12">
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section id="beranda" class="w-full bg-white py-10 lg:py-20 border-b border-hbs-stoneDark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
             <!-- Left Column: Editorial Case Headline (7 Cols) -->
             <div class="lg:col-span-7 space-y-6">
@@ -196,7 +184,7 @@
               <!-- HBS Action Deck -->
               <div class="pt-2 flex flex-wrap items-center gap-4">
                 <a href="#ruang-diskusi" id="hero-cta-primary" class="px-6 py-3.5 bg-hbs-crimson text-white rounded font-medium text-sm hover:bg-hbs-crimsonDark transition-all shadow-md flex items-center gap-2">
-                  <span>Buka Ruang Bincang Bersama Andrew</span>
+                  <span id="hero-cta-primary-text">Buka Ruang Bincang Bersama Andrew</span>
                   <span class="material-symbols-outlined text-[18px]">forum</span>
                 </a>
                 <a href="#karya-buku" id="hero-cta-secondary" class="px-5 py-3.5 bg-hbs-stone text-hbs-charcoal border border-hbs-stoneDark rounded font-medium text-sm hover:bg-white hover:border-hbs-charcoal transition-all">
@@ -207,16 +195,16 @@
               <!-- Academic Credential Pills -->
               <div class="pt-4 grid grid-cols-3 gap-4 border-t border-hbs-stoneDark text-left">
                 <div>
-                  <div id="stat1-num" class="font-serif text-2xl font-bold text-hbs-crimson">40+ Thn</div>
-                  <div id="stat1-title" class="text-xs text-hbs-muted uppercase font-mono tracking-wider mt-0.5">Pendampingan Eksekutif</div>
+                  <div id="stat1-num" class="font-serif text-xl sm:text-2xl font-bold text-hbs-crimson">40+ Thn</div>
+                  <div id="stat1-title" class="text-[10px] sm:text-xs text-hbs-muted uppercase font-mono tracking-wider mt-0.5">Pendampingan Eksekutif</div>
                 </div>
                 <div>
-                  <div id="stat2-num" class="font-serif text-2xl font-bold text-hbs-charcoal">28 Grup</div>
-                  <div id="stat2-title" class="text-xs text-hbs-muted uppercase font-mono tracking-wider mt-0.5">Konglomerasi Klien</div>
+                  <div id="stat2-num" class="font-serif text-xl sm:text-2xl font-bold text-hbs-charcoal">28 Grup</div>
+                  <div id="stat2-title" class="text-[10px] sm:text-xs text-hbs-muted uppercase font-mono tracking-wider mt-0.5">Konglomerasi Klien</div>
                 </div>
                 <div>
-                  <div id="stat3-num" class="font-serif text-2xl font-bold text-hbs-charcoal">2 Buku</div>
-                  <div id="stat3-title" class="text-xs text-hbs-muted uppercase font-mono tracking-wider mt-0.5">Karya Resmi Utama</div>
+                  <div id="stat3-num" class="font-serif text-xl sm:text-2xl font-bold text-hbs-charcoal">2 Buku</div>
+                  <div id="stat3-title" class="text-[10px] sm:text-xs text-hbs-muted uppercase font-mono tracking-wider mt-0.5">Karya Resmi Utama</div>
                 </div>
               </div>
             </div>
@@ -284,7 +272,7 @@
       <!-- SECTION 2: PUBLISHED BOOKS & SCHOLARSHIP  -->
       <!-- ========================================== -->
       <section id="karya-buku" class="w-full bg-hbs-stone py-16 border-b border-hbs-stoneDark">
-        <div id="pokok-pemikiran" class="max-w-7xl mx-auto px-6 lg:px-12 space-y-12">
+        <div id="pokok-pemikiran" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-12">
           
           <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-hbs-stoneDark pb-6">
             <div>
@@ -389,7 +377,7 @@
       <!-- SECTION 3: HBS CASE-DISCUSSION CHAT ROOM   -->
       <!-- ========================================== -->
       <section id="ruang-diskusi" class="w-full bg-white py-16 border-b border-hbs-stoneDark">
-        <div class="max-w-5xl mx-auto px-6 lg:px-12 space-y-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-8">
           
           <div class="text-center space-y-3 max-w-2xl mx-auto">
             <span id="chat-badge" class="font-mono text-xs uppercase tracking-widest text-hbs-crimson font-bold">INTERACTIVE CASE ROOM</span>
@@ -419,9 +407,9 @@
           <div class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-xl shadow-md overflow-hidden flex flex-col">
             
             <!-- Chat Header Bar -->
-            <div class="bg-white px-6 py-4 border-b border-hbs-stoneDark flex items-center justify-between">
+            <div class="bg-white px-5 sm:px-6 py-4 border-b border-hbs-stoneDark flex items-center justify-between">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-lg shadow-xs">
+                <div class="w-10 h-10 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-lg shadow-xs shrink-0">
                   AT
                 </div>
                 <div>
@@ -429,21 +417,21 @@
                   <div id="chat-box-speaker-sub" class="text-[11px] font-mono text-hbs-muted uppercase">Senior Management Advisor &amp; Author • Digital Twin</div>
                 </div>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 shrink-0">
                 <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="chat-box-status" class="text-xs font-mono font-bold text-gray-700">ONLINE</span>
               </div>
             </div>
 
             <!-- Message History Stream -->
-            <div id="frontpage-messages" class="custom-scrollbar p-6 space-y-6 max-h-[520px] overflow-y-auto bg-white/70">
+            <div id="frontpage-messages" class="custom-scrollbar p-5 sm:p-6 space-y-6 max-h-[520px] overflow-y-auto bg-white/70">
               <!-- Opening Welcome Note -->
-              <div class="flex items-start gap-4">
+              <div class="flex items-start gap-3 sm:gap-4">
                 <div class="w-9 h-9 rounded-full bg-hbs-charcoal text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">
                   AT
                 </div>
-                <div class="bg-white border border-hbs-stoneDark rounded-lg p-5 shadow-xs max-w-3xl space-y-3">
-                  <div class="flex items-center justify-between text-xs font-mono text-hbs-muted pb-1 border-b border-hbs-stoneDark">
+                <div class="bg-white border border-hbs-stoneDark rounded-lg p-4 sm:p-5 shadow-xs max-w-3xl space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-hbs-muted pb-1 border-b border-hbs-stoneDark">
                     <span class="text-hbs-crimson font-bold">ANDREW TANI • CATATAN PEMBUKA</span>
                     <span>Ruang Kerja Senior Advisor</span>
                   </div>
@@ -482,7 +470,7 @@
       <!-- SECTION 4: 2 BALANCED TIERS (CANON RULE)   -->
       <!-- ========================================== -->
       <section id="lingkaran-pendampingan" class="w-full bg-hbs-stone py-16 border-b border-hbs-stoneDark">
-        <div id="cara-terhubung" class="max-w-5xl mx-auto px-6 lg:px-12 space-y-8">
+        <div id="cara-terhubung" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-8">
           
           <div class="text-center space-y-2">
             <span id="tiers-badge" class="font-mono text-xs uppercase tracking-widest text-hbs-crimson font-bold">MEMBERSHIP &amp; ENGAGEMENT</span>
@@ -519,7 +507,7 @@
               </div>
               <div class="pt-6 mt-6 border-t border-hbs-stoneDark">
                 <a href="#ruang-diskusi" id="tier1-btn" class="w-full py-3 bg-hbs-stone hover:bg-hbs-stoneDark text-hbs-charcoal font-medium text-sm rounded flex items-center justify-center gap-2 transition-all">
-                  <span>Mulai Berbincang Sekarang</span>
+                  <span id="tier1-btn-text">Mulai Berbincang Sekarang</span>
                   <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                 </a>
               </div>
@@ -555,7 +543,7 @@
               </div>
               <div class="pt-6 mt-6 border-t border-hbs-stoneDark">
                 <button onclick="openModal('ring2-membership-modal')" id="tier2-btn" class="w-full py-3 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-medium text-sm rounded flex items-center justify-center gap-2 transition-all shadow-xs">
-                  <span>Bergabung sebagai Rekan (Bebas Biaya)</span>
+                  <span id="tier2-btn-text">Bergabung sebagai Rekan (Bebas Biaya)</span>
                   <span class="material-symbols-outlined text-[16px]">workspace_premium</span>
                 </button>
               </div>
@@ -569,7 +557,7 @@
       <!-- SECTION 5: ABOUT PAK ANDREW & REFLECTION   -->
       <!-- ========================================== -->
       <section id="tentang-pak-andrew-tani" class="w-full bg-white py-16 border-b border-hbs-stoneDark">
-        <div class="max-w-5xl mx-auto px-6 lg:px-12 space-y-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-8">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div class="lg:col-span-8 space-y-4">
               <span class="font-mono text-xs uppercase tracking-widest text-hbs-crimson font-bold">REKAM JEJAK &amp; WARISAN ADVISORY</span>
@@ -606,7 +594,7 @@
     <!-- VIEW 2: ADVISORY CHAMBER (HARVARD BOARDROOM CASE VIEW)              -->
     <!-- =================================================================== -->
     <div id="chamber-view" class="hidden flex-col w-full bg-hbs-stone min-h-[calc(100vh-12rem)]">
-      <div class="max-w-7xl mx-auto px-6 lg:px-12 py-8 space-y-6 w-full">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 space-y-6 w-full">
         
         <!-- Chamber Banner -->
         <div class="bg-hbs-charcoal text-white rounded-xl p-6 border-l-4 border-hbs-crimson shadow-md flex flex-wrap items-center justify-between gap-6">
@@ -615,7 +603,7 @@
               <span class="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               <span>RUANG PENASIHAT EKSEKUTIF • SESI TERTUTUP</span>
             </div>
-            <div class="flex items-baseline gap-3">
+            <div class="flex flex-wrap items-baseline gap-3">
               <span id="chamber-user-name" class="font-serif text-2xl font-bold">Rekan Eksekutif</span>
               <span id="chamber-user-role" class="text-xs text-gray-300">Direksi / Pemimpin Organisasi</span>
               <span id="chamber-user-tier" class="px-2.5 py-0.5 bg-hbs-crimson text-white rounded font-mono text-xs font-bold">RING 2</span>
@@ -671,7 +659,7 @@
               <!-- Chamber Composer -->
               <form id="chamber-chat-form" onsubmit="event.preventDefault(); handleChatSubmit('chamber');" class="bg-hbs-stone p-4 border-t border-hbs-stoneDark flex flex-col gap-3">
                 <textarea id="chamber-chat-input" rows="3" class="w-full bg-white border border-hbs-stoneDark rounded-lg p-3 text-sm focus:border-hbs-crimson focus:outline-none transition-all resize-none text-hbs-charcoal leading-relaxed font-sans" placeholder="Tuliskan catatan konsultasi, dilema dewan, atau dinamika suksesi yang ingin Anda diskusikan..."></textarea>
-                <div class="flex items-center justify-between text-xs text-hbs-muted">
+                <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-hbs-muted">
                   <span class="flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-[16px] text-hbs-crimson">lock</span>
                     <span>Sesi ini sepenuhnya terenkripsi dan terlindungi protokol hak cipta Andrew Tani.</span>
@@ -741,10 +729,24 @@
   </main>
 
   <!-- ========================================== -->
+  <!-- NOTICE BANNER: DIGITAL TWIN PROVENANCE     -->
+  <!-- (Moved cleanly to bottom right before footer) -->
+  <!-- ========================================== -->
+  <div class="w-full bg-hbs-stone border-t border-hbs-stoneDark py-5 px-4 sm:px-6 lg:px-12 text-xs text-hbs-muted text-center">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-2 leading-relaxed">
+      <span class="material-symbols-outlined text-hbs-crimson text-[18px] shrink-0">verified</span>
+      <span>
+        <strong id="notice-label" class="text-hbs-charcoal">Pemberitahuan Resmi:</strong>
+        <span id="notice-body">Ruang ini ditenagai oleh Digital Twin Andrew Tani berdasarkan karya dan 40+ tahun pengalaman beliau. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
   <!-- HBS-INSPIRED ACADEMIC FOOTER               -->
   <!-- ========================================== -->
   <footer class="w-full bg-hbs-charcoal text-white py-12 border-t-4 border-hbs-crimson text-sm mt-auto">
-    <div class="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8">
       
       <div class="md:col-span-6 space-y-4">
         <div class="font-serif text-2xl font-bold tracking-tight">
@@ -936,16 +938,12 @@
     "nav-chamber-label": "Ruang Konsultasi Penuh",
     "header-login-btn": "Masuk Rekan",
     "header-join-btn": "Bergabung Anggota",
-    "header-cta-btn": "Mulai Berbincang",
     "header-logout-text": "Keluar",
-    "top-bar-left": "EXECUTIVE ADVISORY & STRATEGIC DIALOGUE | JAKARTA • SINGAPORE",
+    "top-bar-left": "EXECUTIVE ADVISORY & STRATEGIC DIALOGUE",
     "top-bar-status": "Disarikan dari 40+ Tahun Pengalaman & Karya Tulis Beliau",
     "top-bar-home-btn": "Halaman Depan",
-    "top-bar-chamber-btn": "Ruang Penasihat →",
     "hero-badge": "EXECUTIVE PERSPECTIVE • CASE REFLECTION",
     "hero-title": "The Discipline of Listening: Menyelaraskan Ketegasan Strategi dengan Empati Manusia.",
-    "html": "• <strong>Masa Perkenalan:</strong> Aktif langsung tanpa biaya keanggotaan.",
-    "hero-cta-primary": "Buka Ruang Bincang Bersama Andrew",
     "hero-cta-member": "Bergabung sebagai Rekan",
     "hero-cta-invite": "Masuk dengan Kode Undangan",
     "hero-note": "Terbuka langsung tanpa perlu mendaftar • Mari berdiskusi seputar kepemimpinan, budaya kerja, dan penyelarasan tim",
@@ -1150,9 +1148,7 @@
     "top-bar-discuss-link": "Mulai Berbincang",
     "top-bar-auth-btn": "Akses Rekan",
     "header-cta-text": "Mulai Diskusi",
-    "header-chamber-btn": "Ruang Penasihat",
     "header-logout-btn": "Keluar",
-    "notice-text": "<strong>Pemberitahuan Resmi:</strong> Ruang ini ditenagai oleh <em>Digital Twin</em> Andrew Tani berdasarkan karya dan 40+ tahun pengalaman beliau. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.",
     "hero-cta-secondary": "Telaah Buku & Khazanah Karya",
     "portrait-name": "Pak Andrew Tani",
     "portrait-title": "SENIOR MANAGEMENT ADVISOR & AUTHOR",
@@ -1179,14 +1175,19 @@
     "tiers-title": "Pilihan Akses Diskusi Bersama Andrew Tani",
     "tiers-subtitle": "Dua tingkat akses transparan dan bersahabat yang dirancang untuk kebutuhan para eksekutif.",
     "tier1-name": "Ruang Diskusi Terbuka",
-    "tier1-btn": "Mulai Berbincang Sekarang",
     "tier2-highlight-badge": "BEBAS BIAYA MASA PERKENALAN",
     "tier2-name": "Keanggotaan Rekan Eksekutif",
-    "tier2-btn": "Bergabung sebagai Rekan (Bebas Biaya)",
     "footer-address": "Andrew Tani & Co. • Senior Management Advisory • Jakarta & Singapore",
     "footer-disclaimer": "Seluruh materi dikurasi langsung dari karya dan pengalaman Andrew Tani. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.",
     "voice-memo-title": "Dengarkan Suara Pak Andrew Tani",
-    "voice-memo-desc": "Refleksi Pembuka • Durasi 1m 45d"
+    "voice-memo-desc": "Refleksi Pembuka • Durasi 1m 45d",
+    "top-bar-chamber-text": "Ruang Penasihat",
+    "hero-cta-primary-text": "Buka Ruang Bincang Bersama Andrew",
+    "header-chamber-text": "Ruang Penasihat",
+    "tier1-btn-text": "Mulai Berbincang Sekarang",
+    "tier2-btn-text": "Bergabung sebagai Rekan (Bebas Biaya)",
+    "notice-label": "Pemberitahuan Resmi:",
+    "notice-body": "Ruang ini ditenagai oleh Digital Twin Andrew Tani berdasarkan karya dan 40+ tahun pengalaman beliau. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal."
   },
   "en": {
     "header-subtitle": "Executive Mentorship & Thought Leadership",
@@ -1197,16 +1198,12 @@
     "nav-chamber-label": "Full Consultation Room",
     "header-login-btn": "Executive Sign In",
     "header-join-btn": "Join Community",
-    "header-cta-btn": "Start Talking",
     "header-logout-text": "Sign Out",
-    "top-bar-left": "EXECUTIVE ADVISORY & STRATEGIC DIALOGUE | JAKARTA • SINGAPORE",
+    "top-bar-left": "EXECUTIVE ADVISORY & STRATEGIC DIALOGUE",
     "top-bar-status": "Drawn from 40+ Years of Experience & Published Works",
     "top-bar-home-btn": "Frontpage",
-    "top-bar-chamber-btn": "Advisory Chamber →",
     "hero-badge": "EXECUTIVE PERSPECTIVE • CASE REFLECTION",
     "hero-title": "The Discipline of Listening: Aligning Strategic Rigor with Human Empathy.",
-    "html": "• <strong>Introductory Period:</strong> Activated immediately with zero membership fees.",
-    "hero-cta-primary": "Open Dialogue with Andrew",
     "hero-cta-member": "Join as Executive Member",
     "hero-cta-invite": "Enter with Private Invitation",
     "hero-note": "Directly accessible with no registration required • Let’s discuss leadership, work culture, and organizational alignment",
@@ -1410,10 +1407,8 @@
     "hero-subtitle": "Over four decades of advising boards of directors, commissioners, and business founders, I have observed that business transformation failures rarely stem from numerical miscalculations, but rather from an organization's inability to listen to the people behind every decision.",
     "top-bar-discuss-link": "Start Discussion",
     "top-bar-auth-btn": "Executive Access",
-    "header-cta-text": "Start Discussion",
-    "header-chamber-btn": "Advisory Chamber",
+    "header-cta-text": "Start Dialogue",
     "header-logout-btn": "Sign Out",
-    "notice-text": "<strong>Official Notice:</strong> This space is powered by Andrew Tani’s <em>Digital Twin</em>, drawing upon his published works and 40+ years of board advisory experience. It serves as a thinking partner, not a substitute for formal legal or financial counsel.",
     "hero-cta-secondary": "Explore Books & Works",
     "portrait-name": "Pak Andrew Tani",
     "portrait-title": "SENIOR MANAGEMENT ADVISOR & AUTHOR",
@@ -1440,14 +1435,19 @@
     "tiers-title": "Access & Consultation Tiers with Andrew Tani",
     "tiers-subtitle": "Two transparent, dignified access options tailored to executive discernment.",
     "tier1-name": "Open Discussion Room",
-    "tier1-btn": "Start Dialogue Now",
     "tier2-highlight-badge": "COMPLIMENTARY INTRODUCTORY PERIOD",
     "tier2-name": "Executive Colleague Membership",
-    "tier2-btn": "Join as Executive Colleague (Complimentary)",
     "footer-address": "Andrew Tani & Co. • Senior Management Advisory • Jakarta & Singapore",
     "footer-disclaimer": "All insights are curated directly from the published scholarship and advisory practice of Andrew Tani. This space serves as a thinking companion, not a replacement for formal legal or financial counsel.",
     "voice-memo-title": "Listen to Andrew Tani's Voice",
-    "voice-memo-desc": "Opening Reflection • Duration 1m 45s"
+    "voice-memo-desc": "Opening Reflection • Duration 1m 45s",
+    "top-bar-chamber-text": "Advisory Chamber",
+    "hero-cta-primary-text": "Open Dialogue with Andrew",
+    "header-chamber-text": "Advisory Chamber",
+    "tier1-btn-text": "Start Dialogue Now",
+    "tier2-btn-text": "Join as Executive Colleague (Complimentary)",
+    "notice-label": "Official Notice:",
+    "notice-body": "This space is powered by Andrew Tani’s Digital Twin, drawing upon his published works and 40+ years of board advisory experience. It serves as a thinking partner, not a substitute for formal legal or financial counsel."
   }
 };
 
@@ -1562,7 +1562,6 @@
         audio.play().then(() => {
           if (icon) icon.textContent = 'pause_circle';
         }).catch(() => {
-          // Audio playback simulation if external asset is unreachable
           if (icon) {
             icon.textContent = icon.textContent === 'pause_circle' ? 'play_circle' : 'pause_circle';
           }
