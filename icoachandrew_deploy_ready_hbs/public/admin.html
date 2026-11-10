@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>iCoachAndrew — Ring 0 Sovereign Registry &amp; Governance Workbench</title>
+  <!-- Google Fonts: Newsreader (Editorial Authority), Source Sans 3 (Executive UI), JetBrains Mono (Cryptographic Telemetry) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&amp;family=Source+Sans+3:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+  <!-- Material Symbols Outlined -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-tertiary-container": "#b18d48",
+            "secondary-fixed": "#ffdad6",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#2d4772",
+            "error-container": "#ffdad6",
+            "surface-container-high": "#ece8e0",
+            "surface-tint": "#465e8b",
+            "background": "#fdf9f1",
+            "primary-container": "#0d2b55",
+            "tertiary": "#211500",
+            "surface-container": "#f1ede6",
+            "on-secondary-container": "#700f11",
+            "outline": "#747780",
+            "tertiary-fixed": "#ffdea5",
+            "surface-variant": "#e6e2da",
+            "secondary-container": "#fd786f",
+            "on-primary-container": "#7a93c3",
+            "on-surface": "#1c1c17",
+            "surface-container-lowest": "#ffffff",
+            "surface": "#fdf9f1",
+            "tertiary-container": "#3a2800",
+            "surface-container-highest": "#e6e2da",
+            "on-secondary-fixed": "#410003",
+            "on-error-container": "#93000a",
+            "inverse-on-surface": "#f4f0e8",
+            "secondary-fixed-dim": "#ffb3ac",
+            "on-secondary-fixed-variant": "#86201f",
+            "primary": "#001637",
+            "primary-fixed": "#d7e3ff",
+            "surface-bright": "#fdf9f1",
+            "secondary": "#a73833",
+            "on-background": "#1c1c17",
+            "on-tertiary-fixed": "#261900",
+            "on-primary-fixed": "#001b3f",
+            "tertiary-fixed-dim": "#e9c176",
+            "inverse-surface": "#31302b",
+            "primary-fixed-dim": "#aec7fa",
+            "on-surface-variant": "#44474f",
+            "on-secondary": "#ffffff",
+            "on-tertiary-fixed-variant": "#5d4201",
+            "outline-variant": "#c4c6d0",
+            "surface-container-low": "#f7f3eb",
+            "error": "#ba1a1a",
+            "on-primary": "#ffffff",
+            "inverse-primary": "#aec7fa",
+            "on-error": "#ffffff",
+            "surface-dim": "#dddad2",
+            /* Compatibility aliases */
+            "navy-imperial": "#001637",
+            "navy-dark": "#071A35",
+            "gold-antique": "#b18d48",
+            "gold-subtle": "#e9c176",
+            "gold-light": "#ffdea5",
+            "burgundy": "#a73833",
+            "burgundy-light": "#ffdad6",
+            "parchment": "#fdf9f1",
+            "parchment-warm": "#f7f3eb",
+            "parchment-border": "#e6e2da",
+            "slate-ink": "#1c1c17",
+            "slate-body": "#44474f",
+            "slate-muted": "#747780"
+          },
+          spacing: {
+            "space-xl": "2.5rem",
+            "space-sm": "0.5rem",
+            "gutter": "1.5rem",
+            "space-md": "1rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.25rem",
+            "margin": "2.5rem"
+          },
+          fontFamily: {
+            "display-lg": ["Newsreader", "Georgia", "serif"],
+            "headline-xl": ["Newsreader", "Georgia", "serif"],
+            "headline-lg": ["Newsreader", "Georgia", "serif"],
+            "headline-md": ["Newsreader", "Georgia", "serif"],
+            "headline-sm": ["Newsreader", "Georgia", "serif"],
+            "title-md": ["\"Source Sans 3\"", "sans-serif"],
+            "body-lg": ["\"Source Sans 3\"", "sans-serif"],
+            "body-md": ["\"Source Sans 3\"", "sans-serif"],
+            "body-sm": ["\"Source Sans 3\"", "sans-serif"],
+            "label-md": ["\"Source Sans 3\"", "sans-serif"],
+            "label-sm": ["\"Source Sans 3\"", "sans-serif"],
+            "serif": ["Newsreader", "Georgia", "serif"],
+            "sans": ["\"Source Sans 3\"", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+            "mono": ["\"JetBrains Mono\"", "monospace"]
+          },
+          fontSize: {
+            "display-lg": ["56px", { "lineHeight": "64px", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+            "headline-xl": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.015em", "fontWeight": "400" }],
+            "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "500" }],
+            "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+            "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "title-md": ["18px", { "lineHeight": "26px", "letterSpacing": "0.005em", "fontWeight": "600" }],
+            "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+            "body-md": ["15px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "body-sm": ["13px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.04em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "16px", "letterSpacing": "0.08em", "fontWeight": "700" }]
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    @layer base {
+      html, body { margin: 0; padding: 0; background: #fdf9f1; color: #1c1c17; }
+      main > :first-child { margin-top: 0 !important; }
+      main > :last-child { margin-bottom: 0 !important; }
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      vertical-align: middle;
+    }
+    .ring-badge-0 { background: #ffdad6; color: #410003; border: 1px solid rgba(167, 56, 51, 0.4); }
+    .ring-badge-1 { background: #ffdea5; color: #261900; border: 1px solid #b18d48; }
+    .ring-badge-2 { background: #d7e3ff; color: #001b3f; border: 1px solid #465e8b; }
+    .ring-badge-3 { background: #e6e2da; color: #1c1c17; border: 1px solid #c4c6d0; }
+    .nav-btn.active {
+      background: #001637 !important;
+      color: #ffdea5 !important;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0, 22, 55, 0.2);
+    }
+    .nav-btn.active .nav-icon {
+      color: #e9c176 !important;
+    }
+    .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: #c4c6d0; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased">
+
+  <!-- ======================================================== -->
+  <!-- FIXED TOP BAR (EXACT DESIGN: RING 0 SOVEREIGN ARCHIVE)    -->
+  <!-- ======================================================== -->
+  <header class="fixed top-0 w-full z-50 bg-primary text-on-primary shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
+    <!-- Top Protocol Strip -->
+    <div class="bg-primary-container text-on-tertiary-container py-space-xs px-gutter border-b border-primary-container/80">
+      <div class="max-w-7xl mx-auto flex items-center justify-between font-label-sm text-label-sm">
+        <div class="flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-[14px] text-tertiary-fixed-dim">verified</span>
+          <span>You are consulting the verified digital twin of Andrew Tani. Wisdom drawn from 40+ years of Indonesian executive practice.</span>
+        </div>
+        <div class="hidden sm:flex items-center gap-space-md">
+          <span class="flex items-center gap-space-xs text-tertiary-fixed-dim">
+            <span class="material-symbols-outlined text-[13px]">account_balance</span>
+            Bespoke Advisory Protocol
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <div class="h-20 max-w-7xl mx-auto px-gutter flex items-center justify-between gap-space-md">
+      <div class="flex items-center gap-space-lg">
+        <a class="flex flex-col" href="/admin">
+          <span class="font-headline-md text-headline-md tracking-tight text-surface-bright">iCoachAndrew</span>
+          <span class="font-label-sm text-label-sm text-tertiary-fixed-dim italic tracking-wider">The Codified Counsel of Andrew Tani</span>
+        </a>
+        <div class="hidden xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-primary-container text-tertiary-fixed-dim font-label-sm text-label-sm border border-on-tertiary-container/30">
+          <span class="material-symbols-outlined text-[15px]">military_tech</span>
+          <span id="studio-auth-pill">Ring 0: Sovereign Protocol</span>
+        </div>
+      </div>
+
+      <!-- Center System Module Nav Pills -->
+      <nav class="hidden lg:flex items-center gap-2 overflow-x-auto thin-scroll py-1" id="adminTabsNav">
+        <button onclick="switchStudioTab('governance')" data-tab="governance" class="nav-btn active px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">shield_lock</span>Ring 0 Archive &amp; Audit
+        </button>
+        <button onclick="switchStudioTab('overview')" data-tab="overview" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">dashboard</span>Dasbor Status
+        </button>
+        <button onclick="switchStudioTab('visual-editor')" data-tab="visual-editor" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">web</span>Visual Website Editor
+        </button>
+        <button onclick="switchStudioTab('media')" data-tab="media" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">photo_library</span>Foto &amp; Media
+        </button>
+        <button onclick="switchStudioTab('works')" data-tab="works" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">auto_stories</span>Karya R0–R3
+        </button>
+        <button onclick="switchStudioTab('memory')" data-tab="memory" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">psychology</span>Memori Persona
+        </button>
+        <button onclick="switchStudioTab('ai')" data-tab="ai" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">bolt</span>Claude AI Vault
+        </button>
+        <button onclick="switchStudioTab('commerce')" data-tab="commerce" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
+          <span class="material-symbols-outlined text-[16px] nav-icon">payments</span>Pricing
+        </button>
+      </nav>
+
+      <!-- Right: Language & External Links -->
+      <div class="flex items-center gap-space-md shrink-0">
+        <div class="flex items-center rounded bg-primary-container px-space-xs py-space-xs font-label-sm text-label-sm border border-on-tertiary-container/30">
+          <button id="admin-top-lang-en" onclick="setEditorLang('en')" class="px-space-xs py-space-xs text-tertiary-fixed-dim font-bold" type="button">EN</button>
+          <span class="text-on-primary-container opacity-40">/</span>
+          <button id="admin-top-lang-id" onclick="setEditorLang('id')" class="px-space-xs py-space-xs text-on-primary-container hover:text-on-primary" type="button">ID</button>
+        </div>
+        <a href="/" onclick="if(location.port==='3001'){this.href=location.protocol+'//'+location.hostname+':3000';}" target="_blank" class="hidden sm:inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded bg-primary-container text-tertiary-fixed-dim hover:text-white transition-colors border border-on-tertiary-container/30">
+          <span class="material-symbols-outlined text-[15px]">open_in_new</span>Lihat Web Publik
+        </a>
+        <button id="btn-logout-admin" onclick="adminLogout()" class="hidden text-xs px-2.5 py-1.5 rounded bg-secondary text-white font-semibold hover:bg-secondary/80">
+          Keluar
+        </button>
+        <div class="w-8 h-8 rounded-full bg-primary-container border border-on-tertiary-container/50 flex items-center justify-center text-tertiary-fixed-dim font-serif font-bold text-sm">
+          AT
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- RING 0 LOGIN GATE OVERLAY                                 -->
+  <!-- ======================================================== -->
+  <div id="admin-login-gate" class="fixed inset-0 z-50 bg-primary/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-surface rounded-2xl max-w-md w-full p-8 shadow-2xl border border-on-tertiary-container/40 space-y-5">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-primary text-tertiary-fixed flex items-center justify-center font-serif text-xl font-semibold shadow-inner">
+          R0
+        </div>
+        <div>
+          <div class="text-[11px] font-mono uppercase tracking-widest text-on-tertiary-container font-bold">Sovereign Enclave Authentication</div>
+          <h1 class="font-serif text-2xl text-primary font-bold">Ring 0 Sovereign Registry</h1>
+        </div>
+      </div>
+      <p class="text-xs text-on-surface-variant leading-relaxed">
+        Masukkan <strong>Passphrase Sovereign Ring 0</strong> untuk membuka Repositori Karya Ring 0–3, Memori Protokoler Andrew Tani, Visual Website Editor, Brankas Kunci Claude API, dan Ledger Audit.
+      </p>
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-primary uppercase tracking-wider font-mono">Passphrase Sovereign Ring 0</label>
+        <input id="admin-passphrase-input" type="password" value="" onkeydown="if(event.key==='Enter')adminLogin()" placeholder="Masukkan passphrase..." class="w-full px-3.5 py-2.5 rounded-lg border border-outline-variant bg-white font-mono text-sm focus:outline-none focus:border-primary shadow-inner"/>
+      </div>
+      <div id="admin-login-err" class="hidden text-xs text-secondary font-semibold bg-red-50 p-2.5 rounded-lg border border-red-200"></div>
+      <button onclick="adminLogin()" class="w-full py-2.5 px-4 rounded-lg bg-primary text-white font-semibold text-sm hover:bg-primary-container transition-all flex items-center justify-center gap-2 shadow-md">
+        <span class="material-symbols-outlined text-[18px] text-tertiary-fixed">lock_open</span>Buka Ring 0 Studio Kurasi
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="studio-toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl bg-primary text-white text-xs font-medium shadow-xl border border-on-tertiary-container/40 items-center gap-2"></div>
+
+  <!-- ======================================================== -->
+  <!-- MAIN WORKSPACE CONTAINER (EXACT HERO BANNER)              -->
+  <!-- ======================================================== -->
+  <main class="w-full pt-28 bg-surface min-h-[calc(100vh-80px)] flex flex-col justify-between">
+    <div class="flex flex-col w-full">
+
+      <!-- TOP SOVEREIGN BANNER (EXACT MATCH: ring_0_sovereign_admin_archive) -->
+      <div class="w-full bg-surface-container-low px-gutter py-space-xl border-b border-surface-container-high">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-space-lg">
+          <div class="flex flex-col gap-space-xs max-w-3xl">
+            <div class="flex items-center gap-space-sm">
+              <span class="px-space-sm py-space-xs rounded bg-surface-variant text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider flex items-center gap-space-xs">
+                <span class="material-symbols-outlined text-[14px] text-secondary">shield_lock</span>
+                Sovereign Protocol • Compartment 0
+              </span>
+              <span class="text-outline text-label-sm">•</span>
+              <span class="font-label-sm text-label-sm text-on-surface-variant tracking-widest uppercase">Archival Ledger v4.18</span>
+            </div>
+            <h1 class="font-headline-xl text-headline-xl text-primary font-serif tracking-tight mt-space-xs font-bold">
+              Ring 0 Sovereign Registry &amp; Governance Workbench
+            </h1>
+            <p class="font-body-lg text-body-lg text-on-surface-variant font-serif italic">
+              Classified Isolation Layer for Knowledge Quarantine, Codename Registry &amp; Immutable Audit Trails
+            </p>
+          </div>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-md">
+            <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center gap-space-md border border-outline-variant/30">
+              <div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-inner">
+                <span class="material-symbols-outlined text-[20px]">verified_user</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Air-Gapped Hostname</span>
+                <span class="font-title-md text-title-md text-primary font-mono font-semibold">JAK-VAULT-0.IND</span>
+              </div>
+            </div>
+            <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center gap-space-md border border-outline-variant/30">
+              <div class="w-10 h-10 rounded-full bg-surface-container-high text-tertiary flex items-center justify-center">
+                <span class="material-symbols-outlined text-[20px] text-on-tertiary-container">token</span>
+              </div>
+              <div class="flex flex-col">
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">FIDO2 Session Lock</span>
+                <span class="font-title-md text-title-md text-primary font-mono font-semibold" id="fido-timer">24:58</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: RING 0 ARCHIVE & GOVERNANCE (DEFAULT VIEW)   -->
+      <!-- ======================================================== -->
+      <div id="tab-governance" class="studio-panel max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-xl">
+        <!-- 1. Corpus Topology: Physically Separate Knowledge Vaults -->
+        <section class="flex flex-col gap-space-md">
+          <div class="flex items-center justify-between">
+            <div class="flex items-baseline gap-space-sm">
+              <span class="font-label-sm text-label-sm text-on-tertiary-container uppercase tracking-widest font-bold">Corpus Topology</span>
+              <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Physically Separate Knowledge Vaults</h2>
+            </div>
+            <span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Global Sync: All Enclaves Attested</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+            <!-- Ring 0 • Sovereign -->
+            <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow border border-outline-variant/30">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-secondary"></div>
+              <div class="flex flex-col gap-space-sm pt-space-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Ring 0 • Sovereign</span>
+                  <span class="px-space-xs py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold">Air-Gap</span>
+                </div>
+                <div class="font-headline-lg text-headline-lg text-primary font-serif font-bold" id="vault-count-r0">184 <span class="font-body-sm text-body-sm text-on-surface-variant font-sans font-normal">Folios</span></div>
+                <h3 class="font-title-md text-title-md text-primary font-semibold">Confidential Manuscripts</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Personal handwritten journals, board caucus diaries, and unfiltered political advisory memoranda. Sole access: Andrew Tani.
+                </p>
+              </div>
+              <div class="mt-space-lg pt-space-md flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md">
+                <span class="flex items-center gap-space-xs text-secondary font-semibold">
+                  <span class="material-symbols-outlined text-[16px]">lock</span> Physical Cryptex
+                </span>
+                <span class="font-mono">SHA-512 Seal</span>
+              </div>
+            </div>
+
+            <!-- Ring 1 • Inner Circle -->
+            <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow border border-outline-variant/30">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-on-tertiary-container"></div>
+              <div class="flex flex-col gap-space-sm pt-space-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-tertiary-container font-bold">Ring 1 • Inner Circle</span>
+                  <span class="px-space-xs py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">Keyed OTP</span>
+                </div>
+                <div class="font-headline-lg text-headline-lg text-primary font-serif font-bold" id="vault-count-r1">312 <span class="font-body-sm text-body-sm text-on-surface-variant font-sans font-normal">Memos</span></div>
+                <h3 class="font-title-md text-title-md text-primary font-semibold">Board Memos &amp; Advisories</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Codename-keyed executive cases, strategic governance interventions, and conglomerate succession structures.
+                </p>
+              </div>
+              <div class="mt-space-lg pt-space-md flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md">
+                <span class="flex items-center gap-space-xs text-on-tertiary-container font-semibold">
+                  <span class="material-symbols-outlined text-[16px]">key</span> Pseudonymous
+                </span>
+                <span class="font-mono" id="vault-r1-active">14 Active Codenames</span>
+              </div>
+            </div>
+
+            <!-- Ring 2 • Licensed -->
+            <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow border border-outline-variant/30">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-primary-container"></div>
+              <div class="flex flex-col gap-space-sm pt-space-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Ring 2 • Licensed</span>
+                  <span class="px-space-xs py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">Member</span>
+                </div>
+                <div class="font-headline-lg text-headline-lg text-primary font-serif font-bold" id="vault-count-r2">580 <span class="font-body-sm text-body-sm text-on-surface-variant font-sans font-normal">Frameworks</span></div>
+                <h3 class="font-title-md text-title-md text-primary font-semibold">Diagnostic Tools &amp; Manuals</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Systematic leadership doctrine, managerial balance scorecards, organizational transformation playbooks.
+                </p>
+              </div>
+              <div class="mt-space-lg pt-space-md flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md">
+                <span class="flex items-center gap-space-xs text-primary font-semibold">
+                  <span class="material-symbols-outlined text-[16px]">verified</span> Institutional
+                </span>
+                <span class="font-mono">Tier 2 DRM Key</span>
+              </div>
+            </div>
+
+            <!-- Ring 3 • Canon -->
+            <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-shadow border border-outline-variant/30">
+              <div class="absolute top-0 left-0 right-0 h-1.5 bg-outline"></div>
+              <div class="flex flex-col gap-space-sm pt-space-xs">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Ring 3 • Canon</span>
+                  <span class="px-space-xs py-0.5 rounded bg-surface-variant text-on-surface font-label-sm text-label-sm font-semibold">Public</span>
+                </div>
+                <div class="font-headline-lg text-headline-lg text-primary font-serif font-bold" id="vault-count-r3">344 <span class="font-body-sm text-body-sm text-on-surface-variant font-sans font-normal">Articles</span></div>
+                <h3 class="font-title-md text-title-md text-primary font-semibold">Keynotes &amp; Public Essays</h3>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Published monographs, philosophy of stewardship, public leadership songs, and keynote addresses across ASEAN.
+                </p>
+              </div>
+              <div class="mt-space-lg pt-space-md flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm bg-surface-container-low -mx-space-lg -mb-space-lg p-space-md">
+                <span class="flex items-center gap-space-xs text-outline font-semibold">
+                  <span class="material-symbols-outlined text-[16px]">public</span> Public Domain
+                </span>
+                <span class="font-mono">Open Verified</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Archival Gatekeeper & Quarantine Protocol -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+          <!-- Left: Ingestion & Passage Classifier (7 cols) -->
+          <div class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg border border-outline-variant/30">
+            <div class="flex flex-col gap-space-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-label-sm text-label-sm text-on-tertiary-container uppercase tracking-wider font-bold">Archival Gatekeeper</span>
+                <span class="font-label-sm text-label-sm text-secondary flex items-center gap-space-xs font-semibold">
+                  <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span> Lexicon Heuristics Active
+                </span>
+              </div>
+              <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Ingestion &amp; Passage Classifier</h2>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Submit new advisory doctrines or historical executive transcripts for automated semantic risk evaluation and Ring assignment.
+              </p>
+            </div>
+            <form class="flex flex-col gap-space-md" onsubmit="event.preventDefault();uploadKnowledgeDoc();">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+                <div class="md:col-span-2 flex flex-col gap-space-xs">
+                  <label class="font-label-md text-label-md text-primary font-semibold" for="gov-doc-title">Folio Codename / Registry Title</label>
+                  <input class="w-full bg-surface-container-low rounded px-space-md py-space-sm text-on-surface font-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary font-mono text-[14px]" id="gov-doc-title" type="text" placeholder="1998-CRISIS-NOTES-VOL-IV"/>
+                </div>
+                <div class="flex flex-col gap-space-xs">
+                  <label class="font-label-md text-label-md text-primary font-semibold" for="gov-doc-lang">Primary Idiom</label>
+                  <select class="w-full bg-surface-container-low rounded px-space-md py-space-sm text-on-surface font-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary font-semibold" id="gov-doc-lang">
+                    <option value="id">Bahasa Indonesia (Resmi)</option>
+                    <option value="en">English (Formal)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+                <div class="flex flex-col gap-space-xs">
+                  <label class="font-label-md text-label-md text-primary font-semibold" for="gov-doc-ring">Proposed Compartment Level</label>
+                  <select class="w-full bg-surface-container-low rounded px-space-md py-space-sm text-on-surface font-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary font-semibold" id="gov-doc-ring">
+                    <option value="1">Ring 1 — Inner Circle (Target)</option>
+                    <option value="0">Ring 0 — Sovereign Air-Gap</option>
+                    <option value="2">Ring 2 — Licensed Member</option>
+                    <option value="3">Ring 3 — Public Canon</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-space-xs">
+                  <label class="font-label-md text-label-md text-primary font-semibold">Verification Protocol</label>
+                  <div class="flex items-center h-full px-space-md bg-surface-container-low rounded text-on-surface-variant font-label-sm text-label-sm justify-between">
+                    <span class="flex items-center gap-space-xs">
+                      <span class="material-symbols-outlined text-[16px] text-on-tertiary-container">enhanced_encryption</span>
+                      Asymmetric RSA-4096
+                    </span>
+                    <span class="font-mono text-primary font-semibold">ACTIVE</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-col gap-space-xs">
+                <label class="font-label-md text-label-md text-primary flex items-center justify-between" for="gov-doc-text">
+                  <span class="font-semibold">Manuscript Passage Content</span>
+                  <span class="text-on-surface-variant font-normal text-label-sm font-mono">Semantic Analyzer Ready</span>
+                </label>
+                <div class="relative">
+                  <textarea class="w-full bg-surface-container-low rounded p-space-md text-on-surface font-body-md font-serif focus:bg-surface-container-lowest focus:outline-none focus:ring-1 focus:ring-primary leading-relaxed" id="gov-doc-text" rows="5" placeholder="The founding patriarch refused to execute the share dilution agreement during the closed-door caucus. An unresolved family succession dispute remains between the second-generation heirs regarding PT Dirgantara holdings. Andrew intervened to recommend a blind voting trust prior to any public disclosure or bank consortium meetings."></textarea>
+                </div>
+              </div>
+              <div class="bg-surface-container-high rounded-lg p-space-md flex flex-col gap-space-sm">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider flex items-center gap-space-xs">
+                    <span class="material-symbols-outlined text-[16px]">warning</span> Quarantined Anomaly Identified
+                  </span>
+                  <span class="font-label-sm text-label-sm font-mono text-primary font-semibold">Risk Index: 9.8 / 10</span>
+                </div>
+                <div class="font-body-sm text-body-sm text-on-surface">
+                  Detected sensitive lexicon pattern: <span class="bg-secondary-fixed text-on-secondary-fixed px-space-xs py-0.5 rounded font-mono font-bold">[unresolved family succession dispute]</span> &amp; <span class="bg-secondary-fixed text-on-secondary-fixed px-space-xs py-0.5 rounded font-mono font-bold">[PT Dirgantara holdings]</span>
+                </div>
+                <div class="font-body-sm text-body-sm text-on-surface-variant italic">
+                  Automated Classifier Override: Overruled Operator Request (Ring 1) &rarr; Mandatory Quarantine to Ring 0 Sovereign Air-Gap.
+                </div>
+              </div>
+              <div class="flex flex-col sm:flex-row items-center justify-between gap-space-md pt-space-sm">
+                <div class="flex items-center gap-space-sm">
+                  <div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center font-serif text-title-md text-secondary font-bold">
+                    98%
+                  </div>
+                  <div class="flex flex-col">
+                    <span class="font-label-sm text-label-sm text-primary font-semibold">Confidence Rating</span>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Quarantine Mandatory</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-space-sm w-full sm:w-auto">
+                  <button onclick="uploadKnowledgeDoc()" class="w-full sm:w-auto px-space-md py-space-sm rounded bg-surface-container-high hover:bg-surface-variant text-on-surface font-label-md text-label-md font-semibold transition-colors" type="button">
+                    Apply Sovereign Override
+                  </button>
+                  <button class="w-full sm:w-auto px-space-lg py-space-sm rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-space-xs" type="submit">
+                    <span class="material-symbols-outlined text-[16px]">verified</span> Confirm Ring 0 Seal
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <!-- Pending Approval Queue -->
+            <div class="pt-space-md border-t border-surface-container-high space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-title-md text-title-md text-primary font-serif font-bold">Antrean Persetujuan Dokumen Ring (Pending Queue)</h3>
+                <span class="font-label-sm text-label-sm text-secondary font-mono font-bold">Stricter Wins Enforced</span>
+              </div>
+              <div id="gov-pending-list" class="space-y-2.5"></div>
+            </div>
+          </div>
+
+          <!-- Right: Quarantine Protocol & Chancellor's Attestation (5 cols) -->
+          <div class="lg:col-span-5 flex flex-col gap-space-lg">
+            <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md border border-outline-variant/30">
+              <div class="flex items-center justify-between">
+                <h3 class="font-title-md text-title-md text-primary font-serif font-bold">Sovereign Quarantine Protocol</h3>
+                <span class="material-symbols-outlined text-secondary text-[20px]">policy</span>
+              </div>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Passages containing identifiable family wealth holdings, named conglomerates, unresolved governance litigations, or unpublished handwritten annotations cannot exit the Sovereign Boundary without explicit cryptographic de-identification.
+              </p>
+              <div class="flex flex-col gap-space-xs text-body-sm font-body-sm">
+                <div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+                  <span class="text-on-surface">Private Wealth Lexicon</span>
+                  <span class="font-mono text-secondary font-semibold">Auto-Quarantine</span>
+                </div>
+                <div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+                  <span class="text-on-surface">Unreleased Board Transcripts</span>
+                  <span class="font-mono text-secondary font-semibold">Ring 0 Restricted</span>
+                </div>
+                <div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+                  <span class="text-on-surface">Anonymized Organizational Doctrine</span>
+                  <span class="font-mono text-primary font-semibold">Ring 2 Eligible</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chancellor's Attestation -->
+            <div class="bg-surface-container-high rounded-xl p-space-lg flex flex-col gap-space-md border border-outline-variant/30">
+              <div class="flex items-center gap-space-sm">
+                <div class="w-8 h-8 rounded-full bg-primary text-tertiary-fixed-dim flex items-center justify-center">
+                  <span class="material-symbols-outlined text-[18px]">workspace_premium</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-title-md text-title-md text-primary font-serif font-semibold">Chancellor's Attestation</span>
+                  <span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Registry Key: SEC-AT-1983-2026</span>
+                </div>
+              </div>
+              <div class="font-body-sm text-body-sm text-on-surface-variant italic font-serif leading-relaxed">
+                "Knowledge entrusted in confidence by Asian enterprise dynasties remains sealed behind sovereign hardware barriers. No artificial intelligence model retains ephemeral conversation memory outside these authenticated crypt-rings."
+              </div>
+              <div class="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
+                <span class="font-semibold text-primary">Andrew Tani &amp; Co. Governance Court</span>
+                <span class="font-mono text-on-tertiary-container font-bold">FIDO2 SECURED</span>
+              </div>
+            </div>
+
+            <!-- Physical Stores Grid -->
+            <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md border border-outline-variant/30">
+              <h3 class="font-title-md text-title-md text-primary font-serif font-bold">4 Penyimpanan Fisik Terpisah</h3>
+              <div id="gov-stores-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Ring 1 Pseudonymous Register (Exact match) -->
+        <section class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg border border-outline-variant/30">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+            <div class="flex flex-col gap-space-xs max-w-2xl">
+              <div class="flex items-center gap-space-xs">
+                <span class="font-label-sm text-label-sm text-on-tertiary-container uppercase tracking-wider font-bold">Cryptographic Ledger</span>
+                <span class="text-outline text-label-sm">•</span>
+                <span class="font-label-sm text-label-sm text-secondary font-semibold">Zero-Knowledge Directory</span>
+              </div>
+              <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Ring 1 Pseudonymous Register</h2>
+              <p class="font-body-sm text-body-sm text-on-surface-variant">
+                Zero real identities or corporate legal names are recorded in this database. Inner Circle access is strictly brokered via cryptographic codenames, rotated YubiKeys, and private enclave channels.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-space-sm">
+              <div class="grid grid-cols-3 gap-2">
+                <input id="gov-cn-name" type="text" placeholder="Kode Nama" class="border rounded px-2.5 py-1.5 text-xs bg-white font-mono"/>
+                <input id="gov-cn-otp" type="text" placeholder="OTP 6 Digit" class="border rounded px-2.5 py-1.5 text-xs bg-white font-mono"/>
+                <input id="gov-cn-pass" type="password" placeholder="Passphrase" class="border rounded px-2.5 py-1.5 text-xs bg-white"/>
+              </div>
+              <button onclick="createOrRotateCodename()" class="px-space-md py-space-sm rounded bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-semibold transition-colors flex items-center gap-space-xs" type="button">
+                <span class="material-symbols-outlined text-[16px]">add_moderator</span> Issue New Codename
+              </button>
+            </div>
+          </div>
+          <!-- Codenames Live Table -->
+          <div class="overflow-x-auto w-full">
+            <table class="w-full text-left font-body-sm text-body-sm">
+              <thead>
+                <tr class="bg-surface-container-high text-primary font-label-sm text-label-sm uppercase tracking-wider">
+                  <th class="py-space-sm px-space-md rounded-l">Assigned Codename</th>
+                  <th class="py-space-sm px-space-md">Compartment Ring</th>
+                  <th class="py-space-sm px-space-md">Hardware Token</th>
+                  <th class="py-space-sm px-space-md">Linked Enclave</th>
+                  <th class="py-space-sm px-space-md">Date Commissioned</th>
+                  <th class="py-space-sm px-space-md">Status</th>
+                  <th class="py-space-sm px-space-md text-right rounded-r">Governance Actions</th>
+                </tr>
+              </thead>
+              <tbody id="gov-codenames-list" class="divide-y divide-surface-container"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 4. Privacy-Safe Append-Only Audit Ledger (Exact match) -->
+        <section class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-lg border border-outline-variant/30">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+            <div class="flex flex-col gap-space-xs">
+              <div class="flex items-center gap-space-xs">
+                <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-bold">Zero-Storage Mandate</span>
+                <span class="text-outline text-label-sm">•</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant font-mono">Merkle Root: 0x9f4a...e12b</span>
+              </div>
+              <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Privacy-Safe Append-Only Audit Ledger</h2>
+              <p class="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+                In compliance with fiduciary confidentiality, strictly zero inquiry prompts or advisory responses are ever committed to disk. Only temporal proofs, hash digests, ring levels, and cryptographic attestation signatures are preserved.
+              </p>
+            </div>
+            <div class="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-lg">
+              <button onclick="document.getElementById('gov-audit-ring').value='';loadGovernanceData()" class="px-space-sm py-space-xs rounded bg-surface-container-lowest text-primary font-label-sm text-label-sm font-bold shadow-sm" type="button">All Rings</button>
+              <button onclick="document.getElementById('gov-audit-ring').value='0';loadGovernanceData()" class="px-space-sm py-space-xs rounded hover:bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm" type="button">Ring 0</button>
+              <button onclick="document.getElementById('gov-audit-ring').value='1';loadGovernanceData()" class="px-space-sm py-space-xs rounded hover:bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm" type="button">Ring 1</button>
+              <button onclick="document.getElementById('gov-audit-ring').value='2';loadGovernanceData()" class="px-space-sm py-space-xs rounded hover:bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm" type="button">Ring 2</button>
+              <button onclick="document.getElementById('gov-audit-ring').value='3';loadGovernanceData()" class="px-space-sm py-space-xs rounded hover:bg-surface-container-lowest text-on-surface-variant font-label-sm text-label-sm" type="button">Ring 3</button>
+              <select id="gov-audit-ring" onchange="loadGovernanceData()" class="hidden">
+                <option value="">All</option>
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+          </div>
+          <!-- Audit Ledger Live Table -->
+          <div class="overflow-x-auto w-full">
+            <table class="w-full text-left font-body-sm text-body-sm">
+              <thead>
+                <tr class="bg-surface-container-high text-primary font-label-sm text-label-sm uppercase tracking-wider">
+                  <th class="py-space-sm px-space-md rounded-l">Timestamp (UTC+7)</th>
+                  <th class="py-space-sm px-space-md">Event Hash Digest</th>
+                  <th class="py-space-sm px-space-md">Target Ring</th>
+                  <th class="py-space-sm px-space-md">Transaction Type</th>
+                  <th class="py-space-sm px-space-md">ZK Verification Proof</th>
+                  <th class="py-space-sm px-space-md text-right rounded-r">Integrity Status</th>
+                </tr>
+              </thead>
+              <tbody id="gov-audit-list" class="divide-y divide-surface-container font-mono text-[13px]"></tbody>
+            </table>
+          </div>
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-space-md pt-space-sm font-label-sm text-label-sm text-on-surface-variant">
+            <div class="flex items-center gap-space-xs">
+              <span class="material-symbols-outlined text-[16px] text-on-tertiary-container">lock_clock</span>
+              Immutable Block Height: #1,849,204 • Sync State: 100% Consistent
+            </div>
+            <div class="flex items-center gap-space-sm">
+              <a href="/admin/api/export" class="text-primary hover:underline font-semibold">Export Cryptographic Audit Proof (.json / .zkp)</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Ring 2 Members List -->
+        <section class="bg-surface-container-lowest rounded-xl p-space-xl shadow-sm flex flex-col gap-space-md border border-outline-variant/30">
+          <h3 class="font-headline-md text-headline-md text-primary font-serif font-bold">Daftar Anggota Eksekutif (Ring 2)</h3>
+          <div id="gov-members-list" class="space-y-2 max-h-80 overflow-y-auto thin-scroll"></div>
+        </section>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: OVERVIEW METRIC SUMMARY                      -->
+      <!-- ======================================================== -->
+      <div id="tab-overview" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Dasbor Status &amp; Metrik Twin</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Ringkasan status seluruh modul Digital Twin iCoachAndrew.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="seedSampleDocs()" class="px-3.5 py-2 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-xs font-semibold text-primary flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">database</span>Muat Sampel R0–R3
+            </button>
+            <a href="/admin/api/export" class="px-3.5 py-2 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-xs font-semibold text-primary flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">download</span>Ekspor Backup JSON
+            </a>
+          </div>
+        </div>
+        <div id="overview-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"></div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: VISUAL WEBSITE EDITOR                        -->
+      <!-- ======================================================== -->
+      <div id="tab-visual-editor" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-md">
+        <!-- Editor Toolbar -->
+        <div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-primary flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px]">touch_app</span>Visual Studio:
+            </span>
+            <div class="inline-flex rounded-lg border border-outline-variant bg-surface p-0.5 text-xs">
+              <button id="ve-mode-inspect" onclick="setEditorMode('inspect')" class="px-2.5 py-1 rounded-md bg-primary text-white font-semibold">Klik-Edit Elemen</button>
+              <button id="ve-mode-navigate" onclick="setEditorMode('navigate')" class="px-2.5 py-1 rounded-md text-on-surface-variant hover:text-primary">Navigasi Bebas</button>
+            </div>
+            <div class="inline-flex rounded-lg border border-outline-variant bg-surface p-0.5 text-xs">
+              <button onclick="setEditorView('frontpage')" class="px-2.5 py-1 rounded-md hover:bg-surface-container font-medium">Beranda</button>
+              <button onclick="setEditorView('chamber')" class="px-2.5 py-1 rounded-md hover:bg-surface-container font-medium">Ruang Diskusi</button>
+            </div>
+            <div class="inline-flex rounded-lg border border-outline-variant bg-surface p-0.5 text-xs font-mono">
+              <button id="ve-lang-id" onclick="setEditorLang('id')" class="px-2 py-1 rounded-md bg-primary text-white font-semibold">ID</button>
+              <button id="ve-lang-en" onclick="setEditorLang('en')" class="px-2 py-1 rounded-md text-on-surface-variant">EN</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="ve-dirty-indicator" class="text-[11px] font-mono px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Tersinkron</span>
+            <button onclick="saveSiteDraft()" class="px-3 py-1.5 rounded-lg bg-surface-container-high text-primary text-xs font-semibold hover:bg-surface-container-highest">Simpan Draf</button>
+            <button onclick="publishSiteDraft()" class="px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">rocket_launch</span>Publikasikan Live
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-Pane Studio Layout -->
+        <div class="grid grid-cols-12 min-h-[640px] gap-4">
+          <aside class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/50 p-4 space-y-4">
+            <div class="grid grid-cols-4 border-b border-outline-variant/40 text-[11px] font-semibold text-center bg-surface-container-low rounded-t-lg">
+              <button onclick="switchLeftDock('photos')" data-dock="photos" class="dock-tab py-2 border-b-2 border-primary text-primary">Foto</button>
+              <button onclick="switchLeftDock('sections')" data-dock="sections" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant">Section</button>
+              <button onclick="switchLeftDock('blocks')" data-dock="blocks" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant">Blok</button>
+              <button onclick="switchLeftDock('theme')" data-dock="theme" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant">Tema</button>
+            </div>
+            <div id="dock-photos" class="dock-panel space-y-3">
+              <div id="ve-page-images-list" class="space-y-2"></div>
+            </div>
+            <div id="dock-sections" class="dock-panel hidden space-y-3">
+              <div id="ve-sections-list" class="space-y-2"></div>
+              <input id="ve-opt-works-home" type="checkbox" class="hidden" onchange="updateSiteSettingsFromUI()"/>
+              <input id="ve-opt-pricing-home" type="checkbox" class="hidden" onchange="updateSiteSettingsFromUI()"/>
+            </div>
+            <div id="dock-blocks" class="dock-panel hidden space-y-3">
+              <div id="ve-blocks-list" class="space-y-3"></div>
+            </div>
+            <div id="dock-theme" class="dock-panel hidden space-y-3">
+              <div id="ve-theme-colors" class="grid grid-cols-2 gap-2"></div>
+              <select id="ve-font-serif" onchange="updateThemeFromUI()" class="hidden"><option value="Newsreader">Newsreader</option></select>
+              <select id="ve-font-sans" onchange="updateThemeFromUI()" class="hidden"><option value="Source Sans 3">Source Sans 3</option></select>
+              <input id="ve-announcement" type="text" onchange="updateSiteSettingsFromUI()" class="hidden"/>
+              <input id="ve-seo-title" type="text" onchange="updateSeoFromUI()" class="hidden"/>
+              <textarea id="ve-seo-desc" onchange="updateSeoFromUI()" class="hidden"></textarea>
+              <textarea id="ve-custom-css" onchange="updateThemeFromUI()" class="hidden"></textarea>
+              <div id="ve-versions-list" class="space-y-1.5 text-xs"></div>
+            </div>
+          </aside>
+          <!-- Canvas Frame -->
+          <div class="col-span-12 lg:col-span-6 bg-surface-container-high rounded-xl p-3 flex flex-col items-center">
+            <div id="ve-iframe-wrap" class="w-full h-[620px] bg-white rounded-xl shadow-lg border border-outline-variant overflow-hidden">
+              <iframe id="ve-preview-iframe" src="/preview-site?studio=1" class="w-full h-full border-0"></iframe>
+            </div>
+          </div>
+          <!-- Inspector -->
+          <aside class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/50 p-4 space-y-4">
+            <div class="flex items-center justify-between border-b pb-2">
+              <span id="ins-key-label" class="text-xs font-mono font-bold text-primary truncate max-w-[180px]">Pilih elemen kanvas...</span>
+              <span id="ins-tag-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-primary text-tertiary-fixed">NONE</span>
+            </div>
+            <div id="ins-empty-state" class="p-6 text-center space-y-2 text-on-surface-variant">
+              <span class="material-symbols-outlined text-3xl text-outline">ads_click</span>
+              <div class="text-xs font-semibold text-primary">Klik Elemen atau Foto di Kanvas Tengah</div>
+            </div>
+            <div id="ins-form" class="hidden space-y-3">
+              <div id="ins-image-section" class="hidden space-y-2">
+                <img id="ins-img-preview" src="" alt="" class="h-28 w-full object-contain bg-surface-container rounded"/>
+                <input id="ins-img-file" type="file" accept="image/*" onchange="uploadAndReplaceSelectedImage(this)" class="text-xs w-full"/>
+                <input id="ins-img-src" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs font-mono"/>
+                <input id="ins-img-alt" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs"/>
+                <select id="ins-img-fit" onchange="applyInspectorChange()" class="w-full border rounded p-1 text-xs"><option value="">Default</option><option value="cover">Cover</option></select>
+                <select id="ins-img-pos" onchange="applyInspectorChange()" class="w-full border rounded p-1 text-xs"><option value="">Default</option></select>
+              </div>
+              <div id="ins-text-section" class="space-y-1">
+                <span class="text-xs font-bold text-primary">Konten Teks (<span id="ins-lang-badge">ID</span>)</span>
+                <textarea id="ins-text-value" rows="3" oninput="applyInspectorChange()" class="w-full border rounded p-2 text-xs"></textarea>
+              </div>
+              <div id="ins-placeholder-section" class="hidden"><input id="ins-placeholder-value" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs"/></div>
+              <div id="ins-link-section" class="hidden"><input id="ins-link-href" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs"/></div>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <input id="ins-style-color-picker" type="color" onchange="document.getElementById('ins-style-color').value=this.value;applyInspectorChange()"/>
+                <input id="ins-style-color" type="text" oninput="applyInspectorChange()" placeholder="Warna Teks" class="border rounded p-1 text-xs font-mono"/>
+                <input id="ins-style-bg-picker" type="color" onchange="document.getElementById('ins-style-bg').value=this.value;applyInspectorChange()"/>
+                <input id="ins-style-bg" type="text" oninput="applyInspectorChange()" placeholder="Warna Latar" class="border rounded p-1 text-xs font-mono"/>
+                <input id="ins-style-fontsize" type="text" oninput="applyInspectorChange()" placeholder="Font Size" class="border rounded p-1 text-xs"/>
+                <select id="ins-style-align" onchange="applyInspectorChange()" class="border rounded p-1 text-xs"><option value="">Align</option><option value="left">Kiri</option><option value="center">Tengah</option></select>
+                <input id="ins-style-radius" type="text" oninput="applyInspectorChange()" placeholder="Radius" class="border rounded p-1 text-xs"/>
+                <input id="ins-style-padding" type="text" oninput="applyInspectorChange()" placeholder="Padding" class="border rounded p-1 text-xs"/>
+              </div>
+              <label class="flex items-center gap-2 text-xs"><input id="ins-hidden-toggle" type="checkbox" onchange="applyInspectorChange()"/> Sembunyikan Elemen</label>
+              <button onclick="resetSelectedElement()" class="w-full py-1 rounded border border-secondary text-secondary text-xs">Reset Elemen</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: MEDIA & PHOTO LIBRARY                        -->
+      <!-- ======================================================== -->
+      <div id="tab-media" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
+        <div class="flex items-center justify-between">
+          <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Pustaka Foto &amp; Media Website</h2>
+          <label class="cursor-pointer px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold flex items-center gap-2">
+            <span class="material-symbols-outlined text-[18px]">upload_file</span>Unggah Foto Baru
+            <input id="media-upload-input" type="file" accept="image/*" multiple onchange="handleMediaUploadFiles(this.files)" class="hidden"/>
+          </label>
+        </div>
+        <div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant/30 space-y-3">
+          <h3 class="font-title-md text-primary font-serif font-bold">Slot Foto Aktif di Website</h3>
+          <div id="media-live-slots" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3"></div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-title-md text-primary font-serif font-bold">Pustaka File Unggahan</h3>
+            <span id="media-count-label" class="font-mono text-xs text-outline">0 file</span>
+          </div>
+          <div id="media-library-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: REPOSITORI KARYA R0–R3                       -->
+      <!-- ======================================================== -->
+      <div id="tab-works" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Repositori Karya Andrew Tani (Ring 0 – Ring 3)</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Buku, esai, modul Orbex, dan memoar pribadi terklasifikasi Ring 0–3.</p>
+          </div>
+          <button onclick="openWorkModal()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span>Tambah Karya Baru
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="filterWorksRing('all')" data-wring="all" class="wring-btn px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold">Semua Ring</button>
+          <button onclick="filterWorksRing(0)" data-wring="0" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-0 text-xs font-semibold">Ring 0 • Sovereign</button>
+          <button onclick="filterWorksRing(1)" data-wring="1" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-1 text-xs font-semibold">Ring 1 • Eksekutor</button>
+          <button onclick="filterWorksRing(2)" data-wring="2" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-2 text-xs font-semibold">Ring 2 • Anggota</button>
+          <button onclick="filterWorksRing(3)" data-wring="3" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-3 text-xs font-semibold">Ring 3 • Publik</button>
+        </div>
+        <div id="works-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: MEMORI PROTOKOLER & PERSONA                  -->
+      <!-- ======================================================== -->
+      <div id="tab-memory" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Memori Protokoler Andrew Tani (The Persona Engine)</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Identitas inti Socrates bariton, nilai Tut Wuri Handayani, dan direktif Ring 0–3.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openCompiledMemoryPreview()" class="px-3.5 py-2 rounded-xl border border-outline-variant bg-surface text-xs font-semibold text-primary">Pratinjau</button>
+            <button onclick="saveCoreMemory()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold">Simpan Profil Inti</button>
+          </div>
+        </div>
+        <div id="memory-fixed-duties" class="grid grid-cols-1 md:grid-cols-4 gap-3"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3">
+            <h3 class="font-serif text-lg font-bold text-primary">Identitas Diri &amp; Suara</h3>
+            <textarea id="mem-core-identity" rows="3" class="w-full border rounded p-2 text-xs bg-white"></textarea>
+            <textarea id="mem-core-voice" rows="3" class="w-full border rounded p-2 text-xs bg-white"></textarea>
+            <textarea id="mem-core-lang" rows="2" class="w-full border rounded p-2 text-xs bg-white"></textarea>
+            <textarea id="mem-core-values" rows="4" class="w-full border rounded p-2 text-xs font-mono bg-white"></textarea>
+            <div id="mem-versions-list" class="space-y-1 text-xs"></div>
+          </div>
+          <div class="lg:col-span-7 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-4">
+            <div class="flex gap-2">
+              <button onclick="selectMemoryRing(0)" data-mring="0" class="mring-btn px-3 py-1 rounded ring-badge-0 text-xs font-semibold">Ring 0</button>
+              <button onclick="selectMemoryRing(1)" data-mring="1" class="mring-btn px-3 py-1 rounded ring-badge-1 text-xs font-semibold">Ring 1</button>
+              <button onclick="selectMemoryRing(2)" data-mring="2" class="mring-btn px-3 py-1 rounded ring-badge-2 text-xs font-semibold">Ring 2</button>
+              <button onclick="selectMemoryRing(3)" data-mring="3" class="mring-btn px-3 py-1 rounded ring-badge-3 text-xs font-semibold">Ring 3</button>
+              <span id="mem-ring-stats" class="ml-auto font-mono text-xs text-outline"></span>
+            </div>
+            <input id="mem-ring-audience" type="text" class="w-full border rounded p-2 text-xs bg-white"/>
+            <input id="mem-ring-tone" type="text" class="w-full border rounded p-2 text-xs bg-white"/>
+            <textarea id="mem-ring-directives" rows="2" class="w-full border rounded p-2 text-xs bg-white"></textarea>
+            <input id="mem-ring-blocked" type="text" class="w-full border rounded p-2 text-xs bg-white font-mono text-secondary"/>
+            <button onclick="saveRingMemoryPolicy()" class="w-full py-1.5 rounded bg-primary text-white text-xs font-semibold">Simpan Direktif Ring</button>
+            <textarea id="mem-new-text" rows="2" placeholder="Tulis memori baru..." class="w-full border rounded p-2 text-xs bg-white"></textarea>
+            <div class="flex gap-2">
+              <input id="mem-new-tags" type="text" placeholder="Tags..." class="flex-1 border rounded p-1.5 text-xs bg-white"/>
+              <label class="text-xs flex items-center gap-1"><input id="mem-new-pinned" type="checkbox"/> Prioritas</label>
+              <button onclick="addMemoryEntry()" class="px-4 py-1.5 rounded bg-primary text-white text-xs font-semibold">+ Tambah</button>
+            </div>
+            <div id="mem-entries-list" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: CLAUDE AI TOKEN VAULT                        -->
+      <!-- ======================================================== -->
+      <div id="tab-ai" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
+        <div class="flex items-center justify-between">
+          <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Dasbor API Token Claude &amp; Konektivitas AI</h2>
+          <div class="flex items-center gap-2">
+            <span id="ai-status-pill" class="px-3 py-1 rounded text-xs font-mono bg-surface-container">Memeriksa...</span>
+            <button onclick="testClaudeConnection()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold">Tes Claude API</button>
+          </div>
+        </div>
+        <div id="ai-telemetry-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-7 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-4">
+            <h3 class="font-serif text-lg font-bold text-primary">Brankas Kunci API Claude (Multi-Key AES-256-GCM)</h3>
+            <div class="grid grid-cols-12 gap-2">
+              <input id="ai-new-key-label" type="text" placeholder="Label Kunci..." class="col-span-4 border rounded p-2 text-xs bg-white"/>
+              <input id="ai-new-key-val" type="password" placeholder="sk-ant-api03-..." class="col-span-5 border rounded p-2 text-xs font-mono bg-white"/>
+              <button onclick="addClaudeKey()" class="col-span-3 rounded bg-primary text-white text-xs font-semibold">+ Simpan</button>
+            </div>
+            <div id="ai-keys-list" class="space-y-2"></div>
+            <div id="ai-test-result" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t text-xs">
+              <label><input id="ai-enabled-toggle" type="checkbox"/> Aktifkan AI</label>
+              <input id="ai-model-default" list="claude-models-datalist" type="text" placeholder="Model Default" class="border rounded p-1 font-mono"/>
+              <datalist id="claude-models-datalist"><option value="claude-sonnet-4-5"></option></datalist>
+              <input id="ai-budget-usd" type="number" placeholder="Budget USD" class="border rounded p-1 font-mono"/>
+              <input id="ai-model-r0" type="text" placeholder="Model R0" class="border rounded p-1 font-mono"/>
+              <input id="ai-model-r1" type="text" placeholder="Model R1" class="border rounded p-1 font-mono"/>
+              <input id="ai-model-r2" type="text" placeholder="Model R2" class="border rounded p-1 font-mono"/>
+              <input id="ai-model-r3" type="text" placeholder="Model R3" class="border rounded p-1 font-mono"/>
+              <input id="ai-max-tokens" type="number" placeholder="Max Tokens" class="border rounded p-1 font-mono"/>
+              <input id="ai-temperature" type="number" placeholder="Temp" class="border rounded p-1 font-mono"/>
+            </div>
+            <textarea id="ai-extra-instructions" rows="2" placeholder="Instruksi tambahan R0..." class="w-full border rounded p-2 text-xs"></textarea>
+            <button onclick="saveAiConfig()" class="w-full py-2 rounded bg-primary text-white text-xs font-semibold">Simpan Konfigurasi AI</button>
+          </div>
+          <div class="lg:col-span-5 space-y-4">
+            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3">
+              <h3 class="font-serif text-lg font-bold text-primary">Playground Percakapan</h3>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <select id="ai-pg-ring" class="border rounded p-1"><option value="3">Ring 3</option><option value="2">Ring 2</option><option value="1">Ring 1</option><option value="0">Ring 0</option></select>
+                <select id="ai-pg-lang" class="border rounded p-1"><option value="id">ID</option><option value="en">EN</option></select>
+              </div>
+              <textarea id="ai-pg-question" rows="2" placeholder="Pertanyaan simulasi..." class="w-full border rounded p-2 text-xs"></textarea>
+              <button onclick="runAiPlayground()" class="w-full py-1.5 rounded bg-primary text-white text-xs font-semibold">Uji Coba</button>
+              <button onclick="previewSystemPrompt()" class="w-full py-1 rounded border text-xs">Lihat System Prompt</button>
+              <div id="ai-pg-output" class="hidden p-3 rounded bg-surface border text-xs space-y-1"></div>
+            </div>
+            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-serif text-sm font-bold text-primary">Log AI (Zero-PII)</h4>
+                <button onclick="resetAiUsage()" class="text-[11px] text-secondary underline">Reset</button>
+              </div>
+              <div id="ai-recent-calls" class="space-y-1 max-h-48 overflow-y-auto thin-scroll text-xs font-mono"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TAB CONTENT: PAYMENT GATEWAY & PRICING                    -->
+      <!-- ======================================================== -->
+      <div id="tab-commerce" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
+        <div class="flex items-center justify-between">
+          <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Payment Gateway &amp; Pricing Editor</h2>
+          <div class="flex gap-3 text-xs">
+            <label class="flex items-center gap-1"><input id="com-free-for-now" type="checkbox" onchange="saveCommerceSettings()"/> Gratis Sementara</label>
+            <select id="com-currency" onchange="saveCommerceSettings()" class="border rounded px-2 py-1"><option value="IDR">IDR</option><option value="USD">USD</option></select>
+          </div>
+        </div>
+        <div id="commerce-gateways-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+        <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-serif text-lg font-bold text-primary">Editor Paket &amp; Harga</h3>
+            <div class="flex gap-2">
+              <button onclick="addPricingPlan()" class="px-3 py-1 rounded border text-xs">+ Tambah Paket</button>
+              <button onclick="savePricingPlans()" class="px-4 py-1 rounded bg-primary text-white text-xs font-semibold">Simpan Semua</button>
+            </div>
+          </div>
+          <div id="commerce-plans-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-serif text-lg font-bold text-primary">Kupon Diskon</h3>
+              <button onclick="addCouponRow()" class="px-2 py-1 rounded bg-primary text-white text-xs">+ Kupon</button>
+            </div>
+            <div id="commerce-coupons-list" class="space-y-2"></div>
+            <button onclick="saveCoupons()" class="w-full py-1.5 rounded bg-primary text-white text-xs">Simpan Kupon</button>
+          </div>
+          <div class="lg:col-span-7 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="font-serif text-lg font-bold text-primary">Buku Besar Transaksi</h3>
+              <span id="commerce-tx-summary" class="font-mono text-xs text-outline"></span>
+            </div>
+            <div id="commerce-tx-list" class="space-y-2 max-h-64 overflow-y-auto thin-scroll"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- PRESTIGIOUS BOTTOM FOOTER (EXACT MATCH: ring_0_sovereign_admin_archive) -->
+    <!-- ======================================================== -->
+    <footer class="w-full bg-surface-container-low text-on-surface-variant mt-space-xl border-t border-surface-container-high">
+      <div class="max-w-7xl mx-auto px-gutter py-space-xl flex flex-col md:flex-row items-center justify-between gap-space-md">
+        <div class="flex flex-col gap-space-xs text-center md:text-left">
+          <span class="font-headline-sm text-headline-sm text-primary font-serif font-bold">iCoachAndrew — Executive Advisory</span>
+          <p class="font-body-sm text-body-sm text-on-surface-variant max-w-xl">
+            Codified frameworks, strategic governance doctrine, and managerial wisdom of Andrew Tani &amp; Co. Established for executive boards and leaders of industry across the Asia-Pacific region.
+          </p>
+        </div>
+        <div class="flex flex-col items-center md:items-end gap-space-xs text-center md:text-right">
+          <span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Confidential &amp; Fiduciary Privilege</span>
+          <span class="font-body-sm text-body-sm text-on-surface-variant">© 2024–2026 Andrew Tani &amp; Co. All Rights Reserved.</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- MODAL: WORK REPOSITORY EDITOR                             -->
+  <!-- ======================================================== -->
+  <div id="work-editor-modal" class="fixed inset-0 z-50 hidden bg-primary/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-outline-variant space-y-4">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="wk-modal-title" class="font-serif text-2xl text-primary font-bold">Tambah / Edit Karya</h3>
+        <button onclick="closeWorkModal()" class="text-outline hover:text-primary text-lg">✕</button>
+      </div>
+      <input id="wk-id" type="hidden"/>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <input id="wk-title" type="text" placeholder="Judul Karya" class="sm:col-span-2 border rounded p-2 bg-white font-bold"/>
+        <input id="wk-subtitle" type="text" placeholder="Subjudul / Jilid" class="border rounded p-2 bg-white"/>
+        <input id="wk-year" type="number" placeholder="Tahun" class="border rounded p-2 bg-white"/>
+        <select id="wk-type" class="border rounded p-2 bg-white"><option value="buku">Buku</option><option value="esai">Esai</option><option value="modul">Modul</option></select>
+        <select id="wk-ring" class="border rounded p-2 bg-white font-bold"><option value="3">Ring 3</option><option value="2">Ring 2</option><option value="1">Ring 1</option><option value="0">Ring 0</option></select>
+        <select id="wk-status" class="border rounded p-2 bg-white"><option value="published">Terbit</option><option value="draft">Draf</option></select>
+        <select id="wk-lang" class="border rounded p-2 bg-white"><option value="id">ID</option><option value="en">EN</option></select>
+        <div class="sm:col-span-2 flex gap-2">
+          <input id="wk-cover" type="text" placeholder="URL Sampul" class="flex-1 border rounded p-2 font-mono"/>
+          <label class="cursor-pointer px-3 py-2 rounded bg-primary text-white font-semibold">Unggah<input type="file" accept="image/*" onchange="uploadWorkCover(this)" class="hidden"/></label>
+        </div>
+        <textarea id="wk-summary" rows="2" placeholder="Ringkasan..." class="sm:col-span-2 border rounded p-2"></textarea>
+        <textarea id="wk-content" rows="4" placeholder="Kutipan inti..." class="sm:col-span-2 border rounded p-2"></textarea>
+        <input id="wk-note" type="text" placeholder="Catatan Preseden..." class="sm:col-span-2 border rounded p-2"/>
+        <label class="flex items-center gap-2"><input id="wk-featured" type="checkbox"/> Tampil di Beranda</label>
+        <label class="flex items-center gap-2"><input id="wk-sync" type="checkbox"/> Sinkron ke Twin</label>
+      </div>
+      <div id="wk-error" class="hidden p-2 rounded bg-red-50 text-secondary text-xs"></div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeWorkModal()" class="px-4 py-2 rounded border text-xs">Batal</button>
+        <button onclick="saveWorkItem(false)" class="px-5 py-2 rounded bg-primary text-white text-xs font-semibold">Simpan Karya</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MEDIA PICKER -->
+  <div id="media-picker-modal" class="fixed inset-0 z-50 hidden bg-primary/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 shadow-2xl border space-y-4">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h3 class="font-serif text-xl text-primary font-bold">Pilih Foto</h3>
+        <button onclick="document.getElementById('media-picker-modal').classList.add('hidden')">✕</button>
+      </div>
+      <div id="media-picker-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: TEXT PREVIEW -->
+  <div id="text-preview-modal" class="fixed inset-0 z-50 hidden bg-primary/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col p-6 shadow-2xl border space-y-3">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h3 id="tp-modal-title" class="font-serif text-xl text-primary font-bold">Pratinjau</h3>
+        <button onclick="document.getElementById('text-preview-modal').classList.add('hidden')">✕</button>
+      </div>
+      <pre id="tp-modal-body" class="flex-1 overflow-auto p-4 rounded-xl bg-primary text-tertiary-fixed font-mono text-xs whitespace-pre-wrap leading-relaxed"></pre>
+    </div>
+  </div>
+
+  <!-- Countdown Timer Script for FIDO2 -->
+  <script>
+    (function initFidoTimer() {
+      var timerElement = document.getElementById('fido-timer');
+      if (timerElement) {
+        var secondsLeft = 1498;
+        setInterval(function() {
+          if (secondsLeft > 0) {
+            secondsLeft--;
+            var mins = Math.floor(secondsLeft / 60);
+            var secs = secondsLeft % 60;
+            timerElement.textContent = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+          }
+        }, 1000);
+      }
+    })();
+  </script>
+  <script src="/admin-studio.js"></script>
+</body>
+</html>
