@@ -182,9 +182,42 @@
     applyTheme(doc.theme);
     applySeo(doc.seo);
     applyAnnouncement(doc.settings);
+    applyTypographyScale(doc.settings);
     if (doc.settings && doc.settings.worksOnHome && worksList) renderWorksOnHome(worksList);
     if (doc.settings && doc.settings.pricingOnHome && pricingData) renderPricingOnHome(pricingData);
     if (isStudio) notifyParentState();
+  }
+
+  function applyTypographyScale(settings) {
+    let styleEl = document.getElementById('cms-font-scale-style');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'cms-font-scale-style';
+      document.head.appendChild(styleEl);
+    }
+    const scope = (settings && settings.fontScope) || 'both';
+    const scale = (scope === 'both' || scope === 'frontpage') ? ((settings && settings.fontScale) || 'small') : 'small';
+    document.documentElement.setAttribute('data-font-scale', scale);
+    if (scale === 'small') {
+      styleEl.textContent = '';
+      return;
+    }
+    const mult = scale === 'medium' ? 1.14 : (scale === 'large' ? 1.28 : 1.44);
+    const px = (base) => Math.round(base * mult * 10) / 10 + 'px';
+    styleEl.textContent = `
+      html[data-font-scale="${scale}"] { font-size: ${Math.round(16 * mult * 10) / 10}px !important; }
+      html[data-font-scale="${scale}"] .text-\\[10px\\], html[data-font-scale="${scale}"] .text-label-sm { font-size: ${px(11)} !important; line-height: 1.45 !important; }
+      html[data-font-scale="${scale}"] .text-\\[11px\\] { font-size: ${px(11.5)} !important; line-height: 1.45 !important; }
+      html[data-font-scale="${scale}"] .text-xs { font-size: ${px(12)} !important; line-height: 1.5 !important; }
+      html[data-font-scale="${scale}"] .text-body-sm, html[data-font-scale="${scale}"] .text-label-md, html[data-font-scale="${scale}"] .text-\\[13px\\] { font-size: ${px(13)} !important; line-height: 1.55 !important; }
+      html[data-font-scale="${scale}"] .text-sm, html[data-font-scale="${scale}"] .text-\\[14px\\] { font-size: ${px(14)} !important; line-height: 1.55 !important; }
+      html[data-font-scale="${scale}"] .text-body-md, html[data-font-scale="${scale}"] body { font-size: ${px(15)} !important; line-height: 1.6 !important; }
+      html[data-font-scale="${scale}"] .text-base { font-size: ${px(16)} !important; line-height: 1.6 !important; }
+      html[data-font-scale="${scale}"] .text-body-lg, html[data-font-scale="${scale}"] .text-title-md, html[data-font-scale="${scale}"] .text-lg { font-size: ${px(18)} !important; line-height: 1.55 !important; }
+      html[data-font-scale="${scale}"] .text-headline-sm, html[data-font-scale="${scale}"] .text-xl { font-size: ${px(20)} !important; line-height: 1.4 !important; }
+      html[data-font-scale="${scale}"] .text-headline-md, html[data-font-scale="${scale}"] .text-2xl { font-size: ${px(24)} !important; line-height: 1.35 !important; }
+      html[data-font-scale="${scale}"] .text-headline-lg, html[data-font-scale="${scale}"] .text-3xl { font-size: ${px(32)} !important; line-height: 1.28 !important; }
+    `;
   }
 
   function applyLayoutAndBlocks(doc) {

@@ -795,6 +795,26 @@ test('Ring 0 Studio: Google Drive API v3 Connector (Service Account JWT, Folder/
     const expRes = await fetch(A + '/admin/api/export', { headers: { cookie } });
     const expText = await expRes.text();
     assert.ok(!expText.includes('BEGIN PRIVATE KEY'), 'Service Account private_key is never exposed in export');
+
+    // 6. Verify Work Summarizer endpoint (extractive fallback when no live Claude key)
+    const sumRes = await admin('POST', '/admin/api/works/summarize', {
+      title: 'Arsitektur Kepemimpinan Nusantara',
+      content: 'Kepemimpinan lintas generasi menuntut arsitektur tata kelola yang jernih dan disiplin eksekusi. Setiap organisasi membutuhkan keselarasan antara niat strategis dan ritme operasional harian.',
+      lang: 'id'
+    });
+    assert.strictEqual(sumRes.status, 200);
+    assert.strictEqual(sumRes.json.ok, true);
+    assert.ok(sumRes.json.summary.length > 20);
+
+    // 7. Verify Global Typography Scale (small, medium, large, xlarge) & Scope (both, frontpage, admin)
+    const typoRes = await admin('POST', '/admin/api/site/typography', { fontScale: 'large', fontScope: 'both' });
+    assert.strictEqual(typoRes.status, 200);
+    assert.strictEqual(typoRes.json.fontScale, 'large');
+    assert.strictEqual(typoRes.json.fontScope, 'both');
+    const pubSite = await user('GET', '/api/site-content');
+    assert.strictEqual(pubSite.status, 200);
+    assert.strictEqual(pubSite.json.settings.fontScale, 'large');
+    assert.strictEqual(pubSite.json.settings.fontScope, 'both');
   } finally {
     app.studio.works.gdrive.setCustomFetch(null);
   }

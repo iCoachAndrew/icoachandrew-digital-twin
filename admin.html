@@ -147,6 +147,42 @@
     }
     .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
     .thin-scroll::-webkit-scrollbar-thumb { background: #c4c6d0; border-radius: 3px; }
+    /* Global Typography Scaling (Kecil = default, Sedang, Besar, Sangat Besar) */
+    html[data-font-scale="medium"] { font-size: 18px !important; }
+    html[data-font-scale="medium"] .text-\[10px\], html[data-font-scale="medium"] .text-label-sm { font-size: 12.5px !important; line-height: 1.45 !important; }
+    html[data-font-scale="medium"] .text-\[11px\] { font-size: 13px !important; line-height: 1.45 !important; }
+    html[data-font-scale="medium"] .text-xs { font-size: 13.8px !important; line-height: 1.5 !important; }
+    html[data-font-scale="medium"] .text-body-sm, html[data-font-scale="medium"] .text-label-md, html[data-font-scale="medium"] .text-\[13px\] { font-size: 15px !important; line-height: 1.55 !important; }
+    html[data-font-scale="medium"] .text-sm, html[data-font-scale="medium"] .text-\[14px\] { font-size: 16px !important; line-height: 1.55 !important; }
+    html[data-font-scale="medium"] .text-body-md, html[data-font-scale="medium"] body { font-size: 17px !important; line-height: 1.6 !important; }
+    html[data-font-scale="medium"] .text-base { font-size: 18px !important; line-height: 1.6 !important; }
+    html[data-font-scale="medium"] .text-title-md, html[data-font-scale="medium"] .text-lg { font-size: 20px !important; line-height: 1.5 !important; }
+    html[data-font-scale="medium"] .text-headline-sm, html[data-font-scale="medium"] .text-xl { font-size: 22.5px !important; line-height: 1.4 !important; }
+    html[data-font-scale="medium"] .text-headline-md, html[data-font-scale="medium"] .text-2xl { font-size: 27px !important; line-height: 1.35 !important; }
+
+    html[data-font-scale="large"] { font-size: 20px !important; }
+    html[data-font-scale="large"] .text-\[10px\], html[data-font-scale="large"] .text-label-sm { font-size: 14px !important; line-height: 1.45 !important; }
+    html[data-font-scale="large"] .text-\[11px\] { font-size: 14.8px !important; line-height: 1.45 !important; }
+    html[data-font-scale="large"] .text-xs { font-size: 15.5px !important; line-height: 1.5 !important; }
+    html[data-font-scale="large"] .text-body-sm, html[data-font-scale="large"] .text-label-md, html[data-font-scale="large"] .text-\[13px\] { font-size: 16.8px !important; line-height: 1.55 !important; }
+    html[data-font-scale="large"] .text-sm, html[data-font-scale="large"] .text-\[14px\] { font-size: 18px !important; line-height: 1.55 !important; }
+    html[data-font-scale="large"] .text-body-md, html[data-font-scale="large"] body { font-size: 19px !important; line-height: 1.6 !important; }
+    html[data-font-scale="large"] .text-base { font-size: 20px !important; line-height: 1.6 !important; }
+    html[data-font-scale="large"] .text-title-md, html[data-font-scale="large"] .text-lg { font-size: 22.5px !important; line-height: 1.5 !important; }
+    html[data-font-scale="large"] .text-headline-sm, html[data-font-scale="large"] .text-xl { font-size: 25px !important; line-height: 1.4 !important; }
+    html[data-font-scale="large"] .text-headline-md, html[data-font-scale="large"] .text-2xl { font-size: 30px !important; line-height: 1.35 !important; }
+
+    html[data-font-scale="xlarge"] { font-size: 22px !important; }
+    html[data-font-scale="xlarge"] .text-\[10px\], html[data-font-scale="xlarge"] .text-label-sm { font-size: 15.8px !important; line-height: 1.5 !important; }
+    html[data-font-scale="xlarge"] .text-\[11px\] { font-size: 16.5px !important; line-height: 1.5 !important; }
+    html[data-font-scale="xlarge"] .text-xs { font-size: 17.5px !important; line-height: 1.55 !important; }
+    html[data-font-scale="xlarge"] .text-body-sm, html[data-font-scale="xlarge"] .text-label-md, html[data-font-scale="xlarge"] .text-\[13px\] { font-size: 18.8px !important; line-height: 1.6 !important; }
+    html[data-font-scale="xlarge"] .text-sm, html[data-font-scale="xlarge"] .text-\[14px\] { font-size: 20px !important; line-height: 1.6 !important; }
+    html[data-font-scale="xlarge"] .text-body-md, html[data-font-scale="xlarge"] body { font-size: 21.5px !important; line-height: 1.65 !important; }
+    html[data-font-scale="xlarge"] .text-base { font-size: 22.5px !important; line-height: 1.65 !important; }
+    html[data-font-scale="xlarge"] .text-title-md, html[data-font-scale="xlarge"] .text-lg { font-size: 25px !important; line-height: 1.55 !important; }
+    html[data-font-scale="xlarge"] .text-headline-sm, html[data-font-scale="xlarge"] .text-xl { font-size: 28px !important; line-height: 1.4 !important; }
+    html[data-font-scale="xlarge"] .text-headline-md, html[data-font-scale="xlarge"] .text-2xl { font-size: 34px !important; line-height: 1.35 !important; }
   </style>
 </head>
 <body class="bg-surface font-body-md text-on-surface antialiased">
@@ -212,8 +248,56 @@
         </button>
       </nav>
 
-      <!-- Right: Language & External Links -->
-      <div class="flex items-center gap-space-md shrink-0">
+      <!-- Right: Typography Size, Language & External Links -->
+      <div class="flex items-center gap-2 sm:gap-space-md shrink-0 relative">
+        <!-- Font Size & Scope Control -->
+        <div class="relative">
+          <button onclick="toggleFontScalePopover()" id="btn-font-scale-trigger" type="button" class="flex items-center gap-1 px-2.5 py-1.5 rounded bg-primary-container text-tertiary-fixed-dim hover:text-white text-xs font-semibold border border-on-tertiary-container/30" title="Pengaturan Ukuran Font (Admin &amp; Front Page)">
+            <span class="material-symbols-outlined text-[16px]">format_size</span>
+            <span id="top-font-scale-label" class="hidden md:inline font-mono text-[11px]">Font: Kecil</span>
+          </button>
+          <div id="font-scale-popover" class="hidden absolute right-0 mt-2 w-80 rounded-2xl bg-surface text-on-surface shadow-2xl border border-outline-variant p-4 z-50 space-y-3 text-xs">
+            <div class="flex items-center justify-between border-b border-outline-variant/40 pb-2">
+              <span class="font-serif font-bold text-primary text-sm flex items-center gap-1">
+                <span class="material-symbols-outlined text-[17px]">text_fields</span>Pengaturan Ukuran Huruf
+              </span>
+              <button onclick="toggleFontScalePopover()" type="button" class="text-outline hover:text-primary font-bold">✕</button>
+            </div>
+            <div class="space-y-1.5">
+              <label class="block text-[11px] font-mono uppercase text-on-surface-variant font-bold">1. Pilih Ukuran Huruf:</label>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button onclick="applyFontScaleAndScope('small', null)" data-fscale="small" type="button" class="fscale-btn px-2.5 py-2 rounded-lg border border-outline-variant bg-white text-left hover:border-primary transition-all">
+                  <div class="font-bold text-primary text-[11px]">Kecil (Default)</div>
+                  <div class="text-[10px] text-outline">Ukuran standar saat ini</div>
+                </button>
+                <button onclick="applyFontScaleAndScope('medium', null)" data-fscale="medium" type="button" class="fscale-btn px-2.5 py-2 rounded-lg border border-outline-variant bg-white text-left hover:border-primary transition-all">
+                  <div class="font-bold text-primary text-xs">Sedang (+14%)</div>
+                  <div class="text-[10px] text-outline">Nyaman dibaca</div>
+                </button>
+                <button onclick="applyFontScaleAndScope('large', null)" data-fscale="large" type="button" class="fscale-btn px-2.5 py-2 rounded-lg border border-outline-variant bg-white text-left hover:border-primary transition-all">
+                  <div class="font-bold text-primary text-sm">Besar (+28%)</div>
+                  <div class="text-[10px] text-outline">Teks eksekutif jelas</div>
+                </button>
+                <button onclick="applyFontScaleAndScope('xlarge', null)" data-fscale="xlarge" type="button" class="fscale-btn px-2.5 py-2 rounded-lg border border-outline-variant bg-white text-left hover:border-primary transition-all">
+                  <div class="font-bold text-primary text-base">Sangat Besar (+44%)</div>
+                  <div class="text-[10px] text-outline">Maksimal &amp; ramah mata</div>
+                </button>
+              </div>
+            </div>
+            <div class="space-y-1.5 pt-1 border-t border-outline-variant/30">
+              <label class="block text-[11px] font-mono uppercase text-on-surface-variant font-bold" for="top-font-scope-select">2. Berlaku Untuk (Cakupan):</label>
+              <select id="top-font-scope-select" onchange="applyFontScaleAndScope(null, this.value)" class="w-full border border-outline-variant rounded-lg p-2 bg-white text-primary font-semibold text-xs">
+                <option value="both">Admin Studio &amp; Front Page Sekaligus</option>
+                <option value="frontpage">Front Page (Website Publik) Saja</option>
+                <option value="admin">Admin Studio Saja</option>
+              </select>
+              <p class="text-[10px] text-on-surface-variant leading-snug">
+                Perubahan langsung disimpan ke server dan diterapkan seketika sesuai cakupan yang dipilih.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div class="flex items-center rounded bg-primary-container px-space-xs py-space-xs font-label-sm text-label-sm border border-on-tertiary-container/30">
           <button id="admin-top-lang-en" onclick="setEditorLang('en')" class="px-space-xs py-space-xs text-tertiary-fixed-dim font-bold" type="button">EN</button>
           <span class="text-on-primary-container opacity-40">/</span>
@@ -880,79 +964,154 @@
           </div>
         </div>
 
-        <!-- Collapsible: Google Drive API Configuration Panel -->
+        <!-- Collapsible Tutorial Step-by-Step For Dummies: Google Drive Setup -->
+        <details class="group bg-amber-50/70 rounded-2xl border border-on-tertiary-container/40 overflow-hidden shadow-sm">
+          <summary class="cursor-pointer list-none px-5 py-3.5 flex items-center justify-between gap-3 font-serif font-bold text-primary hover:bg-amber-100/50 transition-colors">
+            <span class="flex items-center gap-2 text-sm">
+              <span class="material-symbols-outlined text-on-tertiary-container">menu_book</span>
+              📘 Panduan Mudah (Step-by-Step for Dummies): Cara Menghubungkan Google Drive ke iCoachAndrew (Klik untuk Buka/Tutup)
+            </span>
+            <span class="text-xs font-mono text-on-tertiary-container group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="px-5 pb-5 pt-2 border-t border-on-tertiary-container/20 text-xs text-on-surface space-y-4 leading-relaxed">
+            <div class="p-3 rounded-xl bg-white border border-outline-variant/40">
+              <strong class="text-primary block mb-1">💡 Konsep Singkat (Mengapa Sangat Mudah?):</strong>
+              Anda tidak perlu mengunggah buku/naskah satu per satu ke website. Cukup simpan dokumen Google Docs, Word (<code>.docx</code>), atau Teks (<code>.txt</code>/<code>.md</code>) di dalam folder Google Drive Anda. Sistem iCoachAndrew menggunakan <strong>"Akun Robot Pembaca" (Service Account)</strong> untuk membaca isi folder tersebut secara aman dan memasukkannya ke Ring 0, Ring 1, Ring 2, atau Ring 3.
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 1 (Di Google Cloud)</div>
+                <div class="font-bold text-primary">Unduh File Kunci <code>.json</code></div>
+                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li>Buka <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" class="text-primary underline font-semibold">console.cloud.google.com</a> dan buat Project baru (mis. <code>iCoachAndrew</code>).</li>
+                  <li>Ketik <strong>"Google Drive API"</strong> di kotak pencarian atas &rarr; klik <strong>Enable (Aktifkan)</strong>.</li>
+                  <li>Buka menu <strong>IAM &amp; Admin &rarr; Service Accounts</strong> &rarr; klik <strong>+ Create Service Account</strong> (beri nama bebas, mis. <code>drive-reader</code>) &rarr; klik <strong>Done</strong>.</li>
+                  <li>Klik email Service Account yang baru dibuat &rarr; tab <strong>Keys</strong> &rarr; <strong>Add Key &rarr; Create new key &rarr; pilih JSON</strong> &rarr; file <code>.json</code> akan terunduh ke komputer Anda.</li>
+                </ol>
+              </div>
+              <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 2 (Di Halaman Ini)</div>
+                <div class="font-bold text-primary">Upload 1-Klik File <code>.json</code></div>
+                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li>Klik tombol <strong>"Pengaturan Drive API"</strong> di atas.</li>
+                  <li>Klik kotak <strong>"Upload File .JSON Service Account (1-Klik)"</strong> dan pilih file <code>.json</code> yang baru Anda unduh (tidak perlu buka Notepad!).</li>
+                  <li>Sistem otomatis menyimpan kunci secara terenkripsi dan menampilkan <strong>Alamat Email Robot</strong> (contoh: <code>drive-reader@...iam.gserviceaccount.com</code>).</li>
+                  <li>Klik tombol <strong>"Salin Email Robot"</strong>.</li>
+                </ol>
+              </div>
+              <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 3 (Di Google Drive Anda)</div>
+                <div class="font-bold text-primary">Share Folder &amp; Sinkronkan!</div>
+                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li>Buka folder karya Andrew Tani di Google Drive Anda.</li>
+                  <li>Klik kanan folder tersebut &rarr; <strong>Bagikan (Share)</strong> &rarr; tempel (Paste) <strong>Email Robot</strong> tadi sebagai <strong>Pelihat (Viewer)</strong> &rarr; klik <strong>Bagikan</strong>.</li>
+                  <li>Salin link URL folder Google Drive Anda dari browser, tempelkan ke kolom <strong>Folder Induk Utama</strong> di bawah, lalu klik <strong>"Deteksi Sub-Folder Otomatis"</strong> atau <strong>"Sinkronkan dari Google Drive"</strong>!</li>
+                </ol>
+              </div>
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-[11px]">
+              <strong>Tips Otomatisasi Ring 0–3:</strong> Di dalam folder utama Google Drive Anda, buatlah 4 sub-folder bernama <code>Ring 0</code>, <code>Ring 1</code>, <code>Ring 2</code>, dan <code>Ring 3</code>. Setiap kali Anda menaruh file Google Docs/Word/Txt ke dalam sub-folder tersebut dan menekan tombol <strong>Sinkronkan dari Google Drive</strong>, sistem otomatis menempatkannya ke Ring yang tepat!
+            </div>
+          </div>
+        </details>
+
+        <!-- Collapsible: Google Drive API Configuration Panel (Wizard & Manual) -->
         <div id="gdrive-config-panel" class="hidden bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/50 shadow-sm space-y-5">
           <div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
             <div>
-              <span class="text-[10px] font-mono uppercase tracking-wider text-on-tertiary-container font-bold">Google Drive API v3 • AES-256-GCM Vault</span>
-              <h3 class="font-serif text-xl text-primary font-bold">Konfigurasi Kredensial &amp; Pemetaan Folder Ring 0–3</h3>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-on-tertiary-container font-bold">Google Drive API v3 • Easy Wizard &amp; Manual Config</span>
+              <h3 class="font-serif text-xl text-primary font-bold">Asisten Koneksi Cepat &amp; Pemetaan Folder Google Drive</h3>
             </div>
             <button onclick="toggleGDriveConfigPanel()" class="text-outline hover:text-primary text-sm font-bold">✕ Tutup</button>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs">
-            <!-- Left: Credentials (Service Account JSON Recommended + API Key Fallback) -->
+            <!-- Left: Easy 1-Click JSON File Upload + Manual Fallback -->
             <div class="lg:col-span-6 space-y-3">
-              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2">
+              <div class="p-4 rounded-xl bg-surface border border-outline-variant/40 space-y-3">
                 <div class="flex items-center justify-between">
                   <span class="font-bold text-primary flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">verified_user</span>1. Kredensial Service Account JSON (Direkomendasikan)
+                    <span class="material-symbols-outlined text-[16px]">upload_file</span>Langkah 1: Pasang Kunci Akses Google Drive
                   </span>
                   <span id="gd-sa-hint" class="font-mono text-[10px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Belum tersimpan</span>
                 </div>
-                <p class="text-[11px] text-on-surface-variant leading-relaxed">
-                  Tempel isi file JSON Service Account Google Cloud Anda di bawah ini. Kunci privat dienkripsi dengan <strong>AES-256-GCM</strong> di brankas server. Setelah disimpan, bagikan (<em>Share</em> sebagai <strong>Viewer</strong>) folder Google Drive karya Andrew Tani ke alamat email Service Account tersebut.
-                </p>
-                <textarea id="gd-service-account-json" rows="4" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"icoach-drive@...iam.gserviceaccount.com"}' class="w-full border rounded-lg p-2.5 font-mono text-[11px] bg-white"></textarea>
-                <div class="flex items-center justify-between text-[11px]">
-                  <span id="gd-active-email" class="font-mono text-emerald-800 font-semibold truncate"></span>
-                  <button onclick="clearGDriveServiceAccount()" type="button" class="text-secondary hover:underline">Hapus Service Account</button>
-                </div>
-              </div>
 
-              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-primary">Alternatif: Google Drive API Key (Khusus Folder Publik)</span>
-                  <span id="gd-apikey-hint" class="font-mono text-[10px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Opsional</span>
+                <!-- 1-Click File Upload Dropzone -->
+                <label class="cursor-pointer block p-4 rounded-xl border-2 border-dashed border-primary/40 bg-white hover:bg-primary/5 transition-all text-center space-y-1">
+                  <span class="material-symbols-outlined text-2xl text-primary">cloud_upload</span>
+                  <div class="font-bold text-primary">Klik di Sini untuk Upload File <code>.json</code> Service Account (1-Klik)</div>
+                  <div class="text-[11px] text-on-surface-variant">Otomatis membaca email robot &amp; mengenkripsi kunci ke brankas AES-256-GCM</div>
+                  <input type="file" accept=".json,application/json" onchange="handleServiceAccountFileUpload(this)" class="hidden"/>
+                </label>
+
+                <!-- Copyable Service Account Email Box -->
+                <div id="gd-email-share-box" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-300 space-y-1.5">
+                  <div class="text-[11px] font-bold text-emerald-950 flex items-center justify-between">
+                    <span>✅ Bagikan (Share) Folder Google Drive Anda ke Email Robot Ini:</span>
+                    <button onclick="copyGDriveServiceAccountEmail()" type="button" class="px-2.5 py-1 rounded bg-emerald-800 text-white text-[10px] font-mono font-bold hover:bg-emerald-900">📋 Salin Email Robot</button>
+                  </div>
+                  <div id="gd-active-email" class="font-mono text-xs text-emerald-900 font-bold break-all bg-white px-2.5 py-1.5 rounded border border-emerald-200"></div>
                 </div>
-                <input id="gd-api-key" type="password" placeholder="AIzaSy... (Kosongkan bila sudah memakai Service Account)" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
+
+                <!-- Collapsible Manual JSON / API Key Input -->
+                <details class="pt-1">
+                  <summary class="cursor-pointer text-[11px] font-semibold text-primary hover:underline">⚙️ Opsi Manual: Tempel Teks JSON atau Gunakan API Key Folder Publik</summary>
+                  <div class="pt-2 space-y-2">
+                    <textarea id="gd-service-account-json" rows="3" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"..."}' class="w-full border rounded-lg p-2 font-mono text-[11px] bg-white"></textarea>
+                    <div class="flex items-center justify-between text-[11px]">
+                      <span class="text-outline">Atau masukkan API Key (khusus folder publik):</span>
+                      <button onclick="clearGDriveServiceAccount()" type="button" class="text-secondary hover:underline">Hapus Service Account</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <input id="gd-api-key" type="password" placeholder="AIzaSy... (Google Drive API Key)" class="flex-1 border rounded-lg p-2 font-mono text-xs bg-white"/>
+                      <span id="gd-apikey-hint" class="font-mono text-[10px] px-2 py-1 rounded bg-surface-container text-on-surface-variant shrink-0">Opsional</span>
+                    </div>
+                  </div>
+                </details>
               </div>
             </div>
 
-            <!-- Right: Folder Mapping & Ring Protocol Sync Options -->
+            <!-- Right: Visual Folder Mapper & Sync Policy -->
             <div class="lg:col-span-6 space-y-3">
-              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2.5">
-                <span class="font-bold text-primary block">2. Folder Induk &amp; Pemetaan Folder Ring 0–3</span>
-                <p class="text-[11px] text-on-surface-variant">
-                  Anda dapat menempelkan <strong>Link URL Folder Google Drive</strong> atau <strong>Folder ID</strong>. Jika memakai 1 Folder Induk yang di dalamnya memiliki sub-folder bernama <code>Ring 0</code>, <code>Ring 1</code>, <code>Ring 2</code>, <code>Ring 3</code>, sistem otomatis memetakan tiap sub-folder ke Ring yang sesuai.
-                </p>
-                <label class="block space-y-1">
-                  <span class="font-semibold text-primary">Folder Induk Utama (Root Folder URL / ID):</span>
-                  <input id="gd-root-folder" type="text" placeholder="https://drive.google.com/drive/folders/1aBcDeFg... atau ID Folder" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
-                </label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                  <label class="block space-y-0.5">
-                    <span class="text-[11px] font-mono font-bold text-secondary">Folder Ring 0 (Sovereign / Pribadi):</span>
-                    <input id="gd-folder-r0" type="text" placeholder="Opsional: URL / ID Folder R0" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
-                  </label>
-                  <label class="block space-y-0.5">
-                    <span class="text-[11px] font-mono font-bold text-amber-800">Folder Ring 1 (Inner Circle):</span>
-                    <input id="gd-folder-r1" type="text" placeholder="Opsional: URL / ID Folder R1" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
-                  </label>
-                  <label class="block space-y-0.5">
-                    <span class="text-[11px] font-mono font-bold text-primary">Folder Ring 2 (Anggota Berlisensi):</span>
-                    <input id="gd-folder-r2" type="text" placeholder="Opsional: URL / ID Folder R2" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
-                  </label>
-                  <label class="block space-y-0.5">
-                    <span class="text-[11px] font-mono font-bold text-emerald-800">Folder Ring 3 (Kanon Publik):</span>
-                    <input id="gd-folder-r3" type="text" placeholder="Opsional: URL / ID Folder R3" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
-                  </label>
+              <div class="p-4 rounded-xl bg-surface border border-outline-variant/40 space-y-3">
+                <span class="font-bold text-primary block">Langkah 2: Tempel Link Folder Google Drive &amp; Petakan Ring</span>
+                <div class="space-y-1.5">
+                  <label class="font-semibold text-primary block text-[11px]">Link URL atau ID Folder Induk Google Drive:</label>
+                  <div class="flex gap-2">
+                    <input id="gd-root-folder" type="text" placeholder="Tempel link https://drive.google.com/drive/folders/... di sini" class="flex-1 border rounded-lg p-2 font-mono text-xs bg-white"/>
+                    <button onclick="scanAndMapGDriveSubfolders()" type="button" class="px-3 py-2 rounded-lg bg-primary text-white text-[11px] font-semibold shrink-0 hover:bg-primary-container flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[15px]">account_tree</span>Deteksi Sub-Folder
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2.5">
-                <span class="font-bold text-primary block">3. Kebijakan Sinkronisasi &amp; Guardrail Protokol Ring</span>
-                <div class="grid grid-cols-2 gap-2">
+                <!-- Interactive Visual Subfolder Mapper -->
+                <div id="gd-visual-subfolder-mapper" class="hidden p-3 rounded-xl bg-white border border-outline-variant/50 space-y-2"></div>
+
+                <!-- Collapsible Manual Per-Ring Folder Inputs -->
+                <details class="pt-1">
+                  <summary class="cursor-pointer text-[11px] font-semibold text-primary hover:underline">📁 Opsi Manual: Atur Link Folder Terpisah untuk Masing-Masing Ring 0–3</summary>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+                    <label class="block space-y-0.5">
+                      <span class="text-[11px] font-mono font-bold text-secondary">Folder Ring 0 (Sovereign / Pribadi):</span>
+                      <input id="gd-folder-r0" type="text" placeholder="URL / ID Folder R0" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                    </label>
+                    <label class="block space-y-0.5">
+                      <span class="text-[11px] font-mono font-bold text-amber-800">Folder Ring 1 (Inner Circle):</span>
+                      <input id="gd-folder-r1" type="text" placeholder="URL / ID Folder R1" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                    </label>
+                    <label class="block space-y-0.5">
+                      <span class="text-[11px] font-mono font-bold text-primary">Folder Ring 2 (Anggota Berlisensi):</span>
+                      <input id="gd-folder-r2" type="text" placeholder="URL / ID Folder R2" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                    </label>
+                    <label class="block space-y-0.5">
+                      <span class="text-[11px] font-mono font-bold text-emerald-800">Folder Ring 3 (Kanon Publik):</span>
+                      <input id="gd-folder-r3" type="text" placeholder="URL / ID Folder R3" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                    </label>
+                  </div>
+                </details>
+
+                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-outline-variant/30">
                   <label class="block space-y-0.5">
                     <span class="text-[11px] text-on-surface-variant">Ring Default (Tanpa Label):</span>
                     <select id="gd-default-ring" class="w-full border rounded p-1.5 bg-white font-semibold">
@@ -1079,6 +1238,68 @@
             <button onclick="testClaudeConnection()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold">Tes Claude API</button>
           </div>
         </div>
+
+        <!-- Collapsible Tutorial Step-by-Step For Dummies: Claude API Token & Cara Kerja Inteligensia -->
+        <details class="group bg-amber-50/70 rounded-2xl border border-on-tertiary-container/40 overflow-hidden shadow-sm">
+          <summary class="cursor-pointer list-none px-5 py-3.5 flex items-center justify-between gap-3 font-serif font-bold text-primary hover:bg-amber-100/50 transition-colors">
+            <span class="flex items-center gap-2 text-sm">
+              <span class="material-symbols-outlined text-on-tertiary-container">help_clinic</span>
+              📘 Panduan Mudah (Step-by-Step for Dummies): Cara Mengatur Token Claude AI &amp; Perbedaannya dengan Mode Tanpa Token (Klik untuk Buka/Tutup)
+            </span>
+            <span class="text-xs font-mono text-on-tertiary-container group-open:rotate-180 transition-transform">▼</span>
+          </summary>
+          <div class="px-5 pb-5 pt-2 border-t border-on-tertiary-container/20 text-xs text-on-surface space-y-4 leading-relaxed">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1">
+                <div class="font-bold text-amber-900 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[16px]">inventory_2</span>Apa yang Terjadi Jika Token AI BELUM Diisi? (Mode Ekstraktif)
+                </div>
+                <p class="text-[11px] text-on-surface-variant">
+                  • <strong>Membaca &amp; Menyinkronkan Google Drive TIDAK butuh Token AI:</strong> Sistem tetap bisa membaca seluruh file Google Docs/Word/Txt Anda, mendeteksi kata sensitif Ring 0, dan mengindeksnya ke database.<br/>
+                  • <strong>Saat Penanya Bertanya di Chat:</strong> Sistem menggunakan mesin pencari kata kunci (FTS5) untuk mengambil <strong>kutipan paragraf asli (400 karakter pertama)</strong> dari buku/karya Andrew Tani. Namun sistem <strong>belum bisa merangkum lintas bab, belum bisa berbicara dengan gaya suara bariton Socrates Andrew Tani, dan belum bisa menganalisis studi kasus baru</strong>.
+                </p>
+              </div>
+              <div class="p-3.5 rounded-xl bg-white border border-emerald-300 space-y-1">
+                <div class="font-bold text-emerald-900 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[16px]">psychology</span>Apa yang Terjadi Setelah Token Claude AI Diisi? (Mode Inteligensia Penuh)
+                </div>
+                <p class="text-[11px] text-on-surface-variant">
+                  • <strong>Meneladani Kebijaksanaan Andrew Tani:</strong> Setiap pertanyaan dijawab dengan memadukan <strong>Memori Protokoler &amp; Persona Andrew Tani</strong> (gaya Socrates tenang, <em>Tut Wuri Handayani</em>) + <strong>Intisari Karya dari Google Drive/Repositori</strong> sesuai level Ring penanya.<br/>
+                  • <strong>Ikhtisar Otomatis:</strong> Anda juga bisa menekan tombol <em>"✨ Buat Ikhtisar Otomatis"</em> pada setiap karya untuk merangkum naskah panjang menjadi intisari eksekutif.
+                </p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1">
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 1: Buat Akun Anthropic</div>
+                <div class="font-bold text-primary">Buka Console Claude</div>
+                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li>Buka <a href="https://console.anthropic.com/" target="_blank" rel="noopener" class="text-primary underline font-semibold">console.anthropic.com</a> dan daftar/masuk.</li>
+                  <li>Buka menu <strong>Settings &rarr; Billing</strong>, lalu isi saldo kredit awal minimal (mis. <strong>$5 USD</strong> — cukup untuk ribuan percakapan eksekutif).</li>
+                </ol>
+              </div>
+              <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1">
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 2: Buat API Key</div>
+                <div class="font-bold text-primary">Salin Kunci <code>sk-ant-api03-...</code></div>
+                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li>Di halaman Console Anthropic, klik menu <strong>API Keys</strong> &rarr; tombol <strong>+ Create Key</strong>.</li>
+                  <li>Beri nama (mis. <code>iCoachAndrew-Live</code>), lalu salin kode kunci yang diawali dengan <code>sk-ant-api03-...</code>.</li>
+                </ol>
+              </div>
+              <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1">
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 3: Simpan di Brankas</div>
+                <div class="font-bold text-primary">Tempel &amp; Klik Tes Claude API</div>
+                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li>Pada kotak <strong>Brankas Kunci API Claude</strong> di bawah, isi Label (mis. <code>Kunci Utama</code>) dan tempel kode <code>sk-ant-api03-...</code>.</li>
+                  <li>Klik <strong>+ Simpan</strong> (kunci langsung dienkripsi dengan AES-256-GCM).</li>
+                  <li>Klik tombol <strong>"Tes Claude API"</strong> di kanan atas untuk memastikan status berubah menjadi <strong>TERHUBUNG</strong>!</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </details>
+
         <div id="ai-telemetry-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div class="lg:col-span-7 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-4">
@@ -1212,8 +1433,16 @@
           <input id="wk-cover" type="text" placeholder="URL Sampul" class="flex-1 border rounded p-2 font-mono"/>
           <label class="cursor-pointer px-3 py-2 rounded bg-primary text-white font-semibold">Unggah<input type="file" accept="image/*" onchange="uploadWorkCover(this)" class="hidden"/></label>
         </div>
-        <textarea id="wk-summary" rows="2" placeholder="Ringkasan..." class="sm:col-span-2 border rounded p-2"></textarea>
-        <textarea id="wk-content" rows="4" placeholder="Kutipan inti..." class="sm:col-span-2 border rounded p-2"></textarea>
+        <div class="sm:col-span-2 space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-semibold text-primary">Ringkasan / Ikhtisar Eksekutif:</span>
+            <button onclick="summarizeWorkInModal()" type="button" class="px-2.5 py-1 rounded bg-primary text-tertiary-fixed hover:bg-primary-container text-[11px] font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">auto_awesome</span>Buat Ikhtisar Otomatis dari Naskah
+            </button>
+          </div>
+          <textarea id="wk-summary" rows="2" placeholder="Ringkasan..." class="w-full border rounded p-2"></textarea>
+        </div>
+        <textarea id="wk-content" rows="4" placeholder="Kutipan inti / Isi naskah..." class="sm:col-span-2 border rounded p-2"></textarea>
         <input id="wk-note" type="text" placeholder="Catatan Preseden..." class="sm:col-span-2 border rounded p-2"/>
         <label class="flex items-center gap-2"><input id="wk-featured" type="checkbox"/> Tampil di Beranda</label>
         <label class="flex items-center gap-2"><input id="wk-sync" type="checkbox"/> Sinkron ke Twin</label>

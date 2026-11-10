@@ -182,8 +182,81 @@ async function loadSiteState() {
   renderThemeDock();
   renderBlocksDock();
   renderVersionsDock();
+  syncLocalFontScaleUI(
+    (siteState.draft.settings && siteState.draft.settings.fontScale) || 'small',
+    (siteState.draft.settings && siteState.draft.settings.fontScope) || 'both'
+  );
   postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
 }
+
+// ==================== GLOBAL TYPOGRAPHY SIZE & SCOPE CONTROLLER ====================
+const FONT_SCALE_LABELS = {
+  small: 'Kecil',
+  medium: 'Sedang',
+  large: 'Besar',
+  xlarge: 'Sangat Besar'
+};
+
+function toggleFontScalePopover() {
+  const pop = document.getElementById('font-scale-popover');
+  if (!pop) return;
+  pop.classList.toggle('hidden');
+}
+
+function syncLocalFontScaleUI(scale, scope) {
+  const validScale = ['small', 'medium', 'large', 'xlarge'].includes(scale) ? scale : 'small';
+  const validScope = ['both', 'frontpage', 'admin'].includes(scope) ? scope : 'both';
+
+  // Apply to Admin Studio DOM if scope is 'both' or 'admin'
+  const adminEffectiveScale = (validScope === 'both' || validScope === 'admin') ? validScale : 'small';
+  document.documentElement.setAttribute('data-font-scale', adminEffectiveScale);
+
+  try {
+    localStorage.setItem('icoach_font_scale', validScale);
+    localStorage.setItem('icoach_font_scope', validScope);
+  } catch (_) {}
+
+  const topLabel = document.getElementById('top-font-scale-label');
+  if (topLabel) topLabel.textContent = `Font: ${FONT_SCALE_LABELS[validScale] || 'Kecil'}`;
+
+  const scopeSel = document.getElementById('top-font-scope-select');
+  if (scopeSel) scopeSel.value = validScope;
+
+  document.querySelectorAll('.fscale-btn').forEach((btn) => {
+    const active = btn.getAttribute('data-fscale') === validScale;
+    btn.classList.toggle('ring-2', active);
+    btn.classList.toggle('ring-primary', active);
+    btn.classList.toggle('bg-amber-50', active);
+  });
+}
+
+async function applyFontScaleAndScope(newScale, newScope) {
+  const curSettings = (siteState.draft && siteState.draft.settings) || {};
+  const scale = newScale || curSettings.fontScale || localStorage.getItem('icoach_font_scale') || 'small';
+  const scope = newScope || curSettings.fontScope || localStorage.getItem('icoach_font_scope') || 'both';
+
+  siteState.draft = siteState.draft || { elements: {}, layout: { order: [], hidden: [] }, blocks: [], theme: {}, seo: {}, settings: {} };
+  siteState.draft.settings = { ...(siteState.draft.settings || {}), fontScale: scale, fontScope: scope };
+
+  syncLocalFontScaleUI(scale, scope);
+  postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+
+  const r = await api('POST', '/admin/api/site/typography', { fontScale: scale, fontScope: scope });
+  if (r.ok && r.data.draft) {
+    siteState.draft = r.data.draft;
+    const scopeName = scope === 'both' ? 'Admin Studio & Front Page' : (scope === 'frontpage' ? 'Front Page Saja' : 'Admin Studio Saja');
+    toast(`Ukuran huruf "${FONT_SCALE_LABELS[scale]}" diterapkan untuk: ${scopeName}`);
+  }
+}
+
+// Restore saved font scale immediately on script load
+(function initSavedFontScale() {
+  try {
+    const sc = localStorage.getItem('icoach_font_scale') || 'small';
+    const sp = localStorage.getItem('icoach_font_scope') || 'both';
+    syncLocalFontScaleUI(sc, sp);
+  } catch (_) {}
+})();
 
 function updateDirtyIndicator() {
   const el = document.getElementById('ve-dirty-indicator');
@@ -881,8 +954,13 @@ function renderGDriveConfigState() {
   if (apiHint) {
     apiHint.textContent = g.hasApiKey ? `Tersimpan (${g.apiKeyHint || 'AES-256-GCM'})` : 'Opsional';
   }
+  const shareBox = document.getElementById('gd-email-share-box');
   if (activeEmail) {
-    activeEmail.textContent = g.clientEmail ? `Email Aktif: ${g.clientEmail}` : '';
+    activeEmail.textContent = g.clientEmail || '';
+  }
+  if (shareBox) {
+    if (g.clientEmail) shareBox.classList.remove('hidden');
+    else shareBox.classList.add('hidden');
   }
 
   const rootInput = document.getElementById('gd-root-folder');
@@ -905,6 +983,132 @@ function toggleGDriveConfigPanel() {
   const p = document.getElementById('gdrive-config-panel');
   if (!p) return;
   p.classList.toggle('hidden');
+}
+
+// 1-Click Service Account .json file upload handler
+async function handleServiceAccountFileUpload(inputEl) {
+  if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
+  const file = inputEl.files[0];
+  try {
+    const rawText = await file.text();
+    let parsed;
+    try {
+      parsed = JSON.parse(rawText);
+    } catch (_) {
+      toast('File yang dipilih bukan format JSON yang valid.', true);
+      inputEl.value = '';
+      return;
+    }
+    if (!parsed.client_email || !parsed.private_key) {
+      toast('File JSON ini bukan kunci Service Account Google Cloud (client_email / private_key tidak ditemukan).', true);
+      inputEl.value = '';
+      return;
+    }
+    const txtArea = document.getElementById('gd-service-account-json');
+    if (txtArea) txtArea.value = rawText;
+    await saveGDriveConfig();
+    toast(`File JSON "${file.name}" berhasil diunggah! Silakan salin Email Robot & Share folder Google Drive Anda.`);
+  } catch (e) {
+    toast('Gagal membaca file JSON: ' + e.message, true);
+  } finally {
+    inputEl.value = '';
+  }
+}
+
+function copyGDriveServiceAccountEmail() {
+  const email = (gdriveState && gdriveState.clientEmail) || document.getElementById('gd-active-email')?.textContent || '';
+  if (!email) return;
+  navigator.clipboard.writeText(email);
+  toast('Email Robot disalin! Tempel (Paste) ke menu Share folder Google Drive Anda sebagai Viewer.');
+}
+
+// Visual Subfolder Detector & Ring Mapper
+let discoveredSubfolders = [];
+async function scanAndMapGDriveSubfolders() {
+  const mapperBox = document.getElementById('gd-visual-subfolder-mapper');
+  if (!mapperBox) return;
+  mapperBox.classList.remove('hidden');
+  mapperBox.innerHTML = '<div class="text-xs font-mono text-primary">Menghubungi Google Drive API &amp; memindai sub-folder...</div>';
+
+  await saveGDriveConfig();
+  const rootVal = document.getElementById('gd-root-folder')?.value || '';
+  const r = await api('GET', '/admin/api/works/gdrive/browse' + (rootVal ? ('?folderId=' + encodeURIComponent(rootVal)) : ''));
+  if (!r.ok || !r.data.ok) {
+    mapperBox.innerHTML = `<div class="text-xs text-secondary font-semibold">Gagal mendeteksi sub-folder: ${esc(r.data.error || 'Pastikan folder sudah di-Share ke Email Robot Service Account.')}</div>`;
+    return;
+  }
+  const folders = r.data.folders || [];
+  const files = r.data.files || [];
+  discoveredSubfolders = folders;
+
+  if (!folders.length) {
+    mapperBox.innerHTML = `
+      <div class="text-xs text-emerald-950 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
+        Folder <strong>"${esc((r.data.currentFolder && r.data.currentFolder.name) || 'Utama')}"</strong> terbaca langsung dan berisi <strong>${files.length} file</strong> (tanpa sub-folder). Klik tombol <strong>"Sinkronkan dari Google Drive"</strong> untuk langsung mengimpor semua file!
+      </div>`;
+    return;
+  }
+
+  mapperBox.innerHTML = `
+    <div class="flex items-center justify-between">
+      <span class="font-bold text-primary text-xs">Terdeteksi ${folders.length} Sub-Folder di Dalam "${esc((r.data.currentFolder && r.data.currentFolder.name) || 'Folder Induk')}":</span>
+      <span class="text-[10px] font-mono text-outline">Pilih Ring untuk tiap folder</span>
+    </div>
+    <div class="space-y-1.5 max-h-48 overflow-y-auto thin-scroll pr-1">
+      ${folders.map((f, idx) => `
+        <div class="flex items-center justify-between gap-2 p-2 rounded-lg bg-surface border border-outline-variant/40">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <span class="material-symbols-outlined text-amber-600 text-[18px]">folder</span>
+            <span class="font-semibold text-primary truncate text-xs">${esc(f.name)}</span>
+          </div>
+          <select id="gd-submap-${idx}" data-folder-id="${esc(f.id)}" class="border rounded px-2 py-1 text-[11px] font-bold bg-white">
+            <option value="0" ${Number(f.inferredRing) === 0 ? 'selected' : ''}>Ring 0 (Sovereign)</option>
+            <option value="1" ${Number(f.inferredRing) === 1 ? 'selected' : ''}>Ring 1 (Eksekutor)</option>
+            <option value="2" ${Number(f.inferredRing) === 2 ? 'selected' : ''}>Ring 2 (Anggota)</option>
+            <option value="3" ${Number(f.inferredRing) === 3 ? 'selected' : ''}>Ring 3 (Publik)</option>
+            <option value="skip">Abaikan</option>
+          </select>
+        </div>
+      `).join('')}
+    </div>
+    <button onclick="applyVisualSubfolderMapping()" type="button" class="w-full py-2 rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs flex items-center justify-center gap-1.5">
+      <span class="material-symbols-outlined text-[16px]">check_circle</span>Terapkan Pemetaan Sub-Folder &amp; Sinkronkan Sekarang
+    </button>
+  `;
+}
+
+async function applyVisualSubfolderMapping() {
+  discoveredSubfolders.forEach((f, idx) => {
+    const sel = document.getElementById('gd-submap-' + idx);
+    if (!sel || sel.value === 'skip') return;
+    const ring = Number(sel.value);
+    const inputEl = document.getElementById('gd-folder-r' + ring);
+    if (inputEl && !inputEl.value) inputEl.value = f.id;
+  });
+  await saveGDriveConfig();
+  await syncWorksFromGDrive();
+}
+
+async function summarizeWorkInModal() {
+  const id = document.getElementById('wk-id')?.value || undefined;
+  const title = document.getElementById('wk-title')?.value || '';
+  const content = document.getElementById('wk-content')?.value || '';
+  const lang = document.getElementById('wk-lang')?.value || 'id';
+  if (!content.trim()) {
+    toast('Mohon isi kolom Kutipan Inti / Isi Naskah terlebih dahulu agar dapat diikhtisarkan.', true);
+    return;
+  }
+  toast('Membuat ikhtisar eksekutif dari naskah...');
+  const r = await api('POST', '/admin/api/works/summarize', { id, title, content, lang, save: false });
+  if (!r.ok) {
+    toast(r.data.message || 'Gagal membuat ikhtisar.', true);
+    return;
+  }
+  const sumEl = document.getElementById('wk-summary');
+  if (sumEl) sumEl.value = r.data.summary || '';
+  toast(r.data.mode === 'claude'
+    ? '✨ Ikhtisar berhasil dibuat dengan inteligensia Claude AI!'
+    : 'Ikhtisar berhasil diekstrak dari kalimat inti naskah (Mode Ekstraktif).');
 }
 
 async function saveGDriveConfig() {
