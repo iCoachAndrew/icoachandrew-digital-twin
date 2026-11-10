@@ -814,12 +814,287 @@ function pickMediaForInspector(url, alt) {
   toast('Foto dipilih dan dipasang.');
 }
 
-// ==================== TAB 4: WORKS REPOSITORY RING 0–3 ====================
+// ==================== TAB 4: WORKS REPOSITORY RING 0–3 + GOOGLE DRIVE API ====================
+let gdriveState = { configured: false, authMode: 'service_account', ringFolders: { 0: '', 1: '', 2: '', 3: '' } };
+
 async function loadWorks() {
   const r = await api('GET', '/admin/api/works');
   if (!r.ok) return;
   worksData = r.data.works || [];
+  if (r.data.gdrive) {
+    gdriveState = r.data.gdrive;
+    renderGDriveConfigState();
+  }
   renderWorksGrid();
+}
+
+function renderGDriveConfigState() {
+  const g = gdriveState || {};
+  const badge = document.getElementById('gdrive-status-badge');
+  const sub = document.getElementById('gdrive-summary-sub');
+  const emailPill = document.getElementById('gdrive-client-email-pill');
+  const saHint = document.getElementById('gd-sa-hint');
+  const apiHint = document.getElementById('gd-apikey-hint');
+  const activeEmail = document.getElementById('gd-active-email');
+
+  if (badge) {
+    if (g.configured) {
+      const modeLabel = g.authMode === 'service_account' ? 'SERVICE ACCOUNT' : 'API KEY';
+      badge.textContent = `GOOGLE DRIVE: TERHUBUNG (${modeLabel})`;
+      badge.className = 'px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300';
+    } else {
+      badge.textContent = 'GOOGLE DRIVE: BELUM DIKONFIGURASI';
+      badge.className = 'px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300';
+    }
+  }
+
+  if (sub) {
+    if (g.lastSyncAt) {
+      const ts = String(g.lastSyncAt).slice(0, 19).replace('T', ' ');
+      const sum = g.lastSyncSummary || {};
+      if (g.lastSyncStatus === 'error') {
+        sub.textContent = `Sinkronisasi terakhir gagal (${ts}): ${sum.error || 'Periksa kredensial/folder'}`;
+      } else {
+        sub.textContent = `Sinkronisasi terakhir: ${ts} • ${sum.totalDriveFiles || 0} file Drive (+${sum.added || 0} baru, ${sum.updated || 0} diperbarui, ${sum.quarantined || 0} dikarantina ke R0)`;
+      }
+    } else {
+      sub.textContent = g.configured
+        ? 'Kredensial siap. Klik "Sinkronkan dari Google Drive" untuk membaca folder & file karya.'
+        : 'Hubungkan Service Account JSON atau API Key untuk membaca folder & file karya dari Google Drive.';
+    }
+  }
+
+  if (emailPill) {
+    if (g.clientEmail) {
+      emailPill.textContent = 'Share ke: ' + g.clientEmail;
+      emailPill.classList.remove('hidden');
+    } else {
+      emailPill.classList.add('hidden');
+    }
+  }
+  if (saHint) {
+    saHint.textContent = g.hasServiceAccount ? `Tersimpan (${g.serviceAccountHint || 'AES-256-GCM'})` : 'Belum tersimpan';
+    saHint.className = g.hasServiceAccount
+      ? 'font-mono text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold'
+      : 'font-mono text-[10px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant';
+  }
+  if (apiHint) {
+    apiHint.textContent = g.hasApiKey ? `Tersimpan (${g.apiKeyHint || 'AES-256-GCM'})` : 'Opsional';
+  }
+  if (activeEmail) {
+    activeEmail.textContent = g.clientEmail ? `Email Aktif: ${g.clientEmail}` : '';
+  }
+
+  const rootInput = document.getElementById('gd-root-folder');
+  if (rootInput) rootInput.value = g.rootFolderId || '';
+  [0, 1, 2, 3].forEach((r) => {
+    const el = document.getElementById('gd-folder-r' + r);
+    if (el) el.value = (g.ringFolders && g.ringFolders[r]) || '';
+  });
+  const defRing = document.getElementById('gd-default-ring');
+  if (defRing) defRing.value = String(g.defaultRing ?? 0);
+  const autoMins = document.getElementById('gd-autosync-mins');
+  if (autoMins) autoMins.value = String(g.autoSyncMinutes || 0);
+  const autoPub = document.getElementById('gd-auto-publish');
+  if (autoPub) autoPub.checked = g.autoPublish !== false;
+  const autoSync = document.getElementById('gd-auto-sync-knowledge');
+  if (autoSync) autoSync.checked = g.autoSyncKnowledge !== false;
+}
+
+function toggleGDriveConfigPanel() {
+  const p = document.getElementById('gdrive-config-panel');
+  if (!p) return;
+  p.classList.toggle('hidden');
+}
+
+async function saveGDriveConfig() {
+  const saVal = (document.getElementById('gd-service-account-json')?.value || '').trim();
+  const keyVal = (document.getElementById('gd-api-key')?.value || '').trim();
+  const payload = {
+    rootFolderId: document.getElementById('gd-root-folder')?.value || '',
+    ringFolders: {
+      0: document.getElementById('gd-folder-r0')?.value || '',
+      1: document.getElementById('gd-folder-r1')?.value || '',
+      2: document.getElementById('gd-folder-r2')?.value || '',
+      3: document.getElementById('gd-folder-r3')?.value || ''
+    },
+    defaultRing: Number(document.getElementById('gd-default-ring')?.value ?? 0),
+    autoSyncMinutes: Number(document.getElementById('gd-autosync-mins')?.value || 0),
+    autoPublish: Boolean(document.getElementById('gd-auto-publish')?.checked),
+    autoSyncKnowledge: Boolean(document.getElementById('gd-auto-sync-knowledge')?.checked)
+  };
+  if (saVal) payload.serviceAccountJson = saVal;
+  if (keyVal) payload.apiKey = keyVal;
+
+  const r = await api('POST', '/admin/api/works/gdrive/config', payload);
+  if (!r.ok) {
+    toast(r.data.message || r.data.error || 'Gagal menyimpan konfigurasi Google Drive.', true);
+    return;
+  }
+  if (document.getElementById('gd-service-account-json')) document.getElementById('gd-service-account-json').value = '';
+  if (document.getElementById('gd-api-key')) document.getElementById('gd-api-key').value = '';
+  gdriveState = r.data.gdrive || gdriveState;
+  renderGDriveConfigState();
+  toast('Konfigurasi Google Drive berhasil disimpan di brankas AES-256-GCM!');
+}
+
+async function clearGDriveServiceAccount() {
+  const r = await api('POST', '/admin/api/works/gdrive/config', { clearServiceAccount: true });
+  if (r.ok) {
+    gdriveState = r.data.gdrive || gdriveState;
+    renderGDriveConfigState();
+    toast('Kredensial Service Account dihapus.');
+  }
+}
+
+async function testGDriveConnection() {
+  const box = document.getElementById('gd-test-result');
+  if (!box) return;
+  box.classList.remove('hidden');
+  box.className = 'p-3 rounded-xl text-xs font-mono border bg-surface text-primary';
+  box.textContent = 'Menguji autentikasi & membaca daftar folder Google Drive...';
+
+  await saveGDriveConfig();
+  const rootVal = document.getElementById('gd-root-folder')?.value || '';
+  const r = await api('POST', '/admin/api/works/gdrive/test', rootVal ? { folderId: rootVal } : {});
+  if (!r.ok || !r.data.ok) {
+    box.className = 'p-3 rounded-xl text-xs font-mono border bg-red-50 text-secondary border-red-200';
+    box.textContent = 'Koneksi Gagal: ' + (r.data.error || 'Periksa kembali izin Share folder atau kredensial.');
+    return;
+  }
+  box.className = 'p-3 rounded-xl text-xs font-mono border bg-emerald-50 text-emerald-900 border-emerald-300';
+  if (r.data.folder) {
+    box.textContent = `TERHUBUNG! Folder "${r.data.folder.name}" terbaca (${r.data.subfoldersCount} sub-folder, ${r.data.filesCount} file).`;
+  } else {
+    const summary = (r.data.folders || []).map((f) => `${f.folderName} [R${f.ring}: ${f.filesCount} file]`).join(' • ');
+    box.textContent = `TERHUBUNG! ${r.data.targetsCount || 0} target folder siap: ${summary || 'OK'}`;
+  }
+}
+
+async function syncWorksFromGDrive() {
+  const btn = document.getElementById('btn-gdrive-sync');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[17px] animate-spin">sync</span>Menyinkronkan...';
+  }
+  toast('Membaca folder & mengekstrak file dari Google Drive...');
+  const r = await api('POST', '/admin/api/works/gdrive/sync', {});
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[17px]">cloud_sync</span>Sinkronkan dari Google Drive';
+  }
+  if (!r.ok) {
+    toast('Gagal sinkronisasi Google Drive: ' + (r.data.error || 'Pastikan kredensial & Folder ID sudah diatur.'), true);
+    const cfgPanel = document.getElementById('gdrive-config-panel');
+    if (cfgPanel && cfgPanel.classList.contains('hidden')) cfgPanel.classList.remove('hidden');
+    return;
+  }
+  worksData = r.data.works || worksData;
+  if (r.data.gdrive) {
+    gdriveState = r.data.gdrive;
+    renderGDriveConfigState();
+  }
+  renderWorksGrid();
+  loadOverview();
+  toast(`Sinkronisasi Drive selesai: +${r.data.added} karya baru, ${r.data.updated} diperbarui (${r.data.quarantined} dikarantina ke Ring 0).`);
+}
+
+function toggleGDriveBrowser() {
+  const panel = document.getElementById('gdrive-browser-panel');
+  if (!panel) return;
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) {
+    browseGDriveFolder('');
+  }
+}
+
+async function browseGDriveFolder(folderId = '') {
+  const box = document.getElementById('gd-browser-content');
+  const label = document.getElementById('gd-browser-folder-label');
+  if (!box) return;
+  box.innerHTML = '<div class="p-4 text-xs text-outline font-mono">Memuat isi folder dari Google Drive API...</div>';
+  const url = '/admin/api/works/gdrive/browse' + (folderId ? ('?folderId=' + encodeURIComponent(folderId)) : '');
+  const r = await api('GET', url);
+  if (!r.ok || !r.data.ok) {
+    box.innerHTML = `<div class="p-4 rounded-xl bg-red-50 text-secondary border border-red-200 text-xs">${esc(r.data.error || 'Belum ada folder Google Drive yang dikonfigurasi.')}</div>`;
+    return;
+  }
+  const cur = r.data.currentFolder || {};
+  if (label) {
+    label.textContent = `${cur.name || 'Google Drive'}${cur.id ? ' (' + cur.id + ')' : ''}${cur.ring !== null && cur.ring !== undefined ? ' • Target Default: Ring ' + cur.ring : ''}`;
+  }
+  const folders = r.data.folders || [];
+  const files = r.data.files || [];
+
+  if (!folders.length && !files.length) {
+    box.innerHTML = '<div class="p-4 rounded-xl bg-surface border text-xs text-outline">Folder ini kosong atau belum ada file yang dibagikan ke Service Account.</div>';
+    return;
+  }
+
+  let html = '';
+  if (folders.length) {
+    html += `<div class="space-y-1.5"><div class="text-[11px] font-mono uppercase text-outline font-bold">Sub-Folder (${folders.length})</div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">`;
+    html += folders.map((f) => `
+      <button onclick="browseGDriveFolder('${escJs(f.id)}')" class="text-left p-2.5 rounded-xl bg-surface hover:bg-surface-container border border-outline-variant/40 flex items-center justify-between gap-2 transition-all">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="material-symbols-outlined text-amber-600 text-[20px]">folder</span>
+          <span class="font-semibold text-primary truncate">${esc(f.name)}</span>
+        </div>
+        <span class="text-[10px] font-mono px-2 py-0.5 rounded ring-badge-${f.inferredRing ?? 0} shrink-0">R${f.inferredRing ?? 0}</span>
+      </button>
+    `).join('');
+    html += `</div></div>`;
+  }
+
+  if (files.length) {
+    html += `<div class="space-y-1.5 pt-2"><div class="text-[11px] font-mono uppercase text-outline font-bold">File Dokumen &amp; Karya (${files.length})</div><div class="divide-y divide-outline-variant/30 border border-outline-variant/40 rounded-xl bg-surface overflow-hidden">`;
+    html += files.map((f) => `
+      <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-surface-container-low">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-primary truncate">${esc(f.name)}</span>
+            ${f.syncedWorkId ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold">Tersinkron (Ring ${f.syncedRing})</span>` : '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-container text-outline">Belum Diimpor</span>'}
+          </div>
+          <div class="text-[10px] font-mono text-on-surface-variant truncate">${esc(f.mimeType)} • ID: ${esc(f.id)}</div>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="previewGDriveFileText('${escJs(f.id)}', '${escJs(f.name)}')" class="px-2.5 py-1 rounded border border-outline-variant bg-white hover:bg-surface-container text-primary text-[11px] font-semibold">Baca Teks</button>
+          <button onclick="importSingleGDriveFile('${escJs(f.id)}', ${cur.ring ?? 0}, '${escJs(cur.name || '')}')" class="px-2.5 py-1 rounded bg-primary text-white text-[11px] font-semibold">Impor ke R${cur.ring ?? 0}</button>
+        </div>
+      </div>
+    `).join('');
+    html += `</div></div>`;
+  }
+
+  box.innerHTML = html;
+}
+
+async function previewGDriveFileText(fileId, fileName) {
+  toast('Membaca isi file dari Google Drive API...');
+  const r = await api('POST', '/admin/api/works/gdrive/read-file', { fileId, importWork: false });
+  if (!r.ok || !r.data.ok) {
+    toast('Gagal membaca file: ' + (r.data.error || 'Error'), true);
+    return;
+  }
+  document.getElementById('tp-modal-title').textContent = `Isi File Google Drive: ${fileName}`;
+  document.getElementById('tp-modal-body').textContent = r.data.text || '(File ini berformat biner/media atau tidak memiliki teks yang dapat diekstrak secara langsung. Metadata & tautan tetap dapat disinkronkan.)';
+  document.getElementById('text-preview-modal').classList.remove('hidden');
+}
+
+async function importSingleGDriveFile(fileId, ring, folderName) {
+  toast('Mengimpor file dari Google Drive ke Repositori Karya...');
+  const r = await api('POST', '/admin/api/works/gdrive/read-file', { fileId, ring, folderName, importWork: true });
+  if (!r.ok || !r.data.ok) {
+    toast('Gagal mengimpor file: ' + (r.data.error || 'Error'), true);
+    return;
+  }
+  await loadWorks();
+  const imp = r.data.imported;
+  if (imp && imp.quarantined) {
+    toast(`File diimpor & otomatis dikarantina ke Ring 0 karena mengandung kata sensitif Protokol Ring!`);
+  } else {
+    toast(`File "${r.data.file.name}" berhasil disinkronkan ke Repositori Karya!`);
+  }
 }
 
 function filterWorksRing(ring) {
@@ -884,13 +1159,18 @@ function renderWorksGrid() {
           <div class="absolute top-3 left-3 flex items-center gap-1.5">
             <span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded font-bold ring-badge-${w.ring}">Ring ${w.ring}</span>
             <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-black/70 text-white">${esc(w.type)}</span>
+            ${w.gdriveFileId ? `<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-900/90 text-emerald-100 border border-emerald-400/40">Drive API</span>` : ''}
           </div>
           <span class="absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 rounded ${w.status === 'published' ? 'bg-emerald-700 text-white' : 'bg-amber-600 text-white'}">${w.status === 'published' ? 'Terbit' : 'Draf'}</span>
         </div>
         <div class="p-4 space-y-2">
-          <div class="text-[11px] font-mono text-gold-antique font-bold">${esc(w.subtitle || (w.year ? 'Tahun ' + w.year : ''))}</div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="text-[11px] font-mono text-gold-antique font-bold truncate">${esc(w.subtitle || (w.year ? 'Tahun ' + w.year : ''))}</div>
+            ${w.link ? `<a href="${esc(w.link)}" target="_blank" rel="noopener" class="text-[10px] font-mono text-primary underline shrink-0">Buka Sumber ↗</a>` : ''}
+          </div>
           <h3 class="font-serif text-lg text-navy-imperial font-bold leading-snug">${esc(w.title)}</h3>
           <p class="text-xs text-slate-body line-clamp-3">${esc(w.summary || '')}</p>
+          ${w.quarantinedFromRing ? `<div class="text-[10px] font-mono text-amber-900 bg-amber-50 px-2 py-1 rounded border border-amber-300">Auto-Karantina ke Ring 0 dari Ring ${esc(w.quarantinedFromRing)} (Stricter Wins)</div>` : ''}
           ${w.flagged && w.flagged.length ? `<div class="text-[10px] font-mono text-burgundy bg-burgundy-light px-2 py-1 rounded border border-burgundy/20">Kata sensitif terdeteksi: ${esc(w.flagged.join(', '))}</div>` : ''}
         </div>
       </div>

@@ -604,3 +604,198 @@ test('Relational SQLite Multi-File Database & PostgreSQL RLS Schema verification
   assert.match(sqliteSchema, /USING fts5/);
   assert.match(sqliteSchema, /trg_audit_logs_no_update/);
 });
+
+test('Ring 0 Studio: Google Drive API v3 Connector (Service Account JWT, Folder/File Reader, Stricter Wins Quarantine & Knowledge Sync)', async () => {
+  const crypto = require('node:crypto');
+  const { privateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const pemKey = privateKey.export({ type: 'pkcs8', format: 'pem' });
+
+  const fakeServiceAccount = {
+    type: 'service_account',
+    project_id: 'icoachandrew-vault',
+    private_key_id: 'key_12345',
+    private_key: pemKey,
+    client_email: 'drive-reader@icoachandrew-vault.iam.gserviceaccount.com',
+    token_uri: 'https://oauth2.googleapis.com/token'
+  };
+
+  // Mock Google OAuth2 + Google Drive v3 API
+  app.studio.works.gdrive.setCustomFetch(async (urlStr, opts = {}) => {
+    const u = new URL(urlStr);
+    if (u.origin + u.pathname === 'https://oauth2.googleapis.com/token') {
+      assert.strictEqual(opts.method, 'POST');
+      assert.match(String(opts.body), /jwt-bearer/);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ access_token: 'ya29.mock_drive_token_123', expires_in: 3600 })
+      };
+    }
+
+    // Check Bearer token header
+    assert.strictEqual(opts.headers && opts.headers.Authorization, 'Bearer ya29.mock_drive_token_123');
+
+    // 1. Export Google Doc
+    if (u.pathname.endsWith('/files/file_gdoc_r3/export')) {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => 'Kepemimpinan lintas generasi menuntut arsitektur tata kelola yang jernih dan disiplin eksekusi.'
+      };
+    }
+    // 2. Download plain text file (Ring 2)
+    if (u.pathname.endsWith('/files/file_txt_r2') && u.searchParams.get('alt') === 'media') {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => 'Ritme operasional harian Orbex menyelaraskan niat strategis dewan direksi dengan eksekusi lapangan.'
+      };
+    }
+    // 3. Download sensitive file placed in Ring 3 folder -> should be auto-quarantined to Ring 0!
+    if (u.pathname.endsWith('/files/file_sens_leak') && u.searchParams.get('alt') === 'media') {
+      return {
+        ok: true,
+        status: 200,
+        text: async () => 'Catatan ini membahas unresolved family succession dispute pada PT Dirgantara holdings yang bersifat sangat rahasia.'
+      };
+    }
+
+    // 4. Folder metadata lookup
+    if (u.pathname.endsWith('/files/1RootFolderAndrewTani12345')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ id: '1RootFolderAndrewTani12345', name: 'Karya Andrew Tani Master', mimeType: 'application/vnd.google-apps.folder' })
+      };
+    }
+    if (u.pathname.endsWith('/files/file_gdoc_r3')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: 'file_gdoc_r3',
+          name: 'Arsitektur Kepemimpinan Nusantara (2024)',
+          mimeType: 'application/vnd.google-apps.document',
+          description: 'Esai publik tentang arsitektur tata kelola.',
+          webViewLink: 'https://docs.google.com/document/d/file_gdoc_r3/edit'
+        })
+      };
+    }
+
+    // 5. Folder children listing
+    const q = u.searchParams.get('q') || '';
+    if (q.includes("'1RootFolderAndrewTani12345' in parents")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          files: [
+            { id: 'folder_sub_r3', name: 'Ring 3 - Publik', mimeType: 'application/vnd.google-apps.folder' },
+            { id: 'folder_sub_r2', name: 'Ring 2 - Member', mimeType: 'application/vnd.google-apps.folder' }
+          ]
+        })
+      };
+    }
+    if (q.includes("'folder_sub_r3' in parents")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          files: [
+            {
+              id: 'file_gdoc_r3',
+              name: 'Arsitektur Kepemimpinan Nusantara (2024)',
+              mimeType: 'application/vnd.google-apps.document',
+              description: 'Esai publik tentang arsitektur tata kelola.',
+              webViewLink: 'https://docs.google.com/document/d/file_gdoc_r3/edit'
+            },
+            {
+              id: 'file_sens_leak',
+              name: 'Draft Suksesi Keluarga.txt',
+              mimeType: 'text/plain',
+              description: 'Catatan rapat tertutup'
+            }
+          ]
+        })
+      };
+    }
+    if (q.includes("'folder_sub_r2' in parents")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          files: [
+            {
+              id: 'file_txt_r2',
+              name: '[Modul] Panduan Ritme Harian Orbex (2023).txt',
+              mimeType: 'text/plain',
+              description: 'Modul khusus anggota berlisensi Ring 2.'
+            }
+          ]
+        })
+      };
+    }
+
+    return { ok: false, status: 404, json: async () => ({ error: { message: 'Not found in mock' } }) };
+  });
+
+  try {
+    // 1. Save Google Drive config using a full Google Drive folder URL
+    const cfgRes = await admin('POST', '/admin/api/works/gdrive/config', {
+      serviceAccountJson: JSON.stringify(fakeServiceAccount),
+      rootFolderId: 'https://drive.google.com/drive/folders/1RootFolderAndrewTani12345?usp=sharing',
+      defaultRing: 0,
+      autoPublish: true,
+      autoSyncKnowledge: true
+    });
+    assert.strictEqual(cfgRes.status, 200);
+    assert.strictEqual(cfgRes.json.gdrive.configured, true);
+    assert.strictEqual(cfgRes.json.gdrive.rootFolderId, '1RootFolderAndrewTani12345');
+    assert.strictEqual(cfgRes.json.gdrive.clientEmail, fakeServiceAccount.client_email);
+
+    // 2. Test connection endpoint
+    const testRes = await admin('POST', '/admin/api/works/gdrive/test', {});
+    assert.strictEqual(testRes.status, 200);
+    assert.strictEqual(testRes.json.ok, true);
+    assert.strictEqual(testRes.json.targetsCount, 3); // Root + Ring 3 subfolder + Ring 2 subfolder
+
+    // 3. Browse folder endpoint
+    const browseRes = await admin('GET', '/admin/api/works/gdrive/browse');
+    assert.strictEqual(browseRes.status, 200);
+    assert.strictEqual(browseRes.json.folders.length, 2);
+
+    // 4. Read single file text endpoint
+    const readRes = await admin('POST', '/admin/api/works/gdrive/read-file', { fileId: 'file_gdoc_r3', importWork: false });
+    assert.strictEqual(readRes.status, 200);
+    assert.strictEqual(readRes.json.extracted, true);
+    assert.match(readRes.json.text, /Kepemimpinan lintas generasi/);
+
+    // 5. Full Sync from Google Drive
+    const syncRes = await admin('POST', '/admin/api/works/gdrive/sync', {});
+    assert.strictEqual(syncRes.status, 200);
+    assert.strictEqual(syncRes.json.ok, true);
+    assert.strictEqual(syncRes.json.added, 3);
+    assert.strictEqual(syncRes.json.quarantined, 1, 'Sensitive file in Ring 3 subfolder auto-quarantined to Ring 0');
+
+    // Verify public Ring 3 can see the clean Ring 3 Google Doc, CANNOT see Ring 2 or the quarantined Ring 0 doc
+    const pubWorks = await user('GET', '/api/works');
+    assert.strictEqual(pubWorks.status, 200);
+    const pubTitles = pubWorks.json.works.map((w) => w.title);
+    assert.ok(pubTitles.includes('Arsitektur Kepemimpinan Nusantara (2024)'), 'Public Ring 3 work from Google Drive is published');
+    assert.ok(!pubTitles.some((t) => t.includes('Panduan Ritme Harian Orbex')), 'Ring 2 Drive work hidden from public Ring 3');
+    assert.ok(!pubTitles.some((t) => t.includes('Draft Suksesi Keluarga')), 'Quarantined Ring 0 Drive work hidden from public Ring 3');
+
+    // Verify knowledge store retrieval: Ring 3 can retrieve the Ring 3 Google Doc, and only Ring 0 can retrieve the quarantined doc
+    const r3Hits = app.retrieve(3, 'Kepemimpinan lintas generasi arsitektur');
+    assert.ok(r3Hits.some((h) => h.doc.title.includes('Arsitektur Kepemimpinan Nusantara')));
+    assert.strictEqual(app.retrieve(3, 'Dirgantara succession dispute').length, 0);
+    assert.ok(app.retrieve(0, 'Dirgantara succession dispute').length >= 1);
+
+    // Verify backup export never leaks the Service Account private key
+    const expRes = await fetch(A + '/admin/api/export', { headers: { cookie } });
+    const expText = await expRes.text();
+    assert.ok(!expText.includes('BEGIN PRIVATE KEY'), 'Service Account private_key is never exposed in export');
+  } finally {
+    app.studio.works.gdrive.setCustomFetch(null);
+  }
+});

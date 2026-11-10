@@ -838,19 +838,179 @@
       </div>
 
       <!-- ======================================================== -->
-      <!-- TAB CONTENT: REPOSITORI KARYA R0–R3                       -->
+      <!-- TAB CONTENT: REPOSITORI KARYA R0–R3 + GOOGLE DRIVE API    -->
       <!-- ======================================================== -->
       <div id="tab-works" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Repositori Karya Andrew Tani (Ring 0 – Ring 3)</h2>
-            <p class="font-body-sm text-body-sm text-on-surface-variant">Buku, esai, modul Orbex, dan memoar pribadi terklasifikasi Ring 0–3.</p>
+            <div class="flex items-center gap-2 mb-1">
+              <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Repositori Karya Andrew Tani (Ring 0 – Ring 3)</h2>
+              <span id="gdrive-status-badge" class="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-surface-container text-on-surface-variant border border-outline-variant/40">GOOGLE DRIVE: MEMERIKSA...</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Buku, esai, modul Orbex, dan memoar pribadi terklasifikasi Ring 0–3 • Terhubung langsung dengan API Google Drive (Folder &amp; File Reader).</p>
           </div>
-          <button onclick="openWorkModal()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-[18px]">add_circle</span>Tambah Karya Baru
-          </button>
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="syncWorksFromGDrive()" id="btn-gdrive-sync" class="px-3.5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+              <span class="material-symbols-outlined text-[17px]">cloud_sync</span>Sinkronkan dari Google Drive
+            </button>
+            <button onclick="toggleGDriveBrowser()" class="px-3.5 py-2 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container text-primary text-xs font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[17px]">folder_open</span>Jelajahi Folder Drive
+            </button>
+            <button onclick="toggleGDriveConfigPanel()" class="px-3.5 py-2 rounded-xl border border-outline-variant bg-surface hover:bg-surface-container text-primary text-xs font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[17px]">settings</span>Pengaturan Drive API
+            </button>
+            <button onclick="openWorkModal()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">add_circle</span>Tambah Manual
+            </button>
+          </div>
         </div>
-        <div class="flex items-center gap-2">
+
+        <!-- Google Drive Sync Telemetry Banner -->
+        <div id="gdrive-summary-bar" class="bg-surface-container-lowest rounded-xl px-4 py-3 border border-outline-variant/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-primary text-[20px]">add_to_drive</span>
+            <div>
+              <span id="gdrive-summary-title" class="font-semibold text-primary">Konektor Google Drive API v3 (Read-Only Enclave)</span>
+              <span id="gdrive-summary-sub" class="block text-[11px] text-on-surface-variant font-mono">Belum ada sinkronisasi terakhir.</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 text-[11px] font-mono">
+            <span id="gdrive-client-email-pill" class="px-2.5 py-1 rounded bg-surface-container text-primary hidden"></span>
+            <button onclick="toggleGDriveConfigPanel()" class="text-primary underline font-semibold">Konfigurasi Folder &amp; Kredensial</button>
+          </div>
+        </div>
+
+        <!-- Collapsible: Google Drive API Configuration Panel -->
+        <div id="gdrive-config-panel" class="hidden bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/50 shadow-sm space-y-5">
+          <div class="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+            <div>
+              <span class="text-[10px] font-mono uppercase tracking-wider text-on-tertiary-container font-bold">Google Drive API v3 • AES-256-GCM Vault</span>
+              <h3 class="font-serif text-xl text-primary font-bold">Konfigurasi Kredensial &amp; Pemetaan Folder Ring 0–3</h3>
+            </div>
+            <button onclick="toggleGDriveConfigPanel()" class="text-outline hover:text-primary text-sm font-bold">✕ Tutup</button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-xs">
+            <!-- Left: Credentials (Service Account JSON Recommended + API Key Fallback) -->
+            <div class="lg:col-span-6 space-y-3">
+              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-primary flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">verified_user</span>1. Kredensial Service Account JSON (Direkomendasikan)
+                  </span>
+                  <span id="gd-sa-hint" class="font-mono text-[10px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Belum tersimpan</span>
+                </div>
+                <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                  Tempel isi file JSON Service Account Google Cloud Anda di bawah ini. Kunci privat dienkripsi dengan <strong>AES-256-GCM</strong> di brankas server. Setelah disimpan, bagikan (<em>Share</em> sebagai <strong>Viewer</strong>) folder Google Drive karya Andrew Tani ke alamat email Service Account tersebut.
+                </p>
+                <textarea id="gd-service-account-json" rows="4" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"icoach-drive@...iam.gserviceaccount.com"}' class="w-full border rounded-lg p-2.5 font-mono text-[11px] bg-white"></textarea>
+                <div class="flex items-center justify-between text-[11px]">
+                  <span id="gd-active-email" class="font-mono text-emerald-800 font-semibold truncate"></span>
+                  <button onclick="clearGDriveServiceAccount()" type="button" class="text-secondary hover:underline">Hapus Service Account</button>
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-primary">Alternatif: Google Drive API Key (Khusus Folder Publik)</span>
+                  <span id="gd-apikey-hint" class="font-mono text-[10px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Opsional</span>
+                </div>
+                <input id="gd-api-key" type="password" placeholder="AIzaSy... (Kosongkan bila sudah memakai Service Account)" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
+              </div>
+            </div>
+
+            <!-- Right: Folder Mapping & Ring Protocol Sync Options -->
+            <div class="lg:col-span-6 space-y-3">
+              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2.5">
+                <span class="font-bold text-primary block">2. Folder Induk &amp; Pemetaan Folder Ring 0–3</span>
+                <p class="text-[11px] text-on-surface-variant">
+                  Anda dapat menempelkan <strong>Link URL Folder Google Drive</strong> atau <strong>Folder ID</strong>. Jika memakai 1 Folder Induk yang di dalamnya memiliki sub-folder bernama <code>Ring 0</code>, <code>Ring 1</code>, <code>Ring 2</code>, <code>Ring 3</code>, sistem otomatis memetakan tiap sub-folder ke Ring yang sesuai.
+                </p>
+                <label class="block space-y-1">
+                  <span class="font-semibold text-primary">Folder Induk Utama (Root Folder URL / ID):</span>
+                  <input id="gd-root-folder" type="text" placeholder="https://drive.google.com/drive/folders/1aBcDeFg... atau ID Folder" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-secondary">Folder Ring 0 (Sovereign / Pribadi):</span>
+                    <input id="gd-folder-r0" type="text" placeholder="Opsional: URL / ID Folder R0" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                  </label>
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-amber-800">Folder Ring 1 (Inner Circle):</span>
+                    <input id="gd-folder-r1" type="text" placeholder="Opsional: URL / ID Folder R1" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                  </label>
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-primary">Folder Ring 2 (Anggota Berlisensi):</span>
+                    <input id="gd-folder-r2" type="text" placeholder="Opsional: URL / ID Folder R2" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                  </label>
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-emerald-800">Folder Ring 3 (Kanon Publik):</span>
+                    <input id="gd-folder-r3" type="text" placeholder="Opsional: URL / ID Folder R3" class="w-full border rounded p-1.5 font-mono text-[11px] bg-white"/>
+                  </label>
+                </div>
+              </div>
+
+              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2.5">
+                <span class="font-bold text-primary block">3. Kebijakan Sinkronisasi &amp; Guardrail Protokol Ring</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] text-on-surface-variant">Ring Default (Tanpa Label):</span>
+                    <select id="gd-default-ring" class="w-full border rounded p-1.5 bg-white font-semibold">
+                      <option value="0">Ring 0 (Stricter Wins — Aman)</option>
+                      <option value="1">Ring 1 (Eksekutor)</option>
+                      <option value="2">Ring 2 (Anggota)</option>
+                      <option value="3">Ring 3 (Publik)</option>
+                    </select>
+                  </label>
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] text-on-surface-variant">Interval Auto-Sync Latar:</span>
+                    <select id="gd-autosync-mins" class="w-full border rounded p-1.5 bg-white font-semibold">
+                      <option value="0">Manual Saja (Klik Tombol)</option>
+                      <option value="15">Setiap 15 Menit</option>
+                      <option value="30">Setiap 30 Menit</option>
+                      <option value="60">Setiap 60 Menit</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="flex flex-wrap gap-4 pt-1">
+                  <label class="flex items-center gap-1.5"><input id="gd-auto-publish" type="checkbox" checked/> Langsung Terbitkan Karya</label>
+                  <label class="flex items-center gap-1.5"><input id="gd-auto-sync-knowledge" type="checkbox" checked/> Sinkronkan Isi Teks ke Memori AI Ring 0–3</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="gd-test-result" class="hidden p-3 rounded-xl text-xs font-mono border"></div>
+
+          <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-outline-variant/30">
+            <button onclick="testGDriveConnection()" type="button" class="px-4 py-2 rounded-xl border border-primary text-primary hover:bg-surface-container text-xs font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">wifi_tethering</span>Tes Koneksi &amp; Baca Folder
+            </button>
+            <button onclick="saveGDriveConfig()" type="button" class="px-5 py-2 rounded-xl bg-primary text-white hover:bg-primary-container text-xs font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">save</span>Simpan Konfigurasi Google Drive
+            </button>
+          </div>
+        </div>
+
+        <!-- Collapsible: Live Google Drive Folder & File Browser -->
+        <div id="gdrive-browser-panel" class="hidden bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/50 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-outline-variant/30 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">folder_Managed</span>
+              <div>
+                <h3 class="font-serif text-lg text-primary font-bold">Penjelajah Folder &amp; File Google Drive (Live API)</h3>
+                <p id="gd-browser-folder-label" class="text-[11px] font-mono text-on-surface-variant">Memuat folder...</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="browseGDriveFolder('')" class="px-3 py-1.5 rounded-lg border text-xs font-semibold text-primary hover:bg-surface-container">Folder Utama</button>
+              <button onclick="toggleGDriveBrowser()" class="px-3 py-1.5 rounded-lg border text-xs text-outline hover:text-primary">✕ Tutup</button>
+            </div>
+          </div>
+          <div id="gd-browser-content" class="space-y-3 text-xs"></div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
           <button onclick="filterWorksRing('all')" data-wring="all" class="wring-btn px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold">Semua Ring</button>
           <button onclick="filterWorksRing(0)" data-wring="0" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-0 text-xs font-semibold">Ring 0 • Sovereign</button>
           <button onclick="filterWorksRing(1)" data-wring="1" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-1 text-xs font-semibold">Ring 1 • Eksekutor</button>
