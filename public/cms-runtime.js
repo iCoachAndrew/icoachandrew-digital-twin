@@ -305,13 +305,20 @@
       rules.push(`.bg-secondary { background-color: ${c.secondary} !important; }`);
     }
     const f = theme.fonts || {};
-    if (f.serif) {
-      ensureGoogleFont(f.serif);
-      rules.push(`.font-display-lg, .font-headline-xl, .font-headline-lg, .font-headline-sm, .font-serif { font-family: "${f.serif}", Georgia, serif !important; }`);
-    }
-    if (f.sans) {
-      ensureGoogleFont(f.sans);
-      rules.push(`.font-body-lg, .font-body-md, .font-body-sm, .font-label-md, .font-label-sm, body { font-family: "${f.sans}", sans-serif !important; }`);
+    if (f.consistentAll) {
+      ensureGoogleFont(f.consistentAll);
+      rules.push(`body, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, select, li, blockquote, .font-serif, .font-sans, .font-serif-heading, .font-display-lg, .font-headline-xl, .font-headline-lg, .font-headline-md, .font-headline-sm, .font-title-md, .font-body-lg, .font-body-md, .font-body-sm, .font-label-md, .font-label-sm { font-family: "${f.consistentAll}", -apple-system, BlinkMacSystemFont, sans-serif !important; }`);
+      rules.push(`.material-symbols-outlined { font-family: 'Material Symbols Outlined' !important; }`);
+    } else {
+      if (f.serif) {
+        ensureGoogleFont(f.serif);
+        rules.push(`h1, h2, h3, h4, .font-serif, .font-serif-heading, .font-display-lg, .font-headline-xl, .font-headline-lg, .font-headline-md, .font-headline-sm { font-family: "${f.serif}", Georgia, serif !important; }`);
+      }
+      if (f.sans) {
+        ensureGoogleFont(f.sans);
+        rules.push(`body, p, a, button, input, textarea, select, li, .font-sans, .font-body-lg, .font-body-md, .font-body-sm, .font-label-md, .font-label-sm { font-family: "${f.sans}", -apple-system, BlinkMacSystemFont, sans-serif !important; }`);
+        rules.push(`.material-symbols-outlined { font-family: 'Material Symbols Outlined' !important; }`);
+      }
     }
     if (theme.customCss) rules.push(theme.customCss);
     styleEl.textContent = rules.join('\n');
@@ -550,6 +557,123 @@
     }
   }
 
+  // ---------- Human-friendly labels & plain-text entity decoder ----------
+  const SECTION_LABELS = {
+    'ruang-diskusi': 'Ruang Diskusi & Chat Utama',
+    'beranda': 'Profil: Siapa Andrew Tani',
+    'karya-buku': 'Pustaka & Buku Rujukan',
+    'lingkaran-pendampingan': 'Pilihan Akses Diskusi',
+    'tentang-pak-andrew-tani': 'Rekam Jejak & Biografi',
+    'footer': 'Catatan Kaki (Bagian Bawah)',
+    'halaman': 'Bagian Atas / Navigasi'
+  };
+
+  const ELEMENT_ID_LABELS = {
+    'top-bar-left': 'Label Baris Atas (Header)',
+    'header-subtitle': 'Subjudul Logo iCoachAndrew',
+    'chat-badge': 'Label Atas Ruang Chat',
+    'chat-free-pill': 'Info Kuota 10x Gratis',
+    'chat-title': 'Judul Utama Ruang Chat',
+    'chat-subtitle': 'Penjelasan Singkat Ruang Chat',
+    'prompt-chip-1': 'Tombol Pertanyaan Kilat 1',
+    'prompt-chip-2': 'Tombol Pertanyaan Kilat 2',
+    'prompt-chip-3': 'Tombol Pertanyaan Kilat 3',
+    'prompt-chip-4': 'Tombol Pertanyaan Kilat 4',
+    'chat-welcome-header': 'Judul Sapaan Pembuka Chat',
+    'chat-welcome-body': 'Isi Sapaan Pembuka Pak Andrew',
+    'chat-welcome-foot': 'Catatan Kaki Sapaan Chat',
+    'who-trigger-badge': 'Label Kartu Siapa Andrew Tani',
+    'who-trigger-title': 'Judul Tombol Siapa Andrew Tani',
+    'who-trigger-desc': 'Penjelasan Tombol Siapa Andrew Tani',
+    'hero-badge': 'Label Profil Siapa Andrew Tani',
+    'hero-title': 'Judul Utama Profil Andrew Tani',
+    'hero-subtitle': 'Paragraf Pembuka Profil Andrew Tani',
+    'portrait-name': 'Nama pada Kartu Foto Profil',
+    'portrait-title': 'Jabatan pada Kartu Foto Profil',
+    'portrait-subtitle': 'Keterangan Buku pada Kartu Foto',
+    'portrait-quote': 'Kutipan pada Kartu Foto Profil',
+    'books-badge': 'Label Bagian Buku & Karya',
+    'books-title': 'Judul Bagian Buku & Karya',
+    'books-subtitle': 'Deskripsi Bagian Buku & Karya',
+    'book1-title': 'Judul Buku 1 (Organizing for Business Excellence)',
+    'book1-desc': 'Ringkasan Buku 1',
+    'book2-title': 'Judul Buku 2 (Brain Quotient)',
+    'book2-desc': 'Ringkasan Buku 2',
+    'book3-title': 'Judul Karya 3 (Suksesi & Tata Kelola)',
+    'book3-desc': 'Ringkasan Karya 3',
+    'book4-title': 'Judul Karya 4 (Refleksi & Lagu)',
+    'book4-desc': 'Ringkasan Karya 4',
+    'tiers-title': 'Judul Bagian Pilihan Akses',
+    'tiers-subtitle': 'Subjudul Bagian Pilihan Akses',
+    'tier1-name': 'Nama Paket Akses 1 (Publik)',
+    'tier1-desc': 'Deskripsi Paket Akses 1',
+    'tier2-name': 'Nama Paket Akses 2 (Eksekutif)',
+    'tier2-desc': 'Deskripsi Paket Akses 2',
+    'footer-desc': 'Deskripsi Penutup (Bagian Bawah)',
+    'footer-address': 'Alamat Kantor (Bagian Bawah)',
+    'footer-contact-title': 'Judul Kontak Sekretariat',
+    'footer-contact-desc': 'Teks Kontak Sekretariat',
+    'footer-wa-text': 'Teks Tombol WhatsApp Sekretariat',
+    'footer-ethics-title': 'Judul Etika & Penafian',
+    'footer-ethics-desc': 'Isi Etika & Penafian'
+  };
+
+  function decodeHtmlToPlainText(rawHtml, fallbackEl) {
+    if (fallbackEl && typeof fallbackEl.innerText === 'string' && fallbackEl.children.length === 0) {
+      return fallbackEl.textContent.replace(/\s+/g, ' ').trim();
+    }
+    const str = String(rawHtml ?? '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
+      .replace(/<[^>]+>/g, '');
+    if (typeof document !== 'undefined') {
+      const txt = document.createElement('textarea');
+      txt.innerHTML = str;
+      return txt.value.trim();
+    }
+    return str
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&nbsp;/g, ' ')
+      .trim();
+  }
+
+  function getFriendlyType(el) {
+    if (!el || !el.tagName) return 'Elemen';
+    const t = el.tagName.toLowerCase();
+    if (t === 'img') return 'Foto / Gambar';
+    if (/^h[1-6]$/.test(t)) return 'Judul';
+    if (t === 'button') return 'Tombol';
+    if (t === 'a') return 'Tombol / Tautan';
+    if (t === 'input' || t === 'textarea') return 'Kolom Isian';
+    if (t === 'section') return 'Bagian Halaman';
+    return 'Teks';
+  }
+
+  function getFriendlySectionName(secId) {
+    if (!secId) return 'Bagian Halaman';
+    const clean = String(secId).replace(/^#/, '');
+    return SECTION_LABELS[clean] || clean.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  function getFriendlyLabel(el, key) {
+    if (!el) return 'Elemen Halaman';
+    if (el.id && ELEMENT_ID_LABELS[el.id]) return ELEMENT_ID_LABELS[el.id];
+    const typeLabel = getFriendlyType(el);
+    if (el.tagName === 'IMG') {
+      return 'Foto: ' + (el.getAttribute('alt') || 'Gambar Halaman');
+    }
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      return 'Kolom Input: ' + (el.getAttribute('placeholder') || 'Isian Teks').slice(0, 38);
+    }
+    const sample = (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 42);
+    if (sample) return `${typeLabel}: "${sample}${sample.length >= 42 ? '…' : ''}"`;
+    return typeLabel;
+  }
+
   // ---------- Studio Visual Canvas Bridge (?studio=1) ----------
   function initStudioBridge() {
     document.body.classList.add('bio-revealed');
@@ -599,10 +723,9 @@
       if (!el) return '';
       const t = el.tagName.toLowerCase();
       if (t === 'img') return 'FOTO / GAMBAR • Klik untuk ganti';
-      if (t === 'section') return 'SECTION #' + (el.id || '');
-      if (t === 'a') return 'TAUTAN • ' + (el.textContent || '').trim().slice(0, 28);
-      if (t === 'button') return 'TOMBOL • ' + (el.textContent || '').trim().slice(0, 28);
-      return t.toUpperCase() + (el.id ? ' #' + el.id : '');
+      if (t === 'section') return 'BAGIAN: ' + getFriendlySectionName(el.id || '');
+      const fLabel = getFriendlyLabel(el);
+      return fLabel.slice(0, 48) + ' • Klik untuk edit';
     }
 
     function isEditableTarget(el) {
@@ -650,7 +773,8 @@
         t.removeEventListener('blur', onBlur);
         const key = computeKey(t);
         if (key) {
-          window.parent.postMessage({ type: 'cms:inline-edit', key, lang: activeLang(), html: sanitizeHtml(t.innerHTML) }, window.location.origin);
+          const cleanPlain = decodeHtmlToPlainText(t.innerHTML, t);
+          window.parent.postMessage({ type: 'cms:inline-edit', key, lang: activeLang(), html: cleanPlain, plainText: cleanPlain }, window.location.origin);
         }
       };
       t.addEventListener('blur', onBlur);
@@ -673,9 +797,16 @@
         setTimeout(notifyParentState, 80);
       } else if (msg.type === 'cms:set-lang' && typeof window.setLanguage === 'function') {
         window.setLanguage(msg.lang);
+      } else if (msg.type === 'cms:toggle-bio') {
+        if (msg.show === false) document.body.classList.remove('bio-revealed');
+        else document.body.classList.add('bio-revealed');
+        setTimeout(() => { updateBoxes(); notifyParentState(); }, 80);
       } else if (msg.type === 'cms:select-key') {
         const el = resolveKey(msg.key);
         if (el) {
+          if (el.closest('[data-bio-section="1"]')) {
+            document.body.classList.add('bio-revealed');
+          }
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           selectElement(el);
         }
@@ -693,16 +824,23 @@
       updateBoxes();
       const cs = window.getComputedStyle(el);
       const entry = (siteDoc && siteDoc.elements && siteDoc.elements[key]) || {};
+      const secEl = el.closest('section[id], footer, header');
+      const secId = secEl ? (secEl.id || secEl.tagName.toLowerCase()) : 'halaman';
+      const plainText = decodeHtmlToPlainText(el.innerHTML, el);
       window.parent.postMessage({
         type: 'cms:selected',
         key,
+        friendlyLabel: getFriendlyLabel(el, key),
+        friendlyType: getFriendlyType(el),
+        sectionLabel: getFriendlySectionName(secId),
         tag: el.tagName.toLowerCase(),
         isImage: el.tagName === 'IMG',
         isLink: el.tagName === 'A',
         isInput: el.tagName === 'INPUT' || el.tagName === 'TEXTAREA',
         lang: activeLang(),
-        html: el.innerHTML,
-        text: (el.textContent || '').trim().slice(0, 300),
+        html: plainText,
+        plainText,
+        text: plainText.slice(0, 400),
         src: el.tagName === 'IMG' ? el.getAttribute('src') : null,
         alt: el.tagName === 'IMG' ? (el.getAttribute('alt') || '') : null,
         href: el.tagName === 'A' ? (el.getAttribute('href') || '') : null,
@@ -734,13 +872,15 @@
       const key = computeKey(img);
       if (!key) return;
       rememberOriginal(key, img);
-      const sec = img.closest('section[id], div[id]');
+      const sec = img.closest('section[id], footer, header, div[id]');
+      const secId = sec ? (sec.id || sec.tagName.toLowerCase()) : 'halaman';
       images.push({
         index: i,
         key,
         src: img.getAttribute('src') || '',
         alt: img.getAttribute('alt') || ('Foto #' + (i + 1)),
-        section: sec ? sec.id : 'halaman',
+        section: secId,
+        sectionLabel: getFriendlySectionName(secId),
         width: img.naturalWidth || img.clientWidth || 0,
         height: img.naturalHeight || img.clientHeight || 0
       });
@@ -754,12 +894,37 @@
         const h = s.querySelector('h1, h2, h3');
         sections.push({
           id: s.id,
-          title: h ? (h.textContent || '').trim().slice(0, 70) : s.id,
+          friendlyName: getFriendlySectionName(s.id),
+          title: h ? (h.textContent || '').trim().slice(0, 70) : getFriendlySectionName(s.id),
           hidden: s.hasAttribute('data-cms-section-hidden')
         });
       });
     }
-    return { images, sections, lang: activeLang() };
+
+    const editableElements = [];
+    const seenKeys = new Set();
+    const candidates = document.querySelectorAll('h1, h2, h3, [id^="chat-"], [id^="prompt-chip-"], [id^="who-trigger-"], [id^="hero-"], [id^="portrait-"], [id^="book"], [id^="tier"], [id^="footer-"], #header-subtitle, #top-bar-left');
+    candidates.forEach((el) => {
+      if (!el || el.tagName === 'IMG' || el.tagName === 'SECTION' || el.tagName === 'FORM' || el.tagName === 'AUDIO') return;
+      if (el.closest('[data-cms-injected="studio-ui"]')) return;
+      const key = computeKey(el);
+      if (!key || seenKeys.has(key)) return;
+      const plain = decodeHtmlToPlainText(el.innerHTML, el);
+      if (!plain && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') return;
+      seenKeys.add(key);
+      const sec = el.closest('section[id], footer, header');
+      const secId = sec ? (sec.id || sec.tagName.toLowerCase()) : 'halaman';
+      editableElements.push({
+        key,
+        friendlyLabel: getFriendlyLabel(el, key),
+        friendlyType: getFriendlyType(el),
+        section: secId,
+        sectionLabel: getFriendlySectionName(secId),
+        preview: plain.slice(0, 70)
+      });
+    });
+
+    return { images, sections, editableElements, lang: activeLang() };
   }
 
   function notifyParentState() {

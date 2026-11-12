@@ -184,6 +184,72 @@
     html[data-font-scale="xlarge"] .text-title-md, html[data-font-scale="xlarge"] .text-lg { font-size: 25px !important; line-height: 1.55 !important; }
     html[data-font-scale="xlarge"] .text-headline-sm, html[data-font-scale="xlarge"] .text-xl { font-size: 28px !important; line-height: 1.4 !important; }
     html[data-font-scale="xlarge"] .text-headline-md, html[data-font-scale="xlarge"] .text-2xl { font-size: 34px !important; line-height: 1.35 !important; }
+
+    /* ==========================================================================
+       COLLAPSIBLE LEFT SIDEBAR & MULTI-DEVICE EXECUTIVE RATIO ADAPTATION
+       ========================================================================== */
+    html, body { max-width: 100%; overflow-x: hidden; }
+    #admin-left-sidebar {
+      transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms ease;
+    }
+    #admin-left-sidebar .nav-btn.active {
+      background: #0d2b55 !important;
+      color: #ffdea5 !important;
+      border-left: 3px solid #e9c176;
+    }
+    @media (min-width: 1024px) {
+      #admin-left-sidebar[data-sidebar-state="expanded"] {
+        width: 15.5rem;
+      }
+      #admin-left-sidebar[data-sidebar-state="collapsed"] {
+        width: 4.25rem;
+      }
+      #admin-left-sidebar[data-sidebar-state="collapsed"] .sidebar-label {
+        display: none !important;
+      }
+      #admin-left-sidebar[data-sidebar-state="collapsed"] .nav-btn {
+        justify-content: center !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+    }
+    @media (max-width: 1023px) {
+      #admin-left-sidebar {
+        position: fixed;
+        top: 6.5rem;
+        bottom: 0;
+        left: 0;
+        z-index: 45;
+        width: 16.5rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+      }
+      #admin-left-sidebar[data-sidebar-state="collapsed"] {
+        transform: translateX(-105%);
+        pointer-events: none;
+      }
+    }
+    /* Fullscreen Visual Website Editor Mode (Expands to Admin Device Screen) */
+    #tab-visual-editor.ve-fullscreen-active {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 60 !important;
+      max-width: 100vw !important;
+      width: 100vw !important;
+      height: 100dvh !important;
+      background: #fdf9f1 !important;
+      padding: 0.75rem 1rem !important;
+      overflow-y: auto !important;
+      margin: 0 !important;
+    }
+    #tab-visual-editor.ve-fullscreen-active #ve-iframe-wrap {
+      height: calc(100dvh - 118px) !important;
+    }
+    /* Mobile & Foldable Input Anti-Zoom */
+    @media (max-width: 640px) {
+      input[type="text"], input[type="password"], input[type="number"], textarea, select {
+        font-size: 16px !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-surface font-body-md text-on-surface antialiased">
@@ -209,45 +275,28 @@
     </div>
 
     <!-- Main Navigation Header -->
-    <div class="h-20 max-w-7xl mx-auto px-gutter flex items-center justify-between gap-3 xl:gap-space-md">
-      <div class="flex items-center gap-3 xl:gap-space-lg shrink-0">
-        <a class="flex flex-col shrink-0" href="/admin">
-          <span class="font-headline-md text-headline-md tracking-tight text-surface-bright whitespace-nowrap">iCoachAndrew</span>
-          <span class="font-label-sm text-[10px] xl:text-label-sm text-tertiary-fixed-dim italic tracking-wider whitespace-nowrap">The Codified Counsel of Andrew Tani</span>
+    <div class="h-20 max-w-[1600px] mx-auto px-3 sm:px-gutter flex items-center justify-between gap-2 sm:gap-4">
+      <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
+        <!-- Left Sidebar Collapse / Expand Toggle Button -->
+        <button id="btn-toggle-admin-sidebar" onclick="toggleAdminSidebar()" type="button" class="p-2 rounded-lg bg-primary-container text-tertiary-fixed hover:bg-primary-container/80 hover:text-white border border-on-tertiary-container/40 flex items-center gap-1.5 transition-all shrink-0 cursor-pointer" title="Sembunyikan / Tampilkan Menu Navigasi Kiri">
+          <span id="admin-sidebar-toggle-icon" class="material-symbols-outlined text-[20px]">left_panel_close</span>
+          <span class="hidden sm:inline text-[11px] font-semibold">Menu</span>
+        </button>
+
+        <a class="flex flex-col min-w-0" href="/admin">
+          <span class="font-headline-md text-lg sm:text-headline-md tracking-tight text-surface-bright whitespace-nowrap">iCoachAndrew</span>
+          <span class="font-label-sm text-[9px] sm:text-[10px] xl:text-label-sm text-tertiary-fixed-dim italic tracking-wider truncate">The Codified Counsel of Andrew Tani</span>
         </a>
-        <div class="hidden 2xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-primary-container text-tertiary-fixed-dim font-label-sm text-label-sm border border-on-tertiary-container/30 shrink-0 whitespace-nowrap">
+        <div class="hidden xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-primary-container text-tertiary-fixed-dim font-label-sm text-label-sm border border-on-tertiary-container/30 shrink-0 whitespace-nowrap">
           <span class="material-symbols-outlined text-[15px]">military_tech</span>
           <span id="studio-auth-pill">Ring 0: Sovereign Protocol</span>
         </div>
+        <!-- Active Module Indicator Pill -->
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/70 border border-on-tertiary-container/30 text-xs font-semibold text-tertiary-fixed shrink-0">
+          <span class="material-symbols-outlined text-[15px]" id="active-tab-header-icon">shield_lock</span>
+          <span id="active-tab-header-label">Ring 0 Archive &amp; Audit</span>
+        </div>
       </div>
-
-      <!-- Center System Module Nav Pills -->
-      <nav class="hidden lg:flex items-center gap-1.5 xl:gap-2 overflow-x-auto thin-scroll py-1 min-w-0" id="adminTabsNav">
-        <button onclick="switchStudioTab('governance')" data-tab="governance" class="nav-btn active px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">shield_lock</span>Ring 0 Archive &amp; Audit
-        </button>
-        <button onclick="switchStudioTab('overview')" data-tab="overview" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">dashboard</span>Dasbor Status
-        </button>
-        <button onclick="switchStudioTab('visual-editor')" data-tab="visual-editor" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">web</span>Visual Website Editor
-        </button>
-        <button onclick="switchStudioTab('media')" data-tab="media" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">photo_library</span>Foto &amp; Media
-        </button>
-        <button onclick="switchStudioTab('works')" data-tab="works" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">auto_stories</span>Karya R0–R3
-        </button>
-        <button onclick="switchStudioTab('memory')" data-tab="memory" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">psychology</span>Memori Persona
-        </button>
-        <button onclick="switchStudioTab('ai')" data-tab="ai" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">bolt</span>Claude AI Vault
-        </button>
-        <button onclick="switchStudioTab('commerce')" data-tab="commerce" class="nav-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
-          <span class="material-symbols-outlined text-[16px] nav-icon">payments</span>Pricing
-        </button>
-      </nav>
 
       <!-- Right: Typography Size, Language & External Links -->
       <div class="flex items-center gap-2 sm:gap-space-md shrink-0 relative">
@@ -349,10 +398,74 @@
   <div id="studio-toast" class="fixed bottom-5 right-5 z-50 hidden px-4 py-3 rounded-xl bg-primary text-white text-xs font-medium shadow-xl border border-on-tertiary-container/40 items-center gap-2"></div>
 
   <!-- ======================================================== -->
-  <!-- MAIN WORKSPACE CONTAINER (EXACT HERO BANNER)              -->
+  <!-- MAIN WORKSPACE CONTAINER WITH COLLAPSIBLE LEFT SIDEBAR    -->
   <!-- ======================================================== -->
-  <main class="w-full pt-28 bg-surface min-h-[calc(100vh-80px)] flex flex-col justify-between">
-    <div class="flex flex-col w-full">
+  <main class="w-full pt-28 bg-surface min-h-[calc(100dvh-80px)] flex flex-col justify-between">
+    <div id="admin-workspace-shell" class="flex flex-1 w-full min-w-0 relative">
+
+      <!-- ======================================================== -->
+      <!-- COLLAPSIBLE / EXPANDABLE LEFT NAVIGATION SIDEBAR          -->
+      <!-- ======================================================== -->
+      <aside id="admin-left-sidebar" data-sidebar-state="expanded" class="bg-primary text-on-primary border-r border-on-tertiary-container/30 flex flex-col justify-between shrink-0 select-none">
+        <div class="sticky top-28 flex flex-col justify-between h-[calc(100dvh-7rem)] overflow-y-auto thin-scroll p-2.5 space-y-4">
+          <div class="space-y-2">
+            <!-- Sidebar Header & Collapse Toggle -->
+            <div class="flex items-center justify-between px-2 py-1.5 border-b border-primary-container">
+              <span class="sidebar-label text-[10px] font-mono uppercase tracking-widest text-tertiary-fixed-dim font-bold">Menu Modul Admin</span>
+              <button onclick="toggleAdminSidebar()" type="button" class="p-1 rounded hover:bg-primary-container text-tertiary-fixed-dim hover:text-white transition-colors cursor-pointer" title="Ciutkan / Lebarkan Menu Samping">
+                <span id="sidebar-inner-toggle-icon" class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+            </div>
+
+            <!-- Vertical Navigation Tabs -->
+            <nav class="flex flex-col gap-1.5" id="adminTabsNav" aria-label="Navigasi Modul Admin">
+              <button onclick="switchStudioTab('governance')" data-tab="governance" title="Ring 0 Archive &amp; Audit" class="nav-btn active w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">shield_lock</span>
+                <span class="sidebar-label truncate">Ring 0 Archive &amp; Audit</span>
+              </button>
+              <button onclick="switchStudioTab('overview')" data-tab="overview" title="Dasbor Status" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">dashboard</span>
+                <span class="sidebar-label truncate">Dasbor Status</span>
+              </button>
+              <button onclick="switchStudioTab('visual-editor')" data-tab="visual-editor" title="Visual Website Editor" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">web</span>
+                <span class="sidebar-label truncate">Visual Website Editor</span>
+              </button>
+              <button onclick="switchStudioTab('media')" data-tab="media" title="Foto &amp; Media" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">photo_library</span>
+                <span class="sidebar-label truncate">Foto &amp; Media</span>
+              </button>
+              <button onclick="switchStudioTab('works')" data-tab="works" title="Karya R0–R3 &amp; Google Drive" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">auto_stories</span>
+                <span class="sidebar-label truncate">Karya R0–R3 &amp; Drive</span>
+              </button>
+              <button onclick="switchStudioTab('memory')" data-tab="memory" title="Memori Persona" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">psychology</span>
+                <span class="sidebar-label truncate">Memori Persona</span>
+              </button>
+              <button onclick="switchStudioTab('ai')" data-tab="ai" title="Claude AI Vault" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">bolt</span>
+                <span class="sidebar-label truncate">Claude AI Vault</span>
+              </button>
+              <button onclick="switchStudioTab('commerce')" data-tab="commerce" title="Pricing &amp; Keanggotaan" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">payments</span>
+                <span class="sidebar-label truncate">Pricing</span>
+              </button>
+            </nav>
+          </div>
+
+          <!-- Sidebar Footer Collapse / Expand Button -->
+          <div class="pt-3 border-t border-primary-container">
+            <button onclick="toggleAdminSidebar()" type="button" class="w-full px-3 py-2 rounded-lg bg-primary-container/70 hover:bg-primary-container text-tertiary-fixed-dim hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer" title="Ciutkan / Lebarkan Sidebar">
+              <span class="material-symbols-outlined text-[17px]">swap_horiz</span>
+              <span class="sidebar-label" id="sidebar-footer-toggle-text">Ciutkan Sidebar</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Right Content Area -->
+      <div class="flex flex-col flex-1 min-w-0 w-full">
 
       <!-- TOP SOVEREIGN BANNER (EXACT MATCH: ring_0_sovereign_admin_archive) -->
       <div class="w-full bg-surface-container-low px-gutter py-space-xl border-b border-surface-container-high">
@@ -790,40 +903,140 @@
       <!-- ======================================================== -->
       <!-- TAB CONTENT: VISUAL WEBSITE EDITOR                        -->
       <!-- ======================================================== -->
-      <div id="tab-visual-editor" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-md">
-        <!-- Editor Toolbar -->
-        <div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs font-bold text-primary flex items-center gap-1">
-              <span class="material-symbols-outlined text-[16px]">touch_app</span>Visual Studio:
-            </span>
+      <div id="tab-visual-editor" class="studio-panel hidden max-w-[1600px] mx-auto px-3 sm:px-gutter py-space-md w-full flex flex-col gap-space-md">
+        <!-- Editor Top Control Toolbar -->
+        <div class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <!-- Panel Collapse/Expand Buttons -->
+            <button id="btn-toggle-ve-left" type="button" onclick="toggleVeLeftPanel()" class="px-2.5 py-1 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-primary text-xs font-semibold flex items-center gap-1 cursor-pointer" title="Sembunyikan / Tampilkan Panel Kiri">
+              <span class="material-symbols-outlined text-[15px]">dock_to_right</span>
+              <span id="ve-left-btn-label">Panel Kiri</span>
+            </button>
+
             <div class="inline-flex rounded-lg border border-outline-variant bg-surface p-0.5 text-xs">
-              <button id="ve-mode-inspect" onclick="setEditorMode('inspect')" class="px-2.5 py-1 rounded-md bg-primary text-white font-semibold">Klik-Edit Elemen</button>
-              <button id="ve-mode-navigate" onclick="setEditorMode('navigate')" class="px-2.5 py-1 rounded-md text-on-surface-variant hover:text-primary">Navigasi Bebas</button>
+              <button id="ve-mode-inspect" onclick="setEditorMode('inspect')" class="px-2.5 py-1 rounded-md bg-primary text-white font-semibold cursor-pointer">Klik &amp; Edit Elemen</button>
+              <button id="ve-mode-navigate" onclick="setEditorMode('navigate')" class="px-2.5 py-1 rounded-md text-on-surface-variant hover:text-primary cursor-pointer">Uji Klik Halaman</button>
             </div>
+
             <div class="inline-flex rounded-lg border border-outline-variant bg-surface p-0.5 text-xs">
-              <button onclick="setEditorView('frontpage')" class="px-2.5 py-1 rounded-md hover:bg-surface-container font-medium">Beranda</button>
-              <button onclick="setEditorView('chamber')" class="px-2.5 py-1 rounded-md hover:bg-surface-container font-medium">Ruang Diskusi</button>
+              <button onclick="setEditorView('frontpage')" class="px-2 py-1 rounded-md hover:bg-surface-container font-medium cursor-pointer">Halaman Utama</button>
+              <button id="btn-ve-toggle-bio" onclick="toggleCanvasBioSections()" class="px-2 py-1 rounded-md bg-amber-100 text-amber-900 font-semibold cursor-pointer" title="Tampilkan atau sembunyikan bagian Siapa Andrew Tani di kanvas">Bagian Profil: Tampil</button>
+              <button onclick="setEditorView('chamber')" class="px-2 py-1 rounded-md hover:bg-surface-container font-medium cursor-pointer">Ruang Penasihat</button>
             </div>
+
+            <!-- Device Ratio Preview Selector (Executive Phones, Foldables, S Ultra, Desktop) -->
+            <div class="flex items-center gap-1 bg-surface border border-outline-variant rounded-lg px-2 py-1 text-xs">
+              <span class="material-symbols-outlined text-[15px] text-primary">devices</span>
+              <select id="ve-device-ratio-select" onchange="setEditorViewport(this.value)" class="bg-transparent text-primary font-semibold text-xs focus:outline-none cursor-pointer" title="Simulasi Rasio Layar Device Eksekutif">
+                <option value="100%">Layar Penuh Lebar (100%)</option>
+                <option value="1440px">Desktop / Laptop (1440px)</option>
+                <option value="840px">HP Lipat Buka / Z Fold Inner (840px)</option>
+                <option value="412px">Samsung Galaxy S Ultra / Pro Max (412px)</option>
+                <option value="390px">HP Umum Standar (390px)</option>
+                <option value="344px">HP Lipat Depan / Cover Screen (344px)</option>
+              </select>
+            </div>
+
             <div class="inline-flex rounded-lg border border-outline-variant bg-surface p-0.5 text-xs font-mono">
-              <button id="ve-lang-id" onclick="setEditorLang('id')" class="px-2 py-1 rounded-md bg-primary text-white font-semibold">ID</button>
-              <button id="ve-lang-en" onclick="setEditorLang('en')" class="px-2 py-1 rounded-md text-on-surface-variant">EN</button>
+              <button id="ve-lang-id" onclick="setEditorLang('id')" class="px-2 py-1 rounded-md bg-primary text-white font-semibold cursor-pointer">ID</button>
+              <button id="ve-lang-en" onclick="setEditorLang('en')" class="px-2 py-1 rounded-md text-on-surface-variant cursor-pointer">EN</button>
             </div>
-            <button type="button" onclick="toggleWebInfoCard()" class="px-3 py-1 rounded-lg border border-secondary/40 bg-secondary-fixed/40 hover:bg-secondary hover:text-white text-secondary text-xs font-semibold flex items-center gap-1 transition-colors">
-              <span class="material-symbols-outlined text-[15px]">tab</span>Info Tab &amp; Logo Website
+
+            <!-- Collapsible Top Cards Triggers -->
+            <button type="button" onclick="toggleFontThemeCard()" class="px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/5 hover:bg-primary hover:text-white text-primary text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]">font_download</span>Jenis Font Halaman
+            </button>
+            <button type="button" onclick="toggleWebInfoCard()" class="px-2.5 py-1 rounded-lg border border-secondary/40 bg-secondary-fixed/40 hover:bg-secondary hover:text-white text-secondary text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]">tab</span>Info Tab &amp; Logo
             </button>
           </div>
-          <div class="flex items-center gap-2">
+
+          <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+            <button id="btn-toggle-ve-right" type="button" onclick="toggleVeRightPanel()" class="px-2.5 py-1 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-primary text-xs font-semibold flex items-center gap-1 cursor-pointer" title="Sembunyikan / Tampilkan Panel Edit Kanan">
+              <span class="material-symbols-outlined text-[15px]">dock_to_left</span>
+              <span id="ve-right-btn-label">Panel Edit</span>
+            </button>
+            <button id="btn-toggle-ve-fullscreen" type="button" onclick="toggleVeFullscreen()" class="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-xs font-bold flex items-center gap-1 cursor-pointer" title="Perbesar Editor ke Seluruh Layar Device Anda">
+              <span id="ve-fullscreen-icon" class="material-symbols-outlined text-[16px]">open_in_full</span>
+              <span id="ve-fullscreen-label">Layar Penuh</span>
+            </button>
             <span id="ve-dirty-indicator" class="text-[11px] font-mono px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Tersinkron</span>
-            <button onclick="saveSiteDraft()" class="px-3 py-1.5 rounded-lg bg-surface-container-high text-primary text-xs font-semibold hover:bg-surface-container-highest">Simpan Draf</button>
-            <button onclick="publishSiteDraft()" class="px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container flex items-center gap-1">
+            <button onclick="saveSiteDraft()" class="px-3 py-1.5 rounded-lg bg-surface-container-high text-primary text-xs font-semibold hover:bg-surface-container-highest cursor-pointer">Simpan Draf</button>
+            <button onclick="publishSiteDraft()" class="px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container flex items-center gap-1 cursor-pointer">
               <span class="material-symbols-outlined text-[15px]">rocket_launch</span>Publikasikan Live
             </button>
           </div>
         </div>
 
-        <!-- EDITOR INFORMASI WEB & LOGO TAB BROWSER (FAVICON & JUDUL TAB) -->
-        <div id="ve-webinfo-card" class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+        <!-- ========================================================================= -->
+        <!-- COLLAPSIBLE CARD: PILIH JENIS FONT KONSISTEN KE SELURUH HALAMAN           -->
+        <!-- ========================================================================= -->
+        <div id="ve-font-card" class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between gap-2 border-b border-outline-variant/40 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[19px]">font_download</span>
+              <div>
+                <h3 class="font-title-md text-primary font-serif font-bold text-sm sm:text-base">Pengaturan Jenis Font Konsisten ke Seluruh Halaman</h3>
+                <p class="text-[11px] text-on-surface-variant">Pilih satu jenis huruf yang seragam untuk seluruh bagian website, atau padukan huruf Judul dan Teks Utama.</p>
+              </div>
+            </div>
+            <button type="button" onclick="toggleFontThemeCard()" class="px-2.5 py-1 rounded border border-outline-variant text-xs font-semibold text-on-surface-variant hover:text-primary cursor-pointer">Ciutkan ▲</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end text-xs">
+            <div class="md:col-span-5 space-y-1">
+              <label for="ve-font-consistent" class="block font-bold text-primary">1. Pilih 1 Jenis Font Konsisten untuk Seluruh Halaman:</label>
+              <select id="ve-font-consistent" onchange="onConsistentFontSelect(this.value)" class="w-full border border-outline-variant rounded-lg px-3 py-2 bg-white text-primary font-semibold text-xs">
+                <option value="">— Gunakan Kombinasi Font Judul &amp; Font Teks di Samping —</option>
+                <option value="Figtree">Figtree (Modern, Bersih &amp; Sangat Jelas di HP/Laptop)</option>
+                <option value="Plus Jakarta Sans">Plus Jakarta Sans (Eksekutif Modern Nusantara)</option>
+                <option value="Inter">Inter (Standar Profesional Internasional)</option>
+                <option value="Source Sans 3">Source Sans 3 (Klasik, Rapi &amp; Mudah Dibaca)</option>
+                <option value="DM Sans">DM Sans (Elegan &amp; Ramah Layar Lipat/Mobile)</option>
+                <option value="Newsreader">Newsreader (Editorial Buku &amp; Akademis Klasik)</option>
+                <option value="Playfair Display">Playfair Display (Wibawa Dewan Komisaris)</option>
+                <option value="Lora">Lora (Sastra &amp; Refleksi Kepemimpinan)</option>
+                <option value="Merriweather">Merriweather (Tegas &amp; Formal)</option>
+              </select>
+            </div>
+            <div class="md:col-span-2 space-y-1">
+              <label for="ve-font-serif" class="block font-semibold text-on-surface-variant">Font Judul (Opsional):</label>
+              <select id="ve-font-serif" onchange="updateThemeFromUI()" class="w-full border border-outline-variant rounded-lg px-2.5 py-2 bg-white text-primary text-xs">
+                <option value="Newsreader">Newsreader</option>
+                <option value="Playfair Display">Playfair Display</option>
+                <option value="Lora">Lora</option>
+                <option value="Merriweather">Merriweather</option>
+                <option value="Figtree">Figtree</option>
+                <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                <option value="Inter">Inter</option>
+                <option value="Source Sans 3">Source Sans 3</option>
+                <option value="DM Sans">DM Sans</option>
+              </select>
+            </div>
+            <div class="md:col-span-2 space-y-1">
+              <label for="ve-font-sans" class="block font-semibold text-on-surface-variant">Font Teks &amp; Tombol:</label>
+              <select id="ve-font-sans" onchange="updateThemeFromUI()" class="w-full border border-outline-variant rounded-lg px-2.5 py-2 bg-white text-primary text-xs">
+                <option value="Figtree">Figtree</option>
+                <option value="Plus Jakarta Sans">Plus Jakarta Sans</option>
+                <option value="Inter">Inter</option>
+                <option value="Source Sans 3">Source Sans 3</option>
+                <option value="DM Sans">DM Sans</option>
+                <option value="Newsreader">Newsreader</option>
+                <option value="Lora">Lora</option>
+              </select>
+            </div>
+            <div class="md:col-span-3 flex gap-1.5">
+              <button type="button" onclick="applyAndPublishGlobalFonts()" class="w-full py-2 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
+                <span class="material-symbols-outlined text-[16px]">check_circle</span>Terapkan Font ke Seluruh Page
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- COLLAPSIBLE CARD: EDITOR INFORMASI WEB & LOGO TAB BROWSER (FAVICON)       -->
+        <!-- ========================================================================= -->
+        <div id="ve-webinfo-card" class="hidden bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/40 pb-3">
             <div class="space-y-0.5">
               <div class="flex items-center gap-2">
@@ -832,11 +1045,14 @@
               </div>
               <p class="text-xs text-on-surface-variant">Atur judul yang tampil di tab browser atas (Bahasa Indonesia &amp; Inggris), deskripsi SEO, serta unggah logo ikon tab browser Anda.</p>
             </div>
-            <!-- Live Browser Tab Preview -->
-            <div class="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-t-xl border border-outline-variant/60 shadow-inner max-w-xs sm:max-w-sm shrink-0" title="Pratinjau Tampilan Tab Browser">
-              <img id="webinfo-tab-preview-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E" alt="Icon" class="w-4 h-4 rounded-xs object-contain shrink-0"/>
-              <span id="webinfo-tab-preview-title" class="text-xs font-sans font-medium text-on-surface truncate">iCoachAndrew — Ruang Diskusi &amp; Warisan Pemikiran Andrew Tani</span>
-              <span class="text-outline text-xs ml-1">×</span>
+            <div class="flex items-center gap-2">
+              <!-- Live Browser Tab Preview -->
+              <div class="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-t-xl border border-outline-variant/60 shadow-inner max-w-xs sm:max-w-sm shrink-0" title="Pratinjau Tampilan Tab Browser">
+                <img id="webinfo-tab-preview-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E" alt="Icon" class="w-4 h-4 rounded-xs object-contain shrink-0"/>
+                <span id="webinfo-tab-preview-title" class="text-xs font-sans font-medium text-on-surface truncate">iCoachAndrew — Ruang Diskusi &amp; Warisan Pemikiran Andrew Tani</span>
+                <span class="text-outline text-xs ml-1">×</span>
+              </div>
+              <button type="button" onclick="toggleWebInfoCard()" class="px-2.5 py-1 rounded border border-outline-variant text-xs font-semibold text-on-surface-variant hover:text-primary cursor-pointer">Tutup ✕</button>
             </div>
           </div>
 
@@ -879,85 +1095,221 @@
                       <span class="material-symbols-outlined text-[15px]">check_circle</span>Simpan &amp; Terapkan Live
                     </button>
                   </div>
-                  <input id="ve-seo-favicon" type="text" oninput="syncWebInfoInputs('ve')" placeholder="/media/img_xxx.png atau URL ikon..." class="w-full border border-outline-variant rounded px-2 py-1 text-[11px] font-mono bg-white"/>
+                  <input id="ve-seo-favicon" type="text" oninput="syncWebInfoInputs('ve')" placeholder="Otomatis terisi saat upload logo..." class="w-full border border-outline-variant rounded px-2 py-1 text-[11px] bg-white"/>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 3-Pane Studio Layout -->
-        <div class="grid grid-cols-12 min-h-[640px] gap-4">
-          <aside class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/50 p-4 space-y-4">
-            <div class="grid grid-cols-4 border-b border-outline-variant/40 text-[11px] font-semibold text-center bg-surface-container-low rounded-t-lg">
-              <button onclick="switchLeftDock('photos')" data-dock="photos" class="dock-tab py-2 border-b-2 border-primary text-primary">Foto</button>
-              <button onclick="switchLeftDock('sections')" data-dock="sections" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant">Section</button>
-              <button onclick="switchLeftDock('blocks')" data-dock="blocks" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant">Blok</button>
-              <button onclick="switchLeftDock('theme')" data-dock="theme" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant">Tema</button>
+        <!-- ========================================================================= -->
+        <!-- DYNAMIC 3-PANE STUDIO LAYOUT (LEFT DOCK + EXPANDABLE CANVAS + INSPECTOR)  -->
+        <!-- ========================================================================= -->
+        <div id="ve-main-grid" class="grid grid-cols-12 min-h-[680px] gap-3 items-start">
+          <!-- Left Dock Panel (Collapsible) -->
+          <aside id="ve-left-dock" class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/50 p-3.5 space-y-3 max-h-[740px] overflow-y-auto thin-scroll">
+            <div class="flex items-center justify-between border-b border-outline-variant/30 pb-1.5">
+              <span class="text-xs font-bold text-primary">Daftar Isi &amp; Komponen</span>
+              <button type="button" onclick="toggleVeLeftPanel()" class="text-[11px] text-outline hover:text-primary font-semibold cursor-pointer" title="Sembunyikan Panel Kiri">« Ciutkan</button>
             </div>
-            <div id="dock-photos" class="dock-panel space-y-3">
+            <div class="grid grid-cols-5 border-b border-outline-variant/40 text-[11px] font-semibold text-center bg-surface-container-low rounded-t-lg">
+              <button onclick="switchLeftDock('elements')" data-dock="elements" class="dock-tab py-2 border-b-2 border-primary text-primary font-bold cursor-pointer">Teks</button>
+              <button onclick="switchLeftDock('photos')" data-dock="photos" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant cursor-pointer">Foto</button>
+              <button onclick="switchLeftDock('sections')" data-dock="sections" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant cursor-pointer">Urutan</button>
+              <button onclick="switchLeftDock('blocks')" data-dock="blocks" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant cursor-pointer">+ Bagian</button>
+              <button onclick="switchLeftDock('theme')" data-dock="theme" class="dock-tab py-2 border-b-2 border-transparent text-on-surface-variant cursor-pointer">Warna</button>
+            </div>
+            <!-- Panel 1: Quick Editable Elements List -->
+            <div id="dock-elements" class="dock-panel space-y-2">
+              <input id="ve-elem-search" type="text" oninput="renderPageElementsDock()" placeholder="Cari judul, tombol, atau teks..." class="w-full border border-outline-variant rounded-lg px-2.5 py-1.5 text-xs bg-white"/>
+              <div id="ve-page-elements-list" class="space-y-1.5 max-h-[540px] overflow-y-auto thin-scroll pr-1"></div>
+            </div>
+            <!-- Panel 2: Photos List -->
+            <div id="dock-photos" class="dock-panel hidden space-y-3">
               <div id="ve-page-images-list" class="space-y-2"></div>
             </div>
+            <!-- Panel 3: Sections Order & Visibility -->
             <div id="dock-sections" class="dock-panel hidden space-y-3">
+              <p class="text-[11px] text-on-surface-variant">Atur urutan tampil atau sembunyikan bagian halaman:</p>
               <div id="ve-sections-list" class="space-y-2"></div>
-              <input id="ve-opt-works-home" type="checkbox" class="hidden" onchange="updateSiteSettingsFromUI()"/>
-              <input id="ve-opt-pricing-home" type="checkbox" class="hidden" onchange="updateSiteSettingsFromUI()"/>
+              <div class="pt-2 border-t border-outline-variant/30 space-y-2 text-xs">
+                <label class="block space-y-1">
+                  <span class="font-semibold text-primary text-[11px]">Pita Pengumuman Atas (Kosongkan jika tidak dipakai):</span>
+                  <input id="ve-announcement" type="text" onchange="updateSiteSettingsFromUI()" placeholder="Contoh: Sesi Diskusi Eksekutif Terbuka..." class="w-full border border-outline-variant rounded-lg px-2.5 py-1.5 text-xs bg-white"/>
+                </label>
+                <input id="ve-opt-works-home" type="checkbox" class="hidden" onchange="updateSiteSettingsFromUI()"/>
+                <input id="ve-opt-pricing-home" type="checkbox" class="hidden" onchange="updateSiteSettingsFromUI()"/>
+              </div>
             </div>
+            <!-- Panel 4: Add Custom Section (No HTML Code) -->
             <div id="dock-blocks" class="dock-panel hidden space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-primary">Bagian Tambahan</span>
+                <button type="button" onclick="addCustomBlock()" class="px-2.5 py-1 rounded-lg bg-primary text-white text-[11px] font-semibold cursor-pointer">+ Tambah Bagian Baru</button>
+              </div>
               <div id="ve-blocks-list" class="space-y-3"></div>
             </div>
+            <!-- Panel 5: Colors & Versions -->
             <div id="dock-theme" class="dock-panel hidden space-y-3">
+              <div class="text-xs font-bold text-primary">Warna Tema Halaman</div>
               <div id="ve-theme-colors" class="grid grid-cols-2 gap-2"></div>
-              <select id="ve-font-serif" onchange="updateThemeFromUI()" class="hidden"><option value="Newsreader">Newsreader</option></select>
-              <select id="ve-font-sans" onchange="updateThemeFromUI()" class="hidden"><option value="Source Sans 3">Source Sans 3</option></select>
-              <input id="ve-announcement" type="text" onchange="updateSiteSettingsFromUI()" class="hidden"/>
               <textarea id="ve-custom-css" onchange="updateThemeFromUI()" class="hidden"></textarea>
-              <div id="ve-versions-list" class="space-y-1.5 text-xs"></div>
+              <div class="pt-2 border-t border-outline-variant/30 space-y-1.5">
+                <div class="text-xs font-bold text-primary">Riwayat Publikasi</div>
+                <div id="ve-versions-list" class="space-y-1.5 text-xs"></div>
+              </div>
             </div>
           </aside>
-          <!-- Canvas Frame -->
-          <div class="col-span-12 lg:col-span-6 bg-surface-container-high rounded-xl p-3 flex flex-col items-center">
-            <div id="ve-iframe-wrap" class="w-full h-[620px] bg-white rounded-xl shadow-lg border border-outline-variant overflow-hidden">
+
+          <!-- Center Preview Canvas (Automatically Expands when Side Panels Collapse) -->
+          <div id="ve-canvas-col" class="col-span-12 lg:col-span-6 bg-surface-container-high rounded-xl p-2 sm:p-3 flex flex-col items-center transition-all">
+            <div id="ve-iframe-wrap" class="w-full h-[680px] bg-white rounded-xl shadow-lg border border-outline-variant overflow-hidden transition-all duration-200">
               <iframe id="ve-preview-iframe" src="/preview-site?studio=1" class="w-full h-full border-0"></iframe>
             </div>
           </div>
-          <!-- Inspector -->
-          <aside class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/50 p-4 space-y-4">
-            <div class="flex items-center justify-between border-b pb-2">
-              <span id="ins-key-label" class="text-xs font-mono font-bold text-primary truncate max-w-[180px]">Pilih elemen kanvas...</span>
-              <span id="ins-tag-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-primary text-tertiary-fixed">NONE</span>
+
+          <!-- Right Inspector Panel (Collapsible & Zero Programming Jargon) -->
+          <aside id="ve-right-inspector" class="col-span-12 lg:col-span-3 bg-surface-container-lowest rounded-xl border border-outline-variant/50 p-4 space-y-3.5 max-h-[740px] overflow-y-auto thin-scroll">
+            <div class="flex items-center justify-between border-b border-outline-variant/40 pb-2 gap-2">
+              <div class="min-w-0 flex-1">
+                <div id="ins-key-label" class="text-xs font-bold text-primary truncate">Pilih elemen di kanvas...</div>
+                <div id="ins-section-label" class="text-[10px] text-on-surface-variant truncate">Klik teks, judul, tombol, atau foto</div>
+              </div>
+              <span id="ins-tag-badge" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-primary text-tertiary-fixed shrink-0">Belum Dipilih</span>
+              <button type="button" onclick="toggleVeRightPanel()" class="text-[11px] text-outline hover:text-primary font-semibold shrink-0 cursor-pointer" title="Sembunyikan Panel Edit">Ciutkan »</button>
             </div>
+
             <div id="ins-empty-state" class="p-6 text-center space-y-2 text-on-surface-variant">
               <span class="material-symbols-outlined text-3xl text-outline">ads_click</span>
-              <div class="text-xs font-semibold text-primary">Klik Elemen atau Foto di Kanvas Tengah</div>
+              <div class="text-xs font-semibold text-primary">Klik Langsung Teks, Tombol, atau Foto di Layar Tengah</div>
+              <p class="text-[11px] text-outline leading-relaxed">Atau pilih dari daftar <strong>Teks</strong> &amp; <strong>Foto</strong> di panel sebelah kiri untuk langsung mengedit isinya tanpa kode pemrograman.</p>
             </div>
-            <div id="ins-form" class="hidden space-y-3">
-              <div id="ins-image-section" class="hidden space-y-2">
-                <img id="ins-img-preview" src="" alt="" class="h-28 w-full object-contain bg-surface-container rounded"/>
-                <input id="ins-img-file" type="file" accept="image/*" onchange="uploadAndReplaceSelectedImage(this)" class="text-xs w-full"/>
-                <input id="ins-img-src" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs font-mono"/>
-                <input id="ins-img-alt" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs"/>
-                <select id="ins-img-fit" onchange="applyInspectorChange()" class="w-full border rounded p-1 text-xs"><option value="">Default</option><option value="cover">Cover</option></select>
-                <select id="ins-img-pos" onchange="applyInspectorChange()" class="w-full border rounded p-1 text-xs"><option value="">Default</option></select>
+
+            <div id="ins-form" class="hidden space-y-3.5">
+              <!-- Image Editor Section -->
+              <div id="ins-image-section" class="hidden space-y-2.5 text-xs">
+                <img id="ins-img-preview" src="" alt="" class="h-32 w-full object-contain bg-surface-container rounded-lg border border-outline-variant/40 p-1"/>
+                <div class="flex flex-wrap gap-1.5">
+                  <label class="cursor-pointer flex-1 text-center py-2 px-3 rounded-lg bg-primary text-white font-semibold text-xs hover:bg-primary-container">
+                    Unggah Foto Baru
+                    <input id="ins-img-file" type="file" accept="image/*" onchange="uploadAndReplaceSelectedImage(this)" class="hidden"/>
+                  </label>
+                  <button type="button" onclick="openMediaPickerForSelected()" class="py-2 px-3 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-primary font-semibold text-xs cursor-pointer">Pilih dari Pustaka</button>
+                </div>
+                <label class="block space-y-1">
+                  <span class="font-semibold text-primary text-[11px]">Keterangan Foto (Judul / Nama Foto):</span>
+                  <input id="ins-img-alt" type="text" oninput="applyInspectorChange()" placeholder="Contoh: Foto Pak Andrew Tani" class="w-full border border-outline-variant rounded-lg px-2.5 py-1.5 text-xs bg-white"/>
+                </label>
+                <label class="block space-y-1">
+                  <span class="font-semibold text-primary text-[11px]">Cara Menampilkan Foto:</span>
+                  <select id="ins-img-fit" onchange="applyInspectorChange()" class="w-full border border-outline-variant rounded-lg px-2.5 py-1.5 text-xs bg-white">
+                    <option value="">Otomatis Sesuai Bingkai (Standar)</option>
+                    <option value="cover">Penuhi Bingkai Proporsional</option>
+                    <option value="contain">Tampilkan Utuh Tanpa Terpotong</option>
+                  </select>
+                </label>
+                <select id="ins-img-pos" onchange="applyInspectorChange()" class="hidden"><option value="">Default</option></select>
+                <input id="ins-img-src" type="hidden" oninput="applyInspectorChange()"/>
               </div>
-              <div id="ins-text-section" class="space-y-1">
-                <span class="text-xs font-bold text-primary">Konten Teks (<span id="ins-lang-badge">ID</span>)</span>
-                <textarea id="ins-text-value" rows="3" oninput="applyInspectorChange()" class="w-full border rounded p-2 text-xs"></textarea>
+
+              <!-- Clean Natural Text Editor Section -->
+              <div id="ins-text-section" class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <label for="ins-text-value" class="text-xs font-bold text-primary">Isi Teks / Kalimat (<span id="ins-lang-badge">ID</span>)</label>
+                  <span class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-medium">Otomatis Tersimpan</span>
+                </div>
+                <textarea id="ins-text-value" rows="4" oninput="applyInspectorChange()" placeholder="Ketik teks di sini..." class="w-full border border-outline-variant rounded-lg p-2.5 text-xs bg-white leading-relaxed focus:border-primary focus:outline-none"></textarea>
               </div>
-              <div id="ins-placeholder-section" class="hidden"><input id="ins-placeholder-value" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs"/></div>
-              <div id="ins-link-section" class="hidden"><input id="ins-link-href" type="text" oninput="applyInspectorChange()" class="w-full border rounded p-1 text-xs"/></div>
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <input id="ins-style-color-picker" type="color" onchange="document.getElementById('ins-style-color').value=this.value;applyInspectorChange()"/>
-                <input id="ins-style-color" type="text" oninput="applyInspectorChange()" placeholder="Warna Teks" class="border rounded p-1 text-xs font-mono"/>
-                <input id="ins-style-bg-picker" type="color" onchange="document.getElementById('ins-style-bg').value=this.value;applyInspectorChange()"/>
-                <input id="ins-style-bg" type="text" oninput="applyInspectorChange()" placeholder="Warna Latar" class="border rounded p-1 text-xs font-mono"/>
-                <input id="ins-style-fontsize" type="text" oninput="applyInspectorChange()" placeholder="Font Size" class="border rounded p-1 text-xs"/>
-                <select id="ins-style-align" onchange="applyInspectorChange()" class="border rounded p-1 text-xs"><option value="">Align</option><option value="left">Kiri</option><option value="center">Tengah</option></select>
-                <input id="ins-style-radius" type="text" oninput="applyInspectorChange()" placeholder="Radius" class="border rounded p-1 text-xs"/>
-                <input id="ins-style-padding" type="text" oninput="applyInspectorChange()" placeholder="Padding" class="border rounded p-1 text-xs"/>
+
+              <!-- Input Placeholder Editor -->
+              <div id="ins-placeholder-section" class="hidden space-y-1 text-xs">
+                <label class="block font-bold text-primary">Teks Petunjuk di Dalam Kolom Input:</label>
+                <input id="ins-placeholder-value" type="text" oninput="applyInspectorChange()" class="w-full border border-outline-variant rounded-lg p-2 text-xs bg-white"/>
               </div>
-              <label class="flex items-center gap-2 text-xs"><input id="ins-hidden-toggle" type="checkbox" onchange="applyInspectorChange()"/> Sembunyikan Elemen</label>
-              <button onclick="resetSelectedElement()" class="w-full py-1 rounded border border-secondary text-secondary text-xs">Reset Elemen</button>
+
+              <!-- Link Destination Editor -->
+              <div id="ins-link-section" class="hidden space-y-1 text-xs">
+                <label class="block font-bold text-primary">Alamat Tujuan Saat Tombol/Tautan Diklik:</label>
+                <input id="ins-link-href" type="text" oninput="applyInspectorChange()" placeholder="Contoh: #ruang-diskusi atau https://..." class="w-full border border-outline-variant rounded-lg p-2 text-xs bg-white"/>
+              </div>
+
+              <!-- Friendly Visual Appearance Controls (No CSS Jargon) -->
+              <div class="pt-2 border-t border-outline-variant/40 space-y-2.5 text-xs">
+                <div class="font-bold text-primary text-[11px] uppercase tracking-wider">Tampilan &amp; Gaya Elemen</div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block space-y-1">
+                    <span class="text-[11px] text-on-surface-variant font-medium">Warna Huruf:</span>
+                    <div class="flex items-center gap-1.5 border border-outline-variant rounded-lg p-1 bg-white">
+                      <input id="ins-style-color-picker" type="color" onchange="document.getElementById('ins-style-color').value=this.value;applyInspectorChange()" class="w-6 h-6 rounded cursor-pointer border-0 shrink-0"/>
+                      <input id="ins-style-color" type="text" oninput="applyInspectorChange()" placeholder="Standar" class="w-full text-[11px] bg-transparent focus:outline-none"/>
+                    </div>
+                  </label>
+                  <label class="block space-y-1">
+                    <span class="text-[11px] text-on-surface-variant font-medium">Warna Latar Kotak:</span>
+                    <div class="flex items-center gap-1.5 border border-outline-variant rounded-lg p-1 bg-white">
+                      <input id="ins-style-bg-picker" type="color" onchange="document.getElementById('ins-style-bg').value=this.value;applyInspectorChange()" class="w-6 h-6 rounded cursor-pointer border-0 shrink-0"/>
+                      <input id="ins-style-bg" type="text" oninput="applyInspectorChange()" placeholder="Standar" class="w-full text-[11px] bg-transparent focus:outline-none"/>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block space-y-1">
+                    <span class="text-[11px] text-on-surface-variant font-medium">Ukuran Huruf Elemen:</span>
+                    <select id="ins-style-fontsize" onchange="applyInspectorChange()" class="w-full border border-outline-variant rounded-lg p-1.5 text-xs bg-white">
+                      <option value="">Ukuran Standar</option>
+                      <option value="12px">Kecil (12)</option>
+                      <option value="14px">Normal (14)</option>
+                      <option value="16px">Sedang (16)</option>
+                      <option value="18px">Agak Besar (18)</option>
+                      <option value="22px">Subjudul (22)</option>
+                      <option value="28px">Judul Besar (28)</option>
+                      <option value="36px">Judul Utama (36)</option>
+                    </select>
+                  </label>
+                  <label class="block space-y-1">
+                    <span class="text-[11px] text-on-surface-variant font-medium">Perataan Teks:</span>
+                    <select id="ins-style-align" onchange="applyInspectorChange()" class="w-full border border-outline-variant rounded-lg p-1.5 text-xs bg-white">
+                      <option value="">Rata Standar</option>
+                      <option value="left">Rata Kiri</option>
+                      <option value="center">Rata Tengah</option>
+                      <option value="right">Rata Kanan</option>
+                      <option value="justify">Rata Kiri-Kanan</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="block space-y-1">
+                    <span class="text-[11px] text-on-surface-variant font-medium">Lengkungan Sudut:</span>
+                    <select id="ins-style-radius" onchange="applyInspectorChange()" class="w-full border border-outline-variant rounded-lg p-1.5 text-xs bg-white">
+                      <option value="">Sudut Standar</option>
+                      <option value="0px">Kotak Tegas</option>
+                      <option value="6px">Sedikit Melengkung</option>
+                      <option value="12px">Melengkung Sedang</option>
+                      <option value="20px">Melengkung Lebar</option>
+                      <option value="9999px">Kapsul Penuh</option>
+                    </select>
+                  </label>
+                  <label class="block space-y-1">
+                    <span class="text-[11px] text-on-surface-variant font-medium">Ruang Dalam Kotak:</span>
+                    <select id="ins-style-padding" onchange="applyInspectorChange()" class="w-full border border-outline-variant rounded-lg p-1.5 text-xs bg-white">
+                      <option value="">Spasi Standar</option>
+                      <option value="6px 10px">Rapat</option>
+                      <option value="12px 16px">Normal</option>
+                      <option value="18px 24px">Lega</option>
+                      <option value="28px 32px">Sangat Lega</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <label class="flex items-center gap-2 text-xs pt-1 cursor-pointer">
+                <input id="ins-hidden-toggle" type="checkbox" onchange="applyInspectorChange()"/>
+                <span>Sembunyikan Elemen Ini dari Halaman</span>
+              </label>
+              <button onclick="resetSelectedElement()" class="w-full py-1.5 rounded-lg border border-secondary text-secondary hover:bg-red-50 font-semibold text-xs cursor-pointer">Kembalikan Elemen ke Awal (Reset)</button>
             </div>
           </aside>
         </div>
@@ -1163,14 +1515,41 @@
                   <div id="gd-active-email" class="font-mono text-xs text-emerald-900 font-bold break-all bg-white px-2.5 py-1.5 rounded border border-emerald-200"></div>
                 </div>
 
+                <!-- Collapsible OAuth 2.0 Credentials & 1-Click Google Login -->
+                <details class="pt-1 border-t border-outline-variant/30" open>
+                  <summary class="cursor-pointer text-xs font-bold text-primary hover:underline flex items-center justify-between">
+                    <span>🔐 Opsi A: Koneksi via OAuth 2.0 (Login Akun Google Pribadi / Workspace)</span>
+                    <span id="gd-oauth-hint" class="font-mono text-[10px] px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">OAuth 2.0</span>
+                  </summary>
+                  <div class="pt-2.5 space-y-2 text-[11px]">
+                    <p class="text-on-surface-variant leading-relaxed">
+                      Gunakan <strong>OAuth 2.0 Client ID</strong> dari Google Cloud Console (<em>APIs &amp; Services &rarr; Credentials &rarr; Create OAuth client ID &rarr; Web application</em>). Tambahkan URL Redirect di bawah ke <em>Authorized redirect URIs</em>:
+                    </p>
+                    <div class="flex items-center gap-1.5">
+                      <input id="gd-oauth-redirect-uri" type="text" readonly class="flex-1 border rounded px-2 py-1 font-mono text-[10px] bg-surface-container-low text-primary" value=""/>
+                      <button type="button" onclick="copyOAuthRedirectUri()" class="px-2.5 py-1 rounded bg-surface-container-high hover:bg-primary hover:text-white text-primary font-semibold text-[10px] shrink-0 cursor-pointer">Salin Redirect URI</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input id="gd-oauth-client-id" type="text" placeholder="OAuth Client ID (xxx.apps.googleusercontent.com)" class="border rounded-lg p-2 font-mono text-[11px] bg-white"/>
+                      <input id="gd-oauth-client-secret" type="password" placeholder="OAuth Client Secret (GOCSPX-...)" class="border rounded-lg p-2 font-mono text-[11px] bg-white"/>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <input id="gd-oauth-refresh-token" type="password" placeholder="Refresh Token (1//0g... atau klik tombol Hubungkan di samping)" class="flex-1 border rounded-lg p-2 font-mono text-[11px] bg-white"/>
+                      <button type="button" onclick="startGoogleOAuthFlow()" class="px-3 py-2 rounded-lg bg-primary text-tertiary-fixed hover:bg-primary-container font-semibold text-[11px] flex items-center gap-1 shrink-0 cursor-pointer">
+                        <span class="material-symbols-outlined text-[15px]">login</span>Hubungkan Login Google (OAuth)
+                      </button>
+                    </div>
+                  </div>
+                </details>
+
                 <!-- Collapsible Manual JSON / API Key Input -->
-                <details class="pt-1">
-                  <summary class="cursor-pointer text-[11px] font-semibold text-primary hover:underline">⚙️ Opsi Manual: Tempel Teks JSON atau Gunakan API Key Folder Publik</summary>
+                <details class="pt-1 border-t border-outline-variant/30">
+                  <summary class="cursor-pointer text-[11px] font-semibold text-primary hover:underline">⚙️ Opsi B: Tempel Teks JSON Service Account atau API Key Folder Publik</summary>
                   <div class="pt-2 space-y-2">
                     <textarea id="gd-service-account-json" rows="3" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"..."}' class="w-full border rounded-lg p-2 font-mono text-[11px] bg-white"></textarea>
                     <div class="flex items-center justify-between text-[11px]">
                       <span class="text-outline">Atau masukkan API Key (khusus folder publik):</span>
-                      <button onclick="clearGDriveServiceAccount()" type="button" class="text-secondary hover:underline">Hapus Service Account</button>
+                      <button onclick="clearGDriveServiceAccount()" type="button" class="text-secondary hover:underline">Hapus Kredensial</button>
                     </div>
                     <div class="flex items-center gap-2">
                       <input id="gd-api-key" type="password" placeholder="AIzaSy... (Google Drive API Key)" class="flex-1 border rounded-lg p-2 font-mono text-xs bg-white"/>
@@ -1500,6 +1879,7 @@
         </div>
       </div>
 
+      </div>
     </div>
 
     <!-- ======================================================== -->

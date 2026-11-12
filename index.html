@@ -43,6 +43,10 @@
     };
   </script>
   <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
     body {
       font-family: 'Figtree', sans-serif;
       color: #111827;
@@ -71,6 +75,59 @@
     /* Collapse "Siapa Andrew Tani" & rest of landing page until user taps to reveal */
     body:not(.bio-revealed) [data-bio-section="1"] {
       display: none;
+    }
+
+    /* ==========================================================================
+       EXECUTIVE MULTI-DEVICE RATIO ADAPTATION
+       - Foldable Cover Screen (Galaxy Z Fold Outer: 320px–360px, 22:9–23:9)
+       - Standard Executive Smartphones (iPhone / Android: 360px–400px)
+       - Samsung Galaxy S Ultra Series & Pro Max (384px–440px, tall 19.3:9–20:9)
+       - Foldable Unfolded Inner Display (Z Fold / Find N / Pixel Fold: 640px–960px)
+       ========================================================================== */
+    @media (max-width: 640px) {
+      /* Prevent iOS Safari & Samsung Internet auto-zoom on input focus */
+      input[type="text"], input[type="email"], input[type="tel"], input[type="password"], textarea, select {
+        font-size: 16px !important;
+      }
+      #frontpage-messages {
+        max-height: 44dvh;
+      }
+    }
+    /* Tall Flagship Screens: Samsung Galaxy S22/S23/S24/S25 Ultra & iPhone Pro Max */
+    @media (min-width: 380px) and (max-width: 460px) and (min-height: 780px) {
+      #frontpage-messages {
+        max-height: 50dvh;
+        min-height: 260px;
+      }
+    }
+    /* Narrow Foldable Cover Screens (Galaxy Z Fold Outer Screen <= 365px) */
+    @media (max-width: 365px) {
+      header .max-w-7xl {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        gap: 0.375rem !important;
+      }
+      #header-subtitle {
+        max-width: 135px !important;
+        font-size: 8px !important;
+      }
+      #header-who-btn, #header-login-btn {
+        padding: 0.35rem 0.5rem !important;
+        font-size: 9.5px !important;
+      }
+      #ruang-diskusi h1 {
+        font-size: 1.35rem !important;
+        line-height: 1.25 !important;
+      }
+    }
+    /* Foldable Unfolded Inner Display (Galaxy Z Fold / Pixel Fold / Find N: 600px–960px) */
+    @media (min-width: 600px) and (max-width: 960px) {
+      #frontpage-messages {
+        max-height: 52dvh;
+      }
+      #karya-buku .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      }
     }
   </style>
 </head>
@@ -106,16 +163,16 @@
   <!-- ========================================== -->
   <!-- MAIN HEADER & BRAND NAVIGATION             -->
   <!-- ========================================== -->
-  <header class="w-full bg-white border-b border-hbs-stoneDark sticky top-0 z-40 shadow-xs backdrop-blur-md bg-white/95">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-5">
+  <header class="w-full bg-white border-b border-hbs-stoneDark sticky top-0 z-40 shadow-xs backdrop-blur-md bg-white/95 overflow-x-clip">
+    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-12 py-2.5 sm:py-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 min-w-0">
       
-      <!-- Brand Logo (shrink-0 & whitespace-nowrap so subtitle never overlaps adjacent nav/buttons) -->
-      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-        <a href="#" onclick="showFrontpageView(); return false;" class="flex flex-col group shrink-0">
-          <span class="font-serif text-xl sm:text-2xl lg:text-[26px] font-bold tracking-tight text-hbs-charcoal leading-none group-hover:text-hbs-crimson transition-colors whitespace-nowrap">
+      <!-- Brand Logo (responsive so subtitle never overlaps or forces horizontal scroll on Foldable/Canvas) -->
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
+        <a href="#" onclick="showFrontpageView(); return false;" class="flex flex-col group min-w-0">
+          <span class="font-serif text-lg sm:text-2xl lg:text-[26px] font-bold tracking-tight text-hbs-charcoal leading-none group-hover:text-hbs-crimson transition-colors whitespace-nowrap">
             iCoachAndrew<span class="text-hbs-crimson">.</span>
           </span>
-          <span id="header-subtitle" class="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-hbs-muted mt-1 whitespace-nowrap">
+          <span id="header-subtitle" class="text-[8.5px] sm:text-[10px] font-mono uppercase tracking-wider text-hbs-muted mt-1 truncate max-w-[165px] sm:max-w-[230px] lg:max-w-none">
             Executive Mentorship &amp; Thought Leadership
           </span>
         </a>
@@ -136,19 +193,19 @@
       </nav>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <!-- Guest controls (default) -->
-        <div id="header-guest-controls" class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          <button type="button" id="header-who-btn" onclick="revealWhoIsAndrew('beranda')" class="xl:hidden px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-crimson bg-hbs-crimsonLight border border-hbs-crimson/30 rounded hover:bg-hbs-crimson hover:text-white transition-all flex items-center gap-1 whitespace-nowrap">
-            <span class="material-symbols-outlined text-[14px] sm:text-[16px]">person_book</span>
+        <div id="header-guest-controls" class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <button type="button" id="header-who-btn" onclick="revealWhoIsAndrew('beranda')" class="xl:hidden px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-crimson bg-hbs-crimsonLight border border-hbs-crimson/30 rounded hover:bg-hbs-crimson hover:text-white transition-all flex items-center gap-1 whitespace-nowrap">
+            <span class="material-symbols-outlined text-[14px] sm:text-[15px]">person_book</span>
             <span id="header-who-btn-text">Siapa Andrew Tani</span>
           </button>
-          <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-charcoal border border-hbs-stoneDark rounded hover:border-hbs-crimson hover:text-hbs-crimson transition-all whitespace-nowrap">
+          <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-charcoal border border-hbs-stoneDark rounded hover:border-hbs-crimson hover:text-hbs-crimson transition-all whitespace-nowrap">
             Masuk Rekan
           </button>
-          <a href="#ruang-diskusi" id="header-cta-btn" onclick="focusChatEngine(); return false;" class="hidden sm:flex px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white bg-hbs-crimson rounded hover:bg-hbs-crimsonDark transition-all shadow-xs items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+          <a href="#ruang-diskusi" id="header-cta-btn" onclick="focusChatEngine(); return false;" class="hidden xl:flex px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-hbs-crimson rounded hover:bg-hbs-crimsonDark transition-all shadow-xs items-center gap-1.5 whitespace-nowrap">
             <span id="header-cta-text">Mulai Diskusi</span>
-            <span class="material-symbols-outlined text-[14px] sm:text-[16px]">arrow_forward</span>
+            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
           </a>
         </div>
 
@@ -342,9 +399,9 @@
 
             <!-- Input Composer Form -->
             <form id="frontpage-chat-form" onsubmit="event.preventDefault(); handleChatSubmit('frontpage');" class="bg-white p-3.5 sm:p-4 border-t border-hbs-stoneDark flex flex-col gap-2.5">
-              <div class="relative flex items-center gap-2">
+              <div class="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <textarea id="frontpage-chat-input" rows="2" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleChatSubmit('frontpage');}" class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg p-3 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none transition-all resize-none text-hbs-charcoal leading-relaxed font-sans" placeholder="Ketik langsung pertanyaan Anda untuk Pak Andrew di sini (tekan Enter atau klik Kirim)..."></textarea>
-                <button type="submit" id="frontpage-send-btn" class="shrink-0 self-stretch px-5 py-2.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-semibold text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer">
+                <button type="submit" id="frontpage-send-btn" class="shrink-0 sm:self-stretch px-5 py-2.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-semibold text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer">
                   <span id="chat-send-btn">Kirim Pesan</span>
                   <span class="material-symbols-outlined text-[18px]">send</span>
                 </button>

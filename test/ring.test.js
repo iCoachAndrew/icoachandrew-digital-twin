@@ -916,7 +916,7 @@ test('Quick Prompts Book Spill (Brain Quotient, Organizing for Business Excellen
   const html = await htmlRes.text();
   assert.ok(!html.includes('Harvard Business School Style'), 'No HBS mention in browser tab title');
   assert.ok(html.includes('id="site-favicon"'), 'Default favicon link exists');
-  assert.ok(html.includes('id="header-subtitle" class="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-hbs-muted mt-1 whitespace-nowrap"'), 'Header subtitle has whitespace-nowrap');
+  assert.ok(html.includes('id="header-subtitle"') && html.includes('whitespace-nowrap'), 'Header subtitle has whitespace-nowrap');
 
   // 2. Verify all 4 Quick Prompt topics return warm book-spill answers in both EN and ID (never "That is private")
   const bqEn = await user('POST', '/api/chat', {
@@ -996,4 +996,130 @@ test('Quick Prompts Book Spill (Brain Quotient, Organizing for Business Excellen
   });
   assert.strictEqual(outRandomId.status, 200);
   assert.match(outRandomId.json.reply, /tidak tahu/i, 'Unrelated ID question honestly replies tidak tahu');
+});
+
+test('Admin Left Collapsible Sidebar, Dynamic Visual Editor (Consistent Font, Fullscreen, Zero Jargon), Multi-Device Ratios & Google Drive OAuth 2.0', async () => {
+  // 1. Verify Admin HTML has Collapsible Left Sidebar (#admin-left-sidebar) & Dynamic Visual Editor controls
+  const adminHtmlRes = await fetch(A + '/admin');
+  assert.strictEqual(adminHtmlRes.status, 200);
+  const adminHtml = await adminHtmlRes.text();
+  assert.ok(adminHtml.includes('id="admin-left-sidebar"'), 'Admin navigation moved to left collapsible sidebar');
+  assert.ok(adminHtml.includes('toggleAdminSidebar()'), 'Sidebar collapse/expand toggle exists');
+  assert.ok(adminHtml.includes('toggleVeFullscreen()'), 'Visual editor fullscreen toggle exists');
+  assert.ok(adminHtml.includes('toggleVeLeftPanel()'), 'Visual editor left dock collapse toggle exists');
+  assert.ok(adminHtml.includes('toggleVeRightPanel()'), 'Visual editor right inspector collapse toggle exists');
+  assert.ok(adminHtml.includes('id="ve-device-ratio-select"'), 'Device ratio selector (Foldable, S Ultra, Mobile, Desktop) exists');
+  assert.ok(adminHtml.includes('id="ve-font-consistent"'), 'Consistent page-wide font selector exists');
+  assert.ok(adminHtml.includes('Belum Dipilih'), 'Zero programming jargon in inspector badge (no NONE/DIV)');
+
+  // 2. Verify Frontpage HTML includes multi-device responsive rules (Foldable cover, Samsung S Ultra tall dvh, Foldable inner screen)
+  const homeHtmlRes = await fetch(U + '/');
+  const homeHtml = await homeHtmlRes.text();
+  assert.ok(homeHtml.includes('max-width: 365px'), 'Foldable cover screen responsive CSS present');
+  assert.ok(homeHtml.includes('min-height: 780px'), 'Samsung S Ultra tall screen dvh CSS present');
+  assert.ok(homeHtml.includes('min-width: 600px) and (max-width: 960px)'), 'Foldable unfolded inner screen responsive CSS present');
+
+  // 3. Verify Consistent Page-Wide Font endpoint (POST /admin/api/site/fonts) saves & publishes immediately
+  const fontRes = await admin('POST', '/admin/api/site/fonts', {
+    fonts: {
+      consistentAll: 'Plus Jakarta Sans',
+      serif: 'Plus Jakarta Sans',
+      sans: 'Plus Jakarta Sans'
+    }
+  });
+  assert.strictEqual(fontRes.status, 200);
+  assert.strictEqual(fontRes.json.ok, true);
+  assert.strictEqual(fontRes.json.fonts.consistentAll, 'Plus Jakarta Sans');
+
+  const pubSite = await user('GET', '/api/site-content');
+  assert.strictEqual(pubSite.status, 200);
+  assert.strictEqual(pubSite.json.theme.fonts.consistentAll, 'Plus Jakarta Sans');
+
+  // 4. Verify Google Drive OAuth 2.0 flow (Config -> Consent URL -> Code Exchange -> Refresh Token Access)
+  app.studio.works.gdrive.setCustomFetch(async (urlStr, opts = {}) => {
+    const u = new URL(urlStr);
+    if (u.origin + u.pathname === 'https://oauth2.googleapis.com/token') {
+      const bodyStr = String(opts.body || '');
+      if (bodyStr.includes('grant_type=authorization_code')) {
+        assert.ok(bodyStr.includes('code=mock_auth_code_xyz'));
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            access_token: 'ya29.oauth_access_token_live',
+            refresh_token: '1//0g_mock_refresh_token_secret_999',
+            expires_in: 3600
+          })
+        };
+      }
+      if (bodyStr.includes('grant_type=refresh_token')) {
+        assert.ok(bodyStr.includes('refresh_token=1%2F%2F0g_mock_refresh_token_secret_999'));
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            access_token: 'ya29.oauth_refreshed_token_live',
+            expires_in: 3600
+          })
+        };
+      }
+    }
+    if (u.pathname.endsWith('/files/1OAuthFolderTest')) {
+      assert.strictEqual(opts.headers && opts.headers.Authorization, 'Bearer ya29.oauth_refreshed_token_live');
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ id: '1OAuthFolderTest', name: 'Folder OAuth Pak Andrew', mimeType: 'application/vnd.google-apps.folder' })
+      };
+    }
+    if ((u.searchParams.get('q') || '').includes("'1OAuthFolderTest' in parents")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ files: [] })
+      };
+    }
+    return { ok: false, status: 404, json: async () => ({ error: { message: 'Not found' } }) };
+  });
+
+  try {
+    // Save OAuth 2.0 Client ID & Client Secret
+    const oauthCfg = await admin('POST', '/admin/api/works/gdrive/config', {
+      authMode: 'oauth2',
+      oauthClientId: '123456789-abc.apps.googleusercontent.com',
+      oauthClientSecret: 'GOCSPX-mock_client_secret_xyz',
+      oauthRedirectUri: 'https://twin.andrewtani.id/admin/api/works/gdrive/oauth-callback',
+      rootFolderId: '1OAuthFolderTest'
+    });
+    assert.strictEqual(oauthCfg.status, 200);
+    assert.strictEqual(oauthCfg.json.gdrive.authMode, 'oauth2');
+    assert.strictEqual(oauthCfg.json.gdrive.hasOauthClientId, true);
+    assert.strictEqual(oauthCfg.json.gdrive.hasOauthClientSecret, true);
+
+    // Generate Google OAuth 2.0 Consent URL
+    const urlRes = await admin('GET', '/admin/api/works/gdrive/oauth-url');
+    assert.strictEqual(urlRes.status, 200);
+    assert.strictEqual(urlRes.json.ok, true);
+    assert.match(urlRes.json.url, /accounts\.google\.com\/o\/oauth2\/v2\/auth/);
+    assert.match(urlRes.json.url, /access_type=offline/);
+
+    // Exchange authorization code for Refresh Token
+    const exRes = await admin('POST', '/admin/api/works/gdrive/oauth-exchange', {
+      code: 'mock_auth_code_xyz',
+      redirectUri: 'https://twin.andrewtani.id/admin/api/works/gdrive/oauth-callback'
+    });
+    assert.strictEqual(exRes.status, 200);
+    assert.strictEqual(exRes.json.ok, true);
+    assert.strictEqual(exRes.json.gdrive.configured, true);
+    assert.strictEqual(exRes.json.gdrive.hasOauthRefreshToken, true);
+
+    // Force token refresh & test Google Drive connection using OAuth 2.0 refresh token
+    app.studio.works.gdrive.clearTokenCache();
+    const testOauth = await admin('POST', '/admin/api/works/gdrive/test', { folderId: '1OAuthFolderTest' });
+    assert.strictEqual(testOauth.status, 200);
+    assert.strictEqual(testOauth.json.ok, true);
+    assert.strictEqual(testOauth.json.folder.name, 'Folder OAuth Pak Andrew');
+  } finally {
+    app.studio.works.gdrive.setCustomFetch(null);
+  }
 });

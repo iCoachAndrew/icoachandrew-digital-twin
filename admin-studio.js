@@ -2,9 +2,13 @@
 'use strict';
 
 let siteState = { draft: { elements: {}, layout: { order: [], hidden: [] }, blocks: [], theme: { colors: {}, fonts: {}, customCss: '' }, seo: {}, settings: {} }, published: {}, dirty: false, versions: [] };
-let canvasInventory = { images: [], sections: [], lang: 'id' };
+let canvasInventory = { images: [], sections: [], editableElements: [], lang: 'id' };
 let selectedElem = null;
 let editorLang = 'id';
+let veLeftCollapsed = false;
+let veRightCollapsed = false;
+let veFullscreen = false;
+let veBioVisible = false;
 let mediaLibrary = [];
 let worksData = [];
 let worksRingFilter = 'all';
@@ -92,11 +96,69 @@ async function onAdminAuthenticated() {
   if (iframe) iframe.src = '/preview-site?studio=1&t=' + Date.now();
 }
 
+const ADMIN_TAB_META = {
+  'governance': { label: 'Ring 0 Archive & Audit', icon: 'shield_lock' },
+  'overview': { label: 'Dasbor Status', icon: 'space_dashboard' },
+  'visual-editor': { label: 'Visual Website Editor', icon: 'web' },
+  'media': { label: 'Foto & Media', icon: 'photo_library' },
+  'works': { label: 'Karya R0–R3 & Google Drive', icon: 'auto_stories' },
+  'memory': { label: 'Memori Persona', icon: 'psychology' },
+  'ai': { label: 'Claude AI Vault', icon: 'bolt' },
+  'commerce': { label: 'Pricing & Paket Akses', icon: 'payments' }
+};
+
+function applyAdminSidebarState(state) {
+  const sb = document.getElementById('admin-left-sidebar');
+  if (!sb) return;
+  const next = state === 'collapsed' ? 'collapsed' : 'expanded';
+  sb.setAttribute('data-sidebar-state', next);
+  const icon = document.getElementById('sidebar-toggle-icon');
+  if (icon) icon.textContent = next === 'collapsed' ? 'chevron_right' : 'chevron_left';
+  const topIcon = document.getElementById('sidebar-top-collapse-icon');
+  if (topIcon) topIcon.textContent = next === 'collapsed' ? 'chevron_right' : 'chevron_left';
+  const hdrIcon = document.getElementById('header-sidebar-toggle-icon');
+  if (hdrIcon) hdrIcon.textContent = next === 'collapsed' ? 'menu' : 'menu_open';
+  const lbl = document.getElementById('sidebar-toggle-label');
+  if (lbl) lbl.textContent = next === 'collapsed' ? 'Buka Menu' : 'Ciutkan Menu';
+  try {
+    localStorage.setItem('icoach_admin_sidebar_state', next);
+  } catch (_) {}
+}
+
+function toggleAdminSidebar(forceState) {
+  const sb = document.getElementById('admin-left-sidebar');
+  if (!sb) return;
+  const cur = sb.getAttribute('data-sidebar-state') || 'expanded';
+  const next = forceState ? forceState : (cur === 'expanded' ? 'collapsed' : 'expanded');
+  applyAdminSidebarState(next);
+}
+
+(function initAdminSidebarState() {
+  try {
+    const saved = localStorage.getItem('icoach_admin_sidebar_state');
+    if (saved === 'collapsed' || saved === 'expanded') {
+      applyAdminSidebarState(saved);
+    } else if (window.innerWidth < 1024) {
+      applyAdminSidebarState('collapsed');
+    }
+  } catch (_) {}
+})();
+
 function switchStudioTab(tab) {
   document.querySelectorAll('.studio-panel').forEach((p) => p.classList.add('hidden'));
   const target = document.getElementById('tab-' + tab);
   if (target) target.classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach((b) => b.classList.toggle('active', b.getAttribute('data-tab') === tab));
+
+  const meta = ADMIN_TAB_META[tab] || { label: tab, icon: 'space_dashboard' };
+  const hdrLbl = document.getElementById('active-tab-header-label');
+  if (hdrLbl) hdrLbl.textContent = meta.label;
+  const hdrIcon = document.getElementById('active-tab-header-icon');
+  if (hdrIcon) hdrIcon.textContent = meta.icon;
+
+  if (window.innerWidth < 1024) {
+    applyAdminSidebarState('collapsed');
+  }
 
   if (tab === 'overview') loadOverview();
   else if (tab === 'visual-editor') { loadSiteState(); setTimeout(refreshCanvasInventory, 150); }
@@ -321,17 +383,127 @@ function setEditorLang(lang) {
   }
 }
 
+const FRIENDLY_SECTION_NAMES = {
+  'header': 'Baris Menu Atas',
+  'ruang-diskusi': 'Ruang Diskusi & Chat Utama',
+  'beranda': 'Profil & Kisah Andrew Tani',
+  'karya-buku': 'Buku & Publikasi',
+  'paket-akses': 'Paket & Tingkatan Akses',
+  'footer': 'Informasi Kontak & Kaki Halaman'
+};
+
+function getFriendlySectionLabel(secId) {
+  const clean = String(secId || '').replace(/^#/, '');
+  return FRIENDLY_SECTION_NAMES[clean] || clean || 'Bagian Halaman';
+}
+
+function decodeHtmlEntities(str) {
+  if (!str) return '';
+  const txt = document.createElement('textarea');
+  txt.innerHTML = String(str).replace(/<br\s*\/?>/gi, '\n').replace(/<\/?[^>]+(>|$)/g, '');
+  return txt.value;
+}
+
 function setEditorViewport(w) {
   const wrap = document.getElementById('ve-iframe-wrap');
   if (wrap) wrap.style.maxWidth = w;
+  const sel = document.getElementById('ve-device-ratio-select');
+  if (sel && sel.value !== w) sel.value = w;
+}
+
+function updateVeGridLayout() {
+  const leftCol = document.getElementById('ve-left-dock-col');
+  const rightCol = document.getElementById('ve-right-inspector-col');
+  const canvasCol = document.getElementById('ve-canvas-col');
+  if (!canvasCol) return;
+
+  if (leftCol) leftCol.classList.toggle('hidden', veLeftCollapsed);
+  if (rightCol) rightCol.classList.toggle('hidden', veRightCollapsed);
+
+  canvasCol.classList.remove('lg:col-span-6', 'lg:col-span-9', 'lg:col-span-12');
+  if (veLeftCollapsed && veRightCollapsed) {
+    canvasCol.classList.add('lg:col-span-12');
+  } else if (veLeftCollapsed || veRightCollapsed) {
+    canvasCol.classList.add('lg:col-span-9');
+  } else {
+    canvasCol.classList.add('lg:col-span-6');
+  }
+
+  const btnLeft = document.getElementById('btn-toggle-ve-left');
+  if (btnLeft) {
+    btnLeft.className = veLeftCollapsed
+      ? 'px-2.5 py-1.5 rounded-lg border border-outline-variant bg-surface-container text-on-surface-variant text-xs font-semibold flex items-center gap-1'
+      : 'px-2.5 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-primary text-xs font-semibold flex items-center gap-1';
+  }
+  const btnRight = document.getElementById('btn-toggle-ve-right');
+  if (btnRight) {
+    btnRight.className = veRightCollapsed
+      ? 'px-2.5 py-1.5 rounded-lg border border-outline-variant bg-surface-container text-on-surface-variant text-xs font-semibold flex items-center gap-1'
+      : 'px-2.5 py-1.5 rounded-lg border border-primary/30 bg-primary/10 text-primary text-xs font-semibold flex items-center gap-1';
+  }
+}
+
+function toggleVeLeftPanel(forceState) {
+  veLeftCollapsed = typeof forceState === 'boolean' ? forceState : !veLeftCollapsed;
+  updateVeGridLayout();
+}
+
+function toggleVeRightPanel(forceState) {
+  veRightCollapsed = typeof forceState === 'boolean' ? forceState : !veRightCollapsed;
+  updateVeGridLayout();
+}
+
+function toggleVeFullscreen() {
+  const sec = document.getElementById('tab-visual-editor');
+  if (!sec) return;
+  veFullscreen = !veFullscreen;
+  sec.classList.toggle('ve-fullscreen-active', veFullscreen);
+  const icon = document.getElementById('ve-fullscreen-icon');
+  if (icon) icon.textContent = veFullscreen ? 'fullscreen_exit' : 'fullscreen';
+  const lbl = document.getElementById('ve-fullscreen-label');
+  if (lbl) lbl.textContent = veFullscreen ? 'Keluar Layar Penuh' : 'Layar Penuh Editor';
+}
+
+function toggleFontThemeCard() {
+  const card = document.getElementById('ve-font-card');
+  if (!card) return;
+  const isHid = card.classList.toggle('hidden');
+  if (!isHid) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function toggleCanvasBioSections() {
+  veBioVisible = !veBioVisible;
+  postToCanvas({ type: 'cms:toggle-bio', show: veBioVisible });
+  const btn = document.getElementById('btn-ve-toggle-bio');
+  if (btn) {
+    btn.className = veBioVisible
+      ? 'px-2.5 py-1 rounded-md bg-primary text-white font-semibold flex items-center gap-1'
+      : 'px-2.5 py-1 rounded-md hover:bg-white text-primary font-semibold flex items-center gap-1';
+  }
+  toast(veBioVisible
+    ? 'Bagian Profil & Karya ditampilkan di kanvas agar dapat diedit.'
+    : 'Kanvas kembali menampilkan Ruang Diskusi Utama.');
 }
 
 window.addEventListener('message', (e) => {
   const iframe = document.getElementById('ve-preview-iframe');
+  if (e.origin === window.location.origin && e.data && e.data.type === 'gdrive:oauth-success') {
+    toast('Google Drive OAuth 2.0 berhasil terhubung!');
+    loadWorks();
+    return;
+  }
   if (e.origin !== window.location.origin || !iframe || e.source !== iframe.contentWindow) return;
   const msg = e.data || {};
   if (msg.type === 'cms:inventory') {
-    canvasInventory = { images: msg.images || [], sections: msg.sections || [], lang: msg.lang || 'id' };
+    canvasInventory = {
+      images: msg.images || [],
+      sections: msg.sections || [],
+      editableElements: msg.editableElements || [],
+      lang: msg.lang || 'id'
+    };
+    renderPageElementsDock();
     renderPageImagesDock();
     renderSectionsDock();
     renderLivePhotoSlots();
@@ -340,11 +512,54 @@ window.addEventListener('message', (e) => {
   } else if (msg.type === 'cms:inline-edit') {
     if (!msg.key) return;
     const entry = siteState.draft.elements[msg.key] || {};
-    entry.text = { ...(typeof entry.text === 'object' ? entry.text : {}), [msg.lang || editorLang]: msg.html };
+    const cleanText = decodeHtmlEntities(msg.plainText !== undefined ? msg.plainText : msg.html);
+    entry.text = { ...(typeof entry.text === 'object' ? entry.text : {}), [msg.lang || editorLang]: cleanText };
     siteState.draft.elements[msg.key] = entry;
+    if (selectedElem && selectedElem.key === msg.key) {
+      const txtEl = document.getElementById('ins-text-value');
+      if (txtEl) txtEl.value = cleanText;
+    }
     queueSaveDraft({ elements: { [msg.key]: entry } });
   }
 });
+
+function renderPageElementsDock() {
+  const box = document.getElementById('ve-page-elements-list');
+  if (!box) return;
+  const list = canvasInventory.editableElements || [];
+  if (!list.length) {
+    box.innerHTML = '<div class="text-xs text-outline">Memuat daftar teks &amp; elemen halaman...</div>';
+    return;
+  }
+  const q = (document.getElementById('ve-elem-search')?.value || '').trim().toLowerCase();
+  const filtered = q
+    ? list.filter((it) =>
+        (it.friendlyLabel || '').toLowerCase().includes(q) ||
+        (it.preview || '').toLowerCase().includes(q) ||
+        (it.sectionLabel || '').toLowerCase().includes(q) ||
+        (it.friendlyType || '').toLowerCase().includes(q)
+      )
+    : list;
+
+  if (!filtered.length) {
+    box.innerHTML = '<div class="text-xs text-outline p-3 text-center">Tidak ada elemen yang cocok dengan pencarian.</div>';
+    return;
+  }
+
+  box.innerHTML = filtered.slice(0, 80).map((it) => `
+    <div onclick="selectCanvasKey('${escJs(it.key)}')" class="cursor-pointer group flex items-start justify-between gap-2 p-2.5 rounded-xl bg-surface hover:bg-surface-container border border-outline-variant/40 transition-all">
+      <div class="min-w-0 flex-1 space-y-0.5">
+        <div class="flex items-center gap-1.5">
+          <span class="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] font-bold shrink-0">${esc(it.friendlyType || 'Teks')}</span>
+          <span class="text-xs font-bold text-primary truncate">${esc(it.friendlyLabel || 'Elemen Halaman')}</span>
+        </div>
+        <div class="text-[11px] text-on-surface-variant line-clamp-2">${esc(decodeHtmlEntities(it.preview || ''))}</div>
+        <div class="text-[10px] text-outline truncate">Bagian: ${esc(it.sectionLabel || getFriendlySectionLabel(it.section))}</div>
+      </div>
+      <span class="material-symbols-outlined text-[16px] text-primary opacity-60 group-hover:opacity-100 shrink-0 mt-1">edit</span>
+    </div>
+  `).join('');
+}
 
 function renderPageImagesDock() {
   const box = document.getElementById('ve-page-images-list');
@@ -354,11 +569,11 @@ function renderPageImagesDock() {
     return;
   }
   box.innerHTML = canvasInventory.images.map((img, i) => `
-    <div onclick="selectCanvasKey('${esc(img.key)}')" class="cursor-pointer group flex items-center gap-2.5 p-2 rounded-xl bg-surface hover:bg-surface-container border border-outline-variant/40 transition-all">
+    <div onclick="selectCanvasKey('${escJs(img.key)}')" class="cursor-pointer group flex items-center gap-2.5 p-2 rounded-xl bg-surface hover:bg-surface-container border border-outline-variant/40 transition-all">
       <img src="${esc(img.src)}" alt="${esc(img.alt)}" class="w-12 h-12 rounded-lg object-cover bg-primary-container shrink-0 border border-outline-variant/40"/>
       <div class="min-w-0 flex-1">
         <div class="text-xs font-bold text-primary truncate">${esc(img.alt || ('Foto #' + (i + 1)))}</div>
-        <div class="text-[10px] font-mono text-outline truncate">Section: #${esc(img.section)}</div>
+        <div class="text-[10px] text-outline truncate">Bagian: ${esc(img.sectionLabel || getFriendlySectionLabel(img.section))}</div>
       </div>
       <span class="material-symbols-outlined text-[16px] text-primary opacity-60 group-hover:opacity-100">edit</span>
     </div>
@@ -371,10 +586,21 @@ function selectCanvasKey(key) {
 
 function onCanvasElementSelected(info) {
   selectedElem = info;
+  if (veRightCollapsed) {
+    toggleVeRightPanel(false);
+  }
   document.getElementById('ins-empty-state').classList.add('hidden');
   document.getElementById('ins-form').classList.remove('hidden');
-  document.getElementById('ins-key-label').textContent = info.key;
-  document.getElementById('ins-tag-badge').textContent = info.tag.toUpperCase();
+
+  const friendlyName = info.friendlyLabel || getFriendlySectionLabel(info.key) || 'Elemen Terpilih';
+  document.getElementById('ins-key-label').textContent = friendlyName;
+  const secLbl = document.getElementById('ins-section-label');
+  if (secLbl) {
+    secLbl.textContent = info.sectionLabel
+      ? `Bagian: ${info.sectionLabel}`
+      : `Bagian: ${getFriendlySectionLabel(info.section || 'ruang-diskusi')}`;
+  }
+  document.getElementById('ins-tag-badge').textContent = info.friendlyType || (info.isImage ? 'Foto / Gambar' : 'Teks');
   document.getElementById('ins-lang-badge').textContent = editorLang.toUpperCase();
 
   const imgSec = document.getElementById('ins-image-section');
@@ -395,12 +621,13 @@ function onCanvasElementSelected(info) {
     imgSec.classList.add('hidden');
     txtSec.classList.add('hidden');
     phSec.classList.remove('hidden');
-    document.getElementById('ins-placeholder-value').value = info.placeholder || '';
+    document.getElementById('ins-placeholder-value').value = decodeHtmlEntities(info.placeholder || '');
   } else {
     imgSec.classList.add('hidden');
     txtSec.classList.remove('hidden');
     phSec.classList.add('hidden');
-    document.getElementById('ins-text-value').value = info.html || '';
+    const cleanText = decodeHtmlEntities(info.plainText !== undefined ? info.plainText : (info.html || ''));
+    document.getElementById('ins-text-value').value = cleanText;
   }
 
   if (info.isLink) {
@@ -414,6 +641,10 @@ function onCanvasElementSelected(info) {
   document.getElementById('ins-style-color').value = st.color || '';
   document.getElementById('ins-style-color-picker').value = (st.color && /^#[0-9a-f]{6}$/i.test(st.color)) ? st.color : (info.computed && info.computed.color) || '#001637';
   document.getElementById('ins-style-bg').value = st.backgroundColor || '';
+  const bgPicker = document.getElementById('ins-style-bg-picker');
+  if (bgPicker && st.backgroundColor && /^#[0-9a-f]{6}$/i.test(st.backgroundColor)) {
+    bgPicker.value = st.backgroundColor;
+  }
   document.getElementById('ins-style-fontsize').value = st.fontSize || '';
   document.getElementById('ins-style-align').value = st.textAlign || '';
   document.getElementById('ins-style-radius').value = st.borderRadius || '';
@@ -451,8 +682,8 @@ function applyInspectorChange() {
     const ph = document.getElementById('ins-placeholder-value').value;
     next.placeholder = { ...(typeof next.placeholder === 'object' ? next.placeholder : {}), [editorLang]: ph };
   } else {
-    const html = document.getElementById('ins-text-value').value;
-    next.text = { ...(typeof next.text === 'object' ? next.text : {}), [editorLang]: html };
+    const plainVal = document.getElementById('ins-text-value').value;
+    next.text = { ...(typeof next.text === 'object' ? next.text : {}), [editorLang]: plainVal };
   }
 
   if (selectedElem.isLink) {
@@ -494,7 +725,7 @@ async function resetSelectedElement() {
   }
 }
 
-// Sections Reorder & Visibility
+// Sections Reorder & Visibility (Zero Jargon)
 function renderSectionsDock() {
   const box = document.getElementById('ve-sections-list');
   if (!box) return;
@@ -505,18 +736,19 @@ function renderSectionsDock() {
   const fullOrder = [...order.filter((id) => byId.has(id)), ...canvasInventory.sections.map((s) => s.id).filter((id) => !order.includes(id))];
 
   box.innerHTML = fullOrder.map((id, idx) => {
-    const s = byId.get(id) || { id, title: id };
+    const s = byId.get(id) || { id, title: getFriendlySectionLabel(id) };
     const isHid = hiddenSet.has(id);
+    const friendlyTitle = s.friendlyTitle || getFriendlySectionLabel(id);
     return `
       <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-surface border border-outline-variant/40 text-xs">
         <div class="min-w-0 flex-1">
-          <div class="font-bold text-primary truncate">#${esc(id)}</div>
-          <div class="text-[11px] text-on-surface-variant truncate">${esc(s.title)}</div>
+          <div class="font-bold text-primary truncate">${esc(friendlyTitle)}</div>
+          <div class="text-[11px] text-on-surface-variant truncate">${esc(s.title || friendlyTitle)}</div>
         </div>
         <div class="flex items-center gap-1 shrink-0">
-          <button onclick="moveSectionOrder('${esc(id)}', -1)" ${idx === 0 ? 'disabled' : ''} class="px-1.5 py-0.5 rounded border text-[11px] disabled:opacity-30">↑</button>
-          <button onclick="moveSectionOrder('${esc(id)}', 1)" ${idx === fullOrder.length - 1 ? 'disabled' : ''} class="px-1.5 py-0.5 rounded border text-[11px] disabled:opacity-30">↓</button>
-          <button onclick="toggleSectionHidden('${esc(id)}')" class="px-2 py-0.5 rounded text-[11px] font-semibold ${isHid ? 'bg-red-100 text-secondary' : 'bg-emerald-100 text-emerald-900'}">${isHid ? 'Tersembunyi' : 'Tampil'}</button>
+          <button onclick="moveSectionOrder('${escJs(id)}', -1)" ${idx === 0 ? 'disabled' : ''} class="px-1.5 py-0.5 rounded border text-[11px] disabled:opacity-30" title="Geser ke Atas">↑</button>
+          <button onclick="moveSectionOrder('${escJs(id)}', 1)" ${idx === fullOrder.length - 1 ? 'disabled' : ''} class="px-1.5 py-0.5 rounded border text-[11px] disabled:opacity-30" title="Geser ke Bawah">↓</button>
+          <button onclick="toggleSectionHidden('${escJs(id)}')" class="px-2 py-0.5 rounded text-[11px] font-semibold ${isHid ? 'bg-red-100 text-secondary' : 'bg-emerald-100 text-emerald-900'}">${isHid ? 'Tersembunyi' : 'Tampil'}</button>
         </div>
       </div>`;
   }).join('');
@@ -559,39 +791,69 @@ function updateSiteSettingsFromUI() {
   queueSaveDraft({ settings: siteState.draft.settings });
 }
 
-// Custom Flexible Blocks
+// Custom Flexible Blocks (Zero HTML Code Jargon)
+function parseBlockFields(b) {
+  if (b.title !== undefined || b.body !== undefined) {
+    return { title: b.title || b.label || 'Catatan Reflektif Baru', body: b.body || '' };
+  }
+  const raw = String(b.html || '');
+  const hMatch = raw.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i);
+  const pMatch = raw.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+  return {
+    title: decodeHtmlEntities(hMatch ? hMatch[1] : (b.label || 'Catatan Reflektif Baru')),
+    body: decodeHtmlEntities(pMatch ? pMatch[1] : raw)
+  };
+}
+
+function buildBlockHtml(title, body) {
+  return `<div class="p-8 rounded-2xl bg-surface-container-low border border-outline-variant/40 space-y-2"><h3 class="font-headline-lg text-2xl text-primary">${esc(title)}</h3><p class="text-body-md text-on-surface-variant whitespace-pre-line">${esc(body)}</p></div>`;
+}
+
 function renderBlocksDock() {
   const box = document.getElementById('ve-blocks-list');
   if (!box) return;
   const blocks = siteState.draft.blocks || [];
   if (!blocks.length) {
-    box.innerHTML = '<div class="text-xs text-outline bg-surface p-3 rounded-xl border border-outline-variant/40">Belum ada blok kustom. Klik "+ Tambah Blok" untuk menyisipkan section baru.</div>';
+    box.innerHTML = '<div class="text-xs text-outline bg-surface p-3 rounded-xl border border-outline-variant/40">Belum ada bagian tambahan. Klik <strong>"+ Tambah"</strong> untuk menyisipkan bagian baru.</div>';
     return;
   }
-  box.innerHTML = blocks.map((b, i) => `
-    <div class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-2 text-xs">
-      <div class="flex items-center justify-between gap-2">
-        <input type="text" value="${esc(b.label)}" onchange="updateCustomBlock(${i}, 'label', this.value)" class="font-bold text-primary bg-white border rounded px-2 py-1 text-xs flex-1"/>
-        <button onclick="removeCustomBlock(${i})" class="text-secondary text-xs font-semibold">Hapus</button>
+  box.innerHTML = blocks.map((b, i) => {
+    const parsed = parseBlockFields(b);
+    const curAfter = b.after || 'ruang-diskusi';
+    return `
+      <div class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-2 text-xs">
+        <div class="flex items-center justify-between gap-2">
+          <input type="text" value="${esc(parsed.title)}" onchange="updateCustomBlock(${i}, 'title', this.value)" placeholder="Judul Bagian..." class="font-bold text-primary bg-white border rounded-lg px-2.5 py-1.5 text-xs flex-1"/>
+          <button onclick="removeCustomBlock(${i})" class="text-secondary text-xs font-semibold px-2 py-1 rounded hover:bg-red-50">Hapus</button>
+        </div>
+        <label class="block text-[11px] text-on-surface-variant font-medium">Letakkan Setelah Bagian:
+          <select onchange="updateCustomBlock(${i}, 'after', this.value)" class="mt-0.5 w-full border rounded-lg px-2 py-1.5 text-xs bg-white font-semibold text-primary">
+            <option value="ruang-diskusi" ${curAfter === 'ruang-diskusi' ? 'selected' : ''}>Ruang Diskusi &amp; Chat Utama</option>
+            <option value="beranda" ${curAfter === 'beranda' ? 'selected' : ''}>Profil &amp; Kisah Andrew Tani</option>
+            <option value="karya-buku" ${curAfter === 'karya-buku' ? 'selected' : ''}>Buku &amp; Publikasi</option>
+            <option value="paket-akses" ${curAfter === 'paket-akses' ? 'selected' : ''}>Paket &amp; Tingkatan Akses</option>
+          </select>
+        </label>
+        <label class="block text-[11px] text-on-surface-variant font-medium">Isi Teks / Paragraf Bagian:
+          <textarea rows="3" onchange="updateCustomBlock(${i}, 'body', this.value)" placeholder="Tulis isi paragraf di sini..." class="mt-0.5 w-full border rounded-lg p-2 text-xs bg-white">${esc(parsed.body)}</textarea>
+        </label>
       </div>
-      <label class="block text-[11px] text-on-surface-variant">Posisi Setelah Section:
-        <input type="text" value="${esc(b.after || 'beranda')}" onchange="updateCustomBlock(${i}, 'after', this.value)" placeholder="beranda / karya-buku" class="mt-0.5 w-full border rounded px-2 py-1 text-xs font-mono bg-white"/>
-      </label>
-      <label class="block text-[11px] text-on-surface-variant">Konten HTML Blok:
-        <textarea rows="3" onchange="updateCustomBlock(${i}, 'html', this.value)" class="mt-0.5 w-full border rounded p-2 text-xs font-mono bg-white">${esc(b.html)}</textarea>
-      </label>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function addCustomBlock() {
   const blocks = siteState.draft.blocks || [];
+  const title = 'Catatan Reflektif Baru';
+  const body = 'Anda dapat menulis isi bagian tambahan ini langsung dengan bahasa sehari-hari tanpa kode pemrograman.';
   blocks.push({
     id: 'blk_' + Math.random().toString(16).slice(2, 10),
-    label: 'Section Refleksi Baru',
-    after: 'beranda',
+    label: title,
+    title,
+    body,
+    after: 'ruang-diskusi',
     hidden: false,
-    html: '<div class="p-8 rounded-2xl bg-surface-container-low border border-outline-variant/40 space-y-2"><h3 class="font-headline-lg text-2xl text-primary">Catatan Reflektif Baru</h3><p class="text-body-md text-on-surface-variant">Anda dapat mengedit isi blok ini kapan saja melalui Editor Website Visual.</p></div>'
+    html: buildBlockHtml(title, body)
   });
   siteState.draft.blocks = blocks;
   renderBlocksDock();
@@ -601,7 +863,19 @@ function addCustomBlock() {
 function updateCustomBlock(idx, field, val) {
   const blocks = siteState.draft.blocks || [];
   if (!blocks[idx]) return;
-  blocks[idx][field] = val;
+  const parsed = parseBlockFields(blocks[idx]);
+  if (field === 'title') {
+    blocks[idx].title = val;
+    blocks[idx].label = val;
+    blocks[idx].body = parsed.body;
+    blocks[idx].html = buildBlockHtml(val, parsed.body);
+  } else if (field === 'body') {
+    blocks[idx].title = parsed.title;
+    blocks[idx].body = val;
+    blocks[idx].html = buildBlockHtml(parsed.title, val);
+  } else {
+    blocks[idx][field] = val;
+  }
   queueSaveDraft({ blocks });
 }
 
@@ -613,7 +887,7 @@ function removeCustomBlock(idx) {
   queueSaveDraft({ blocks });
 }
 
-// Theme & SEO Dock
+// Theme, Consistent Fonts & SEO Dock
 function renderThemeDock() {
   const box = document.getElementById('ve-theme-colors');
   if (!box) return;
@@ -628,12 +902,48 @@ function renderThemeDock() {
   }).join('');
 
   const fonts = (siteState.draft.theme && siteState.draft.theme.fonts) || {};
-  document.getElementById('ve-font-serif').value = fonts.serif || '';
-  document.getElementById('ve-font-sans').value = fonts.sans || '';
-  document.getElementById('ve-custom-css').value = (siteState.draft.theme && siteState.draft.theme.customCss) || '';
+  const consEl = document.getElementById('ve-font-consistent');
+  if (consEl) consEl.value = fonts.consistentAll || '';
+  const serifEl = document.getElementById('ve-font-serif');
+  if (serifEl) serifEl.value = fonts.serif || '';
+  const sansEl = document.getElementById('ve-font-sans');
+  if (sansEl) sansEl.value = fonts.sans || '';
+  const cssEl = document.getElementById('ve-custom-css');
+  if (cssEl) cssEl.value = (siteState.draft.theme && siteState.draft.theme.customCss) || '';
 
   const seo = siteState.draft.seo || {};
   populateWebInfoUI(seo);
+}
+
+function onConsistentFontSelect(val) {
+  if (val) {
+    const serifEl = document.getElementById('ve-font-serif');
+    const sansEl = document.getElementById('ve-font-sans');
+    if (serifEl) serifEl.value = val;
+    if (sansEl) sansEl.value = val;
+  }
+  updateThemeFromUI();
+}
+
+async function applyAndPublishGlobalFonts() {
+  const consistentAll = document.getElementById('ve-font-consistent')?.value || '';
+  const serif = document.getElementById('ve-font-serif')?.value || '';
+  const sans = document.getElementById('ve-font-sans')?.value || '';
+  const r = await api('POST', '/admin/api/site/fonts', {
+    fonts: { consistentAll, serif, sans }
+  });
+  if (r.ok && r.data.draft) {
+    siteState.draft = r.data.draft;
+    siteState.dirty = false;
+    updateDirtyIndicator();
+    renderThemeDock();
+    postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+    toast(consistentAll
+      ? `Font konsisten "${consistentAll}" berhasil diterapkan & dipublikasikan ke seluruh halaman!`
+      : 'Kombinasi font halaman berhasil disimpan & dipublikasikan ke website Live!');
+  } else {
+    toast('Gagal menyimpan pengaturan font halaman.', true);
+  }
 }
 
 const DEFAULT_FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E";
@@ -697,9 +1007,10 @@ function syncWebInfoInputs(source) {
 function toggleWebInfoCard() {
   const card = document.getElementById('ve-webinfo-card');
   if (!card) return;
-  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  card.classList.add('ring-2', 'ring-secondary');
-  setTimeout(() => card.classList.remove('ring-2', 'ring-secondary'), 1800);
+  const isHid = card.classList.toggle('hidden');
+  if (!isHid) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 async function uploadFaviconFile(inputEl) {
@@ -757,13 +1068,18 @@ function setThemeColor(key, hex) {
 }
 
 function updateThemeFromUI() {
+  const consistentAll = document.getElementById('ve-font-consistent')?.value || '';
+  const serif = document.getElementById('ve-font-serif')?.value || '';
+  const sans = document.getElementById('ve-font-sans')?.value || '';
+  const customCss = document.getElementById('ve-custom-css')?.value || '';
   siteState.draft.theme = {
     colors: (siteState.draft.theme && siteState.draft.theme.colors) || {},
     fonts: {
-      serif: document.getElementById('ve-font-serif').value,
-      sans: document.getElementById('ve-font-sans').value
+      consistentAll,
+      serif,
+      sans
     },
-    customCss: document.getElementById('ve-custom-css').value
+    customCss
   };
   queueSaveDraft({ theme: siteState.draft.theme });
 }
@@ -934,17 +1250,18 @@ function renderLivePhotoSlots() {
     const ov = (siteState.draft.elements && siteState.draft.elements[img.key]) || {};
     const curSrc = ov.src || img.src;
     const curAlt = ov.alt !== undefined ? ov.alt : img.alt;
+    const secFriendly = img.sectionLabel || getFriendlySectionLabel(img.section);
     return `
       <div class="bg-surface rounded-xl border border-outline-variant/40 overflow-hidden flex flex-col justify-between shadow-sm">
         <div class="h-36 bg-primary-container relative overflow-hidden">
           <img src="${esc(curSrc)}" alt="${esc(curAlt)}" class="w-full h-full object-cover"/>
-          <span class="absolute top-2 left-2 text-[10px] font-mono px-2 py-0.5 rounded bg-black/70 text-white">#${esc(img.section)}</span>
+          <span class="absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded bg-black/75 text-white">${esc(secFriendly)}</span>
         </div>
         <div class="p-3 space-y-2 text-xs">
           <div class="font-bold text-primary truncate">${esc(curAlt || ('Foto #' + (i + 1)))}</div>
           <label class="cursor-pointer block text-center py-1.5 px-2.5 rounded-lg bg-primary text-white text-[11px] font-semibold hover:bg-primary-container">
             Unggah &amp; Ganti Foto Ini
-            <input type="file" accept="image/*" onchange="replaceSlotPhotoDirect('${esc(img.key)}', this)" class="hidden"/>
+            <input type="file" accept="image/*" onchange="replaceSlotPhotoDirect('${escJs(img.key)}', this)" class="hidden"/>
           </label>
         </div>
       </div>`;
@@ -1034,13 +1351,36 @@ function renderGDriveConfigState() {
 
   if (badge) {
     if (g.configured) {
-      const modeLabel = g.authMode === 'service_account' ? 'SERVICE ACCOUNT' : 'API KEY';
+      const modeLabel = g.authMode === 'oauth2' ? 'OAUTH 2.0' : (g.authMode === 'service_account' ? 'SERVICE ACCOUNT' : 'API KEY');
       badge.textContent = `GOOGLE DRIVE: TERHUBUNG (${modeLabel})`;
       badge.className = 'px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300';
     } else {
       badge.textContent = 'GOOGLE DRIVE: BELUM DIKONFIGURASI';
       badge.className = 'px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300';
     }
+  }
+
+  const oauthBadge = document.getElementById('gd-oauth-status-badge');
+  if (oauthBadge) {
+    if (g.hasOauthRefreshToken && g.hasOauthClientId && g.hasOauthClientSecret) {
+      oauthBadge.textContent = 'TERHUBUNG (OAUTH 2.0 AKTIF)';
+      oauthBadge.className = 'font-mono text-[10px] px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300';
+    } else if (g.hasOauthClientId && g.hasOauthClientSecret) {
+      oauthBadge.textContent = 'SIAP LOGIN GOOGLE (KLIK HUBUNGKAN)';
+      oauthBadge.className = 'font-mono text-[10px] px-2.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold border border-amber-300';
+    } else {
+      oauthBadge.textContent = 'BELUM TERHUBUNG';
+      oauthBadge.className = 'font-mono text-[10px] px-2.5 py-0.5 rounded bg-blue-100 text-blue-900 font-bold';
+    }
+  }
+
+  const redirectInput = document.getElementById('gd-oauth-redirect-uri');
+  if (redirectInput) {
+    redirectInput.value = g.oauthRedirectUri || (window.location.origin + '/admin/api/works/gdrive/oauth-callback');
+  }
+  const clientIdInput = document.getElementById('gd-oauth-client-id');
+  if (clientIdInput && g.oauthClientId) {
+    clientIdInput.value = g.oauthClientId;
   }
 
   if (sub) {
@@ -1055,7 +1395,7 @@ function renderGDriveConfigState() {
     } else {
       sub.textContent = g.configured
         ? 'Kredensial siap. Klik "Sinkronkan dari Google Drive" untuk membaca folder & file karya.'
-        : 'Hubungkan Service Account JSON atau API Key untuk membaca folder & file karya dari Google Drive.';
+        : 'Hubungkan Google Drive via OAuth 2.0, Service Account JSON, atau API Key untuk membaca folder & file karya.';
     }
   }
 
@@ -1236,6 +1576,11 @@ async function summarizeWorkInModal() {
 async function saveGDriveConfig() {
   const saVal = (document.getElementById('gd-service-account-json')?.value || '').trim();
   const keyVal = (document.getElementById('gd-api-key')?.value || '').trim();
+  const oauthClientId = (document.getElementById('gd-oauth-client-id')?.value || '').trim();
+  const oauthClientSecret = (document.getElementById('gd-oauth-client-secret')?.value || '').trim();
+  const oauthRefreshToken = (document.getElementById('gd-oauth-refresh-token')?.value || '').trim();
+  const oauthRedirectUri = (document.getElementById('gd-oauth-redirect-uri')?.value || '').trim();
+
   const payload = {
     rootFolderId: document.getElementById('gd-root-folder')?.value || '',
     ringFolders: {
@@ -1251,6 +1596,15 @@ async function saveGDriveConfig() {
   };
   if (saVal) payload.serviceAccountJson = saVal;
   if (keyVal) payload.apiKey = keyVal;
+  if (oauthClientId) payload.oauthClientId = oauthClientId;
+  if (oauthClientSecret) payload.oauthClientSecret = oauthClientSecret;
+  if (oauthRefreshToken) {
+    payload.oauthRefreshToken = oauthRefreshToken;
+    payload.authMode = 'oauth2';
+  } else if (oauthClientId && oauthClientSecret && !saVal && !keyVal) {
+    payload.authMode = 'oauth2';
+  }
+  if (oauthRedirectUri) payload.oauthRedirectUri = oauthRedirectUri;
 
   const r = await api('POST', '/admin/api/works/gdrive/config', payload);
   if (!r.ok) {
@@ -1259,9 +1613,36 @@ async function saveGDriveConfig() {
   }
   if (document.getElementById('gd-service-account-json')) document.getElementById('gd-service-account-json').value = '';
   if (document.getElementById('gd-api-key')) document.getElementById('gd-api-key').value = '';
+  if (document.getElementById('gd-oauth-client-secret')) document.getElementById('gd-oauth-client-secret').value = '';
+  if (document.getElementById('gd-oauth-refresh-token')) document.getElementById('gd-oauth-refresh-token').value = '';
   gdriveState = r.data.gdrive || gdriveState;
   renderGDriveConfigState();
   toast('Konfigurasi Google Drive berhasil disimpan di brankas AES-256-GCM!');
+}
+
+function copyOAuthRedirectUri() {
+  const el = document.getElementById('gd-oauth-redirect-uri');
+  const uri = (el && el.value) || (window.location.origin + '/admin/api/works/gdrive/oauth-callback');
+  navigator.clipboard.writeText(uri);
+  toast('Authorized Redirect URI berhasil disalin! Tempel (Paste) ke Google Cloud Console.');
+}
+
+async function startGoogleOAuthFlow() {
+  const clientId = (document.getElementById('gd-oauth-client-id')?.value || '').trim();
+  if (!clientId && !(gdriveState && gdriveState.hasOauthClientId)) {
+    toast('Mohon isi OAuth Client ID dan Client Secret terlebih dahulu.', true);
+    return;
+  }
+  await saveGDriveConfig();
+  const redirectUri = (document.getElementById('gd-oauth-redirect-uri')?.value || '').trim()
+    || (window.location.origin + '/admin/api/works/gdrive/oauth-callback');
+  const r = await api('GET', '/admin/api/works/gdrive/oauth-url?redirectUri=' + encodeURIComponent(redirectUri));
+  if (!r.ok || !r.data.ok || !r.data.url) {
+    toast(r.data.error || 'Gagal membuat URL OAuth 2.0 Google.', true);
+    return;
+  }
+  window.open(r.data.url, 'icoach_gdrive_oauth', 'width=560,height=680,menubar=no,toolbar=no');
+  toast('Jendela login Google OAuth 2.0 dibuka. Silakan pilih akun Google Anda dan klik Allow.');
 }
 
 async function clearGDriveServiceAccount() {
