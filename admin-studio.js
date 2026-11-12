@@ -1809,25 +1809,254 @@ function toggleGDriveBrowser() {
   }
 }
 
+let gdCurrentFolderId = '';
+let gdCurrentBrowseData = { currentFolder: {}, folders: [], files: [], unconfiguredFolders: false, isSearchResult: false, query: '' };
+let gdExplorerFilter = 'all'; // 'all' | 'assigned' | 'unassigned' | 'irrelevant'
+let gdLocalSearchQuery = '';
+let gdSelectedItems = new Map(); // id -> { id, type: 'folder'|'file', name, folderName }
+
+function clientFuzzyScore(query, target) {
+  const q = String(query || '').trim().toLowerCase();
+  const t = String(target || '').trim().toLowerCase();
+  if (!q) return 1;
+  if (!t) return 0;
+  if (t === q) return 100;
+  if (t.startsWith(q)) return 90;
+  if (t.includes(q)) return 80;
+  const tokens = q.split(/\s+/).filter(Boolean);
+  if (tokens.length > 1 && tokens.every((tk) => t.includes(tk))) return 75;
+  let qi = 0;
+  let consecutive = 0;
+  let maxConsecutive = 0;
+  for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+    if (t[ti] === q[qi]) {
+      qi++;
+      consecutive++;
+      if (consecutive > maxConsecutive) maxConsecutive = consecutive;
+    } else {
+      consecutive = 0;
+    }
+  }
+  if (qi === q.length) {
+    return 40 + Math.min(30, Math.round((maxConsecutive / q.length) * 30));
+  }
+  return 0;
+}
+
+// 5. Toggle Folder Induk on 2nd click (Unassign Folder Induk if already active)
 async function setGDriveFolderAsRoot(folderId, folderName = '') {
   if (!folderId) return;
   const rootInput = document.getElementById('gd-root-folder');
+  const currentRoot = (gdriveState && gdriveState.rootFolderId) || (rootInput ? rootInput.value.trim() : '');
+  const isAlreadyRoot = currentRoot === folderId;
+
+  if (isAlreadyRoot) {
+    if (rootInput) rootInput.value = '';
+    const r = await api('POST', '/admin/api/works/gdrive/config', { rootFolderId: '' });
+    if (r.ok && r.data.gdrive) {
+      gdriveState = r.data.gdrive;
+      renderGDriveConfigState();
+    }
+    toast(`Folder "${folderName || folderId}" dibatalkan (Unassigned) dari Folder Induk.`);
+    await browseGDriveFolder(gdCurrentFolderId || 'root');
+    return;
+  }
+
   if (rootInput) rootInput.value = folderId;
   await saveGDriveConfig();
-  toast(`Folder "${folderName || folderId}" ditetapkan sebagai Folder Induk Google Drive!`);
+  toast(`Folder "${folderName || folderId}" ditetapkan sebagai Folder Induk! (Klik tombol sekali lagi jika ingin membatalkan).`);
   await browseGDriveFolder(folderId);
 }
 
+// Assign or Unassign (on 2nd click) a Folder to Ring 0..3 / 'irrelevant' / 'unassigned' + Auto-Read & Convert to .md
 async function assignGDriveFolderToRing(folderId, ring, folderName = '') {
-  if (!folderId || ![0, 1, 2, 3].includes(Number(ring))) return;
-  const rNum = Number(ring);
-  const ringInput = document.getElementById('gd-folder-r' + rNum);
-  if (ringInput) ringInput.value = folderId;
-  await saveGDriveConfig();
-  toast(`Folder "${folderName || folderId}" berhasil dipetakan ke Ring ${rNum}! Klik "Sinkronkan dari Google Drive" untuk mengimpor isinya.`);
+  if (!folderId) return;
+  const isRingNum = [0, 1, 2, 3].includes(Number(ring)) && ring !== 'unassigned' && ring !== 'irrelevant';
+  const rNum = isRingNum ? Number(ring) : null;
+
+  // Check if already mapped to this ring -> 2nd click toggles back to 'unassigned'!
+  const mappedInRingFolders = rNum !== null && gdriveState && gdriveState.ringFolders && gdriveState.ringFolders[rNum] === folderId;
+  const mappedInFolderMap = gdriveState && gdriveState.folderRingMap && String(gdriveState.folderRingMap[folderId]) === String(ring);
+  const targetRing = (mappedInRingFolders || mappedInFolderMap) ? 'unassigned' : ring;
+
+  if (targetRing === 'unassigned' || targetRing === 'irrelevant') {
+    [0, 1, 2, 3].forEach((rk) => {
+      const inp = document.getElementById('gd-folder-r' + rk);
+      if (inp && inp.value.trim() === folderId) inp.value = '';
+    });
+  } else if (rNum !== null) {
+    const ringInput = document.getElementById('gd-folder-r' + rNum);
+    if (ringInput) ringInput.value = folderId;
+  }
+
+  toast(targetRing === 'unassigned'
+    ? `Membatalkan pemetaan Ring untuk folder "${folderName || folderId}" (Unassigned)...`
+    : (targetRing === 'irrelevant'
+      ? `Menandai folder "${folderName || folderId}" sebagai Irrelevant (diabaikan)...`
+      : `Memetakan folder "${folderName || folderId}" ke Ring ${targetRing}, membaca semua file & membuat dokumen .md...`));
+
+  const r = await api('POST', '/admin/api/works/gdrive/bulk-assign', {
+    ring: targetRing,
+    items: [{ id: folderId, type: 'folder', name: folderName || folderId }]
+  });
+  if (!r.ok || !r.data.ok) {
+    toast('Gagal memetakan folder: ' + ((r.data && r.data.error) || 'Error'), true);
+    return;
+  }
+  await loadWorks();
+  await browseGDriveFolder(gdCurrentFolderId || '');
+  if (targetRing === 'unassigned') {
+    toast(`Folder "${folderName || folderId}" dikembalikan ke status Unassigned.`);
+  } else if (targetRing === 'irrelevant') {
+    toast(`Folder "${folderName || folderId}" ditandai Irrelevant (di luar R0–R3).`);
+  } else {
+    toast(`Folder "${folderName || folderId}" dipetakan ke Ring ${targetRing} (${r.data.processedFiles || 0} file otomatis dibaca & dikonversi ke .md)!`);
+  }
+}
+
+function getEffectiveItemRing(item, isFolder = false) {
+  if (!item) return 'unassigned';
+  if (item.assignedRing !== undefined && item.assignedRing !== null) return item.assignedRing;
+  if (isFolder) {
+    if (gdriveState && gdriveState.folderRingMap && gdriveState.folderRingMap[item.id] !== undefined) {
+      return gdriveState.folderRingMap[item.id];
+    }
+    for (const rk of [0, 1, 2, 3]) {
+      if (gdriveState && gdriveState.ringFolders && gdriveState.ringFolders[rk] === item.id) return rk;
+    }
+    if (item.inferredRing !== undefined && item.inferredRing !== null) return item.inferredRing;
+    return 'unassigned';
+  }
+  if (item.syncedRing !== undefined && item.syncedRing !== null) return item.syncedRing;
+  return 'unassigned';
+}
+
+function matchesExplorerFilter(ringVal) {
+  if (gdExplorerFilter === 'all') return true;
+  if (gdExplorerFilter === 'assigned') return [0, 1, 2, 3].includes(Number(ringVal)) && ringVal !== 'unassigned' && ringVal !== 'irrelevant';
+  if (gdExplorerFilter === 'unassigned') return ringVal === 'unassigned' || ringVal === null || ringVal === undefined;
+  if (gdExplorerFilter === 'irrelevant') return ringVal === 'irrelevant';
+  return true;
+}
+
+function setGDriveExplorerFilter(filter) {
+  gdExplorerFilter = filter || 'all';
+  document.querySelectorAll('.gde-filter-btn').forEach((btn) => {
+    const active = btn.getAttribute('data-gdefilter') === gdExplorerFilter;
+    btn.className = active
+      ? 'gde-filter-btn px-2.5 py-1 rounded-md bg-primary text-white text-[11px] font-semibold cursor-pointer'
+      : 'gde-filter-btn px-2.5 py-1 rounded-md bg-white border border-outline-variant text-primary text-[11px] font-semibold cursor-pointer';
+  });
+  renderGDriveBrowserView();
+}
+
+function onGDriveLocalFuzzySearch(val) {
+  gdLocalSearchQuery = String(val || '').trim();
+  renderGDriveBrowserView();
+}
+
+async function runGDriveGlobalSearch() {
+  const input = document.getElementById('gd-explorer-search');
+  const q = String((input && input.value) || '').trim();
+  if (!q) {
+    toast('Ketik kata kunci nama file atau folder yang ingin dicari terlebih dahulu.', true);
+    return;
+  }
+  const box = document.getElementById('gd-browser-content');
+  if (box) {
+    box.innerHTML = `<div class="p-4 text-xs text-primary font-mono">🌐 Mencari "${esc(q)}" di seluruh Google Drive (Fuzzy Search)...</div>`;
+  }
+  const r = await api('GET', `/admin/api/works/gdrive/search?q=${encodeURIComponent(q)}`);
+  if (!r.ok || !r.data.ok) {
+    toast('Gagal mencari di Google Drive: ' + ((r.data && r.data.error) || 'Error'), true);
+    renderGDriveBrowserView();
+    return;
+  }
+  gdCurrentBrowseData = {
+    currentFolder: { id: 'search', name: `Hasil Pencarian Global: "${q}"`, ring: 'unassigned' },
+    folders: r.data.folders || [],
+    files: r.data.files || [],
+    unconfiguredFolders: false,
+    isSearchResult: true,
+    query: q
+  };
+  gdLocalSearchQuery = '';
+  renderGDriveBrowserView();
+}
+
+function clearGDriveSearch() {
+  const input = document.getElementById('gd-explorer-search');
+  if (input) input.value = '';
+  gdLocalSearchQuery = '';
+  if (gdCurrentBrowseData && gdCurrentBrowseData.isSearchResult) {
+    browseGDriveFolder(gdCurrentFolderId || '');
+  } else {
+    renderGDriveBrowserView();
+  }
+}
+
+function updateGDriveSelectedCountUI() {
+  const countEl = document.getElementById('gd-selected-count');
+  if (countEl) countEl.textContent = `${gdSelectedItems.size} dipilih`;
+}
+
+function toggleGDriveItemSelect(id, type, name, folderName, checked) {
+  if (checked) {
+    gdSelectedItems.set(id, { id, type, name, folderName });
+  } else {
+    gdSelectedItems.delete(id);
+  }
+  updateGDriveSelectedCountUI();
+}
+
+function toggleGDriveSelectAll(checked) {
+  const checkboxes = document.querySelectorAll('.gd-item-cb');
+  checkboxes.forEach((cb) => {
+    cb.checked = checked;
+    const id = cb.getAttribute('data-id');
+    const type = cb.getAttribute('data-type');
+    const name = cb.getAttribute('data-name') || '';
+    const folderName = cb.getAttribute('data-folder') || '';
+    if (id) {
+      if (checked) gdSelectedItems.set(id, { id, type, name, folderName });
+      else gdSelectedItems.delete(id);
+    }
+  });
+  updateGDriveSelectedCountUI();
+}
+
+async function bulkAssignGDriveItems(ring) {
+  const items = Array.from(gdSelectedItems.values());
+  if (!items.length) {
+    toast('Centang minimal 1 folder atau file terlebih dahulu untuk menggunakan Aksi Massal.', true);
+    return;
+  }
+  const label = ring === 'irrelevant' ? 'Irrelevant (Diabaikan)' : (ring === 'unassigned' ? 'Unassigned' : `Ring ${ring} (+ Konversi .md)`);
+  toast(`Memproses ${items.length} item terpilih ke ${label}...`);
+  const r = await api('POST', '/admin/api/works/gdrive/bulk-assign', {
+    ring,
+    items,
+    folderName: (gdCurrentBrowseData.currentFolder && gdCurrentBrowseData.currentFolder.name) || ''
+  });
+  if (!r.ok || !r.data.ok) {
+    toast('Gagal memproses aksi massal: ' + ((r.data && r.data.error) || 'Error'), true);
+    return;
+  }
+  gdSelectedItems.clear();
+  const selAll = document.getElementById('gd-select-all-cb');
+  if (selAll) selAll.checked = false;
+  updateGDriveSelectedCountUI();
+  await loadWorks();
+  if (gdCurrentBrowseData.isSearchResult && gdCurrentBrowseData.query) {
+    await runGDriveGlobalSearch();
+  } else {
+    await browseGDriveFolder(gdCurrentFolderId || '');
+  }
+  toast(`Selesai! ${r.data.processedFiles || items.length} dokumen berhasil dipetakan ke ${label} & disimpan sebagai .md.`);
 }
 
 async function browseGDriveFolder(folderId = '') {
+  gdCurrentFolderId = folderId;
   const box = document.getElementById('gd-browser-content');
   const label = document.getElementById('gd-browser-folder-label');
   if (!box) return;
@@ -1838,46 +2067,101 @@ async function browseGDriveFolder(folderId = '') {
     box.innerHTML = `<div class="p-4 rounded-xl bg-red-50 text-secondary border border-red-200 text-xs">${esc(r.data.error || 'Belum ada folder Google Drive yang dikonfigurasi.')}</div>`;
     return;
   }
-  const cur = r.data.currentFolder || {};
+  gdCurrentBrowseData = {
+    currentFolder: r.data.currentFolder || {},
+    folders: r.data.folders || [],
+    files: r.data.files || [],
+    unconfiguredFolders: Boolean(r.data.unconfiguredFolders),
+    isSearchResult: false,
+    query: ''
+  };
   if (label) {
-    label.textContent = `${cur.name || 'Google Drive'}${cur.id && cur.id !== 'root' ? ' (ID: ' + cur.id + ')' : ''}${cur.ring !== null && cur.ring !== undefined ? ' • Target Default: Ring ' + cur.ring : ''}`;
+    const cur = gdCurrentBrowseData.currentFolder;
+    const ringTag = (cur.ring !== null && cur.ring !== undefined && cur.ring !== 'unassigned')
+      ? (cur.ring === 'irrelevant' ? ' • Status: Irrelevant' : ' • Target: Ring ' + cur.ring)
+      : ' • Status: Unassigned (Pilih Ring per folder/file)';
+    label.textContent = `${cur.name || 'Google Drive'}${cur.id && cur.id !== 'root' ? ' (ID: ' + cur.id + ')' : ''}${ringTag}`;
   }
-  const folders = r.data.folders || [];
-  const files = r.data.files || [];
+  renderGDriveBrowserView();
+}
+
+function renderRingStatusBadge(ringVal) {
+  if (ringVal === 'irrelevant') {
+    return '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 text-secondary border border-red-300 font-bold shrink-0">IRRELEVANT</span>';
+  }
+  if (ringVal === 'unassigned' || ringVal === null || ringVal === undefined || ringVal === '') {
+    return '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-container text-on-surface-variant border border-outline-variant/60 shrink-0">UNASSIGNED</span>';
+  }
+  return `<span class="text-[10px] font-mono px-2 py-0.5 rounded ring-badge-${ringVal} font-bold shrink-0">R${ringVal}</span>`;
+}
+
+function renderGDriveBrowserView() {
+  const box = document.getElementById('gd-browser-content');
+  if (!box) return;
+  const cur = gdCurrentBrowseData.currentFolder || {};
+  let folders = (gdCurrentBrowseData.folders || []).slice();
+  let files = (gdCurrentBrowseData.files || []).slice();
+
+  // Apply local fuzzy search if query is present
+  if (gdLocalSearchQuery) {
+    folders = folders
+      .map((f) => ({ ...f, _fscore: clientFuzzyScore(gdLocalSearchQuery, f.name) }))
+      .filter((f) => f._fscore > 0)
+      .sort((a, b) => b._fscore - a._fscore);
+    files = files
+      .map((f) => ({ ...f, _fscore: clientFuzzyScore(gdLocalSearchQuery, f.name) }))
+      .filter((f) => f._fscore > 0)
+      .sort((a, b) => b._fscore - a._fscore);
+  }
+
+  // Apply Explorer Ring filter ('all' | 'assigned' | 'unassigned' | 'irrelevant')
+  folders = folders.filter((f) => matchesExplorerFilter(getEffectiveItemRing(f, true)));
+  files = files.filter((f) => matchesExplorerFilter(getEffectiveItemRing(f, false)));
 
   if (!folders.length && !files.length) {
     const isOauth = gdriveState && gdriveState.authMode === 'oauth2';
     box.innerHTML = `<div class="p-4 rounded-xl bg-surface border text-xs text-outline flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-      <span>${isOauth ? 'Folder ini belum memiliki sub-folder atau file dokumen.' : 'Folder ini kosong atau belum ada file yang dibagikan.'}</span>
-      <button onclick="browseGDriveFolder('root')" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold shrink-0 cursor-pointer">Buka Google Drive Utama (My Drive)</button>
+      <span>${gdLocalSearchQuery || gdExplorerFilter !== 'all' ? 'Tidak ada folder/file yang cocok dengan filter atau kata kunci pencarian ini.' : (isOauth ? 'Folder ini belum memiliki sub-folder atau file dokumen.' : 'Folder ini kosong atau belum ada file yang dibagikan.')}</span>
+      <div class="flex items-center gap-2 shrink-0">
+        ${(gdLocalSearchQuery || gdExplorerFilter !== 'all') ? `<button onclick="clearGDriveSearch();setGDriveExplorerFilter('all')" class="px-3 py-1.5 rounded-lg border border-outline-variant bg-white text-primary text-xs font-semibold cursor-pointer">Tampilkan Semua</button>` : ''}
+        <button onclick="browseGDriveFolder('root')" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold cursor-pointer">Buka My Drive Utama</button>
+      </div>
     </div>`;
     return;
   }
 
   let html = '';
 
-  if (r.data.unconfiguredFolders || cur.id === 'root') {
+  if (gdCurrentBrowseData.isSearchResult) {
+    html += `
+      <div class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-950 text-xs flex items-center justify-between gap-2">
+        <span>🌐 Menampilkan hasil Fuzzy Search di seluruh Google Drive untuk <strong>"${esc(gdCurrentBrowseData.query)}"</strong> (${folders.length} folder, ${files.length} file).</span>
+        <button onclick="clearGDriveSearch()" class="px-2.5 py-1 rounded bg-white border border-blue-300 text-primary font-semibold text-[11px] cursor-pointer">← Kembali ke Folder</button>
+      </div>`;
+  } else if (gdCurrentBrowseData.unconfiguredFolders || cur.id === 'root') {
     html += `
       <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <strong>📌 Cara Memilih Folder Sinkronisasi (1-Klik):</strong> Klik nama folder untuk melihat isinya, klik <strong>"Jadikan Induk"</strong> jika folder tersebut adalah folder utama karya Anda, atau klik <strong>R0 / R1 / R2 / R3</strong> untuk memetakan folder langsung ke Ring tertentu.
+          <strong>📌 Panduan Cepat (1-Klik Auto-MD):</strong> Klik <strong>"Jadikan Induk"</strong> untuk menetapkan folder utama (<strong>klik ke-2x untuk membatalkan/unassign</strong>). Klik <strong>R0 / R1 / R2 / R3</strong> pada folder/file untuk <strong>otomatis membaca isinya &amp; mengubah ke dokumen <code>.md</code> ringan</strong> tanpa perlu menekan "Baca Teks"! Gunakan tombol <strong>Irrelevant</strong> untuk mengabaikan file di luar R0–R3.
         </div>
       </div>`;
   } else if (cur.id && cur.id !== 'root') {
     const isCurrentRoot = gdriveState && gdriveState.rootFolderId === cur.id;
+    const curRing = getEffectiveItemRing(cur, true);
     html += `
       <div class="p-2.5 rounded-xl bg-surface border border-outline-variant/40 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-amber-600 text-[18px]">folder_open</span>
           <span class="font-bold text-primary">Sedang Membuka: ${esc(cur.name)}</span>
           ${isCurrentRoot ? '<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-mono text-[10px] font-bold">FOLDER INDUK AKTIF</span>' : ''}
+          ${renderRingStatusBadge(curRing)}
         </div>
         <div class="flex flex-wrap items-center gap-1.5">
-          <button onclick="setGDriveFolderAsRoot('${escJs(cur.id)}', '${escJs(cur.name)}')" class="px-2.5 py-1 rounded bg-primary text-white text-[11px] font-semibold cursor-pointer">Jadikan Folder Induk</button>
-          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 0, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-0 text-[10px] font-mono font-bold cursor-pointer">Set R0</button>
-          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 1, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-1 text-[10px] font-mono font-bold cursor-pointer">Set R1</button>
-          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 2, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-2 text-[10px] font-mono font-bold cursor-pointer">Set R2</button>
-          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 3, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-3 text-[10px] font-mono font-bold cursor-pointer">Set R3</button>
+          <button onclick="setGDriveFolderAsRoot('${escJs(cur.id)}', '${escJs(cur.name)}')" title="Klik sekali lagi untuk membatalkan Folder Induk" class="px-2.5 py-1 rounded ${isCurrentRoot ? 'bg-emerald-700 text-white' : 'bg-primary text-white'} text-[11px] font-semibold cursor-pointer">${isCurrentRoot ? '✓ Folder Induk (Klik 2x Batal)' : 'Jadikan Folder Induk'}</button>
+          ${[0, 1, 2, 3].map((rk) => `
+            <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', ${rk}, '${escJs(cur.name)}')" class="px-2 py-1 rounded ${curRing === rk ? 'ring-2 ring-primary ring-badge-' + rk : 'ring-badge-' + rk} text-[10px] font-mono font-bold cursor-pointer">${curRing === rk ? '✓ R' + rk : 'Set R' + rk}</button>
+          `).join('')}
+          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 'irrelevant', '${escJs(cur.name)}')" class="px-2 py-1 rounded ${curRing === 'irrelevant' ? 'bg-secondary text-white' : 'bg-red-50 text-secondary border border-red-200'} text-[10px] font-mono font-bold cursor-pointer">Irrelevant</button>
         </div>
       </div>`;
   }
@@ -1886,23 +2170,28 @@ async function browseGDriveFolder(folderId = '') {
     html += `<div class="space-y-1.5"><div class="text-[11px] font-mono uppercase text-outline font-bold">Daftar Folder (${folders.length})</div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">`;
     html += folders.map((f) => {
       const isRoot = gdriveState && gdriveState.rootFolderId === f.id;
-      const mappedRings = [0, 1, 2, 3].filter((rk) => gdriveState && gdriveState.ringFolders && gdriveState.ringFolders[rk] === f.id);
+      const effRing = getEffectiveItemRing(f, true);
+      const isChecked = gdSelectedItems.has(f.id);
       return `
-      <div class="p-2.5 rounded-xl bg-surface hover:bg-surface-container border ${isRoot || mappedRings.length ? 'border-emerald-500 bg-emerald-50/30' : 'border-outline-variant/40'} flex flex-col justify-between gap-2 transition-all">
-        <button onclick="browseGDriveFolder('${escJs(f.id)}')" class="text-left flex items-center justify-between gap-2 w-full cursor-pointer">
-          <div class="flex items-center gap-2 min-w-0">
+      <div class="p-2.5 rounded-xl bg-surface hover:bg-surface-container border ${isRoot || [0, 1, 2, 3].includes(Number(effRing)) ? 'border-emerald-500 bg-emerald-50/30' : (effRing === 'irrelevant' ? 'border-red-300 bg-red-50/20 opacity-80' : 'border-outline-variant/40')} flex flex-col justify-between gap-2 transition-all">
+        <div class="flex items-center justify-between gap-2 w-full">
+          <label class="flex items-center cursor-pointer shrink-0" title="Pilih folder untuk Aksi Massal">
+            <input type="checkbox" class="gd-item-cb" data-id="${esc(f.id)}" data-type="folder" data-name="${esc(f.name)}" data-folder="${esc(f.name)}" ${isChecked ? 'checked' : ''} onchange="toggleGDriveItemSelect('${escJs(f.id)}', 'folder', '${escJs(f.name)}', '${escJs(f.name)}', this.checked)"/>
+          </label>
+          <button onclick="browseGDriveFolder('${escJs(f.id)}')" class="text-left flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer">
             <span class="material-symbols-outlined text-amber-600 text-[20px]">folder</span>
             <span class="font-semibold text-primary truncate" title="${esc(f.name)}">${esc(f.name)}</span>
-          </div>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded ring-badge-${f.inferredRing ?? 0} shrink-0">R${f.inferredRing ?? 0}</span>
-        </button>
+          </button>
+          ${renderRingStatusBadge(effRing)}
+        </div>
         <div class="flex flex-wrap items-center justify-between gap-1 pt-1.5 border-t border-outline-variant/25 text-[10px]">
-          <button onclick="setGDriveFolderAsRoot('${escJs(f.id)}', '${escJs(f.name)}')" class="px-2 py-0.5 rounded ${isRoot ? 'bg-emerald-700 text-white' : 'bg-white border border-outline-variant text-primary hover:bg-primary hover:text-white'} font-semibold cursor-pointer">${isRoot ? '✓ Folder Induk' : 'Jadikan Induk'}</button>
+          <button onclick="setGDriveFolderAsRoot('${escJs(f.id)}', '${escJs(f.name)}')" title="${isRoot ? 'Klik sekali lagi untuk membatalkan Folder Induk' : 'Jadikan sebagai Folder Induk'}" class="px-2 py-0.5 rounded ${isRoot ? 'bg-emerald-700 text-white' : 'bg-white border border-outline-variant text-primary hover:bg-primary hover:text-white'} font-semibold cursor-pointer">${isRoot ? '✓ Folder Induk' : 'Jadikan Induk'}</button>
           <div class="flex items-center gap-1">
             ${[0, 1, 2, 3].map((rk) => {
-              const active = mappedRings.includes(rk);
-              return `<button onclick="assignGDriveFolderToRing('${escJs(f.id)}', ${rk}, '${escJs(f.name)}')" title="Tetapkan sebagai Folder Ring ${rk}" class="px-1.5 py-0.5 rounded font-mono font-bold cursor-pointer ${active ? 'ring-2 ring-primary ring-badge-' + rk : 'bg-white border border-outline-variant/60 text-on-surface-variant hover:border-primary'}">R${rk}</button>`;
+              const active = Number(effRing) === rk && effRing !== 'unassigned' && effRing !== 'irrelevant';
+              return `<button onclick="assignGDriveFolderToRing('${escJs(f.id)}', ${rk}, '${escJs(f.name)}')" title="${active ? 'Klik sekali lagi untuk Unassign' : 'Baca & petakan ke Ring ' + rk + ' (.md)'}" class="px-1.5 py-0.5 rounded font-mono font-bold cursor-pointer ${active ? 'ring-2 ring-primary ring-badge-' + rk : 'bg-white border border-outline-variant/60 text-on-surface-variant hover:border-primary'}">R${rk}</button>`;
             }).join('')}
+            <button onclick="assignGDriveFolderToRing('${escJs(f.id)}', 'irrelevant', '${escJs(f.name)}')" title="Tandai sebagai Irrelevant (Abaikan)" class="px-1.5 py-0.5 rounded font-mono font-bold cursor-pointer ${effRing === 'irrelevant' ? 'bg-secondary text-white' : 'bg-white border border-red-200 text-secondary hover:bg-red-50'}">🚫</button>
           </div>
         </div>
       </div>`;
@@ -1911,24 +2200,38 @@ async function browseGDriveFolder(folderId = '') {
   }
 
   if (files.length) {
-    html += `<div class="space-y-1.5 pt-2"><div class="text-[11px] font-mono uppercase text-outline font-bold">File Dokumen &amp; Karya (${files.length})</div><div class="divide-y divide-outline-variant/30 border border-outline-variant/40 rounded-xl bg-surface overflow-hidden">`;
-    html += files.map((f) => `
-      <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-surface-container-low">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-primary truncate">${esc(f.name)}</span>
-            ${f.syncedWorkId ? `<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold">Tersinkron (Ring ${f.syncedRing})</span>` : '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-container text-outline">Belum Diimpor</span>'}
+    html += `<div class="space-y-1.5 pt-2"><div class="text-[11px] font-mono uppercase text-outline font-bold">File Dokumen, PDF &amp; Karya (${files.length})</div><div class="divide-y divide-outline-variant/30 border border-outline-variant/40 rounded-xl bg-surface overflow-hidden">`;
+    html += files.map((f) => {
+      const effRing = getEffectiveItemRing(f, false);
+      const isChecked = gdSelectedItems.has(f.id);
+      const isPdf = String(f.mimeType || '').toLowerCase().includes('pdf') || /\.pdf$/i.test(f.name || '');
+      return `
+      <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-surface-container-low ${effRing === 'irrelevant' ? 'opacity-75 bg-red-50/20' : ''}">
+        <div class="flex items-start sm:items-center gap-2.5 min-w-0 flex-1">
+          <input type="checkbox" class="gd-item-cb mt-1 sm:mt-0 cursor-pointer" data-id="${esc(f.id)}" data-type="file" data-name="${esc(f.name)}" data-folder="${esc(cur.name || '')}" ${isChecked ? 'checked' : ''} onchange="toggleGDriveItemSelect('${escJs(f.id)}', 'file', '${escJs(f.name)}', '${escJs(cur.name || '')}', this.checked)"/>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="font-bold text-primary truncate">${esc(f.name)}</span>
+              ${renderRingStatusBadge(effRing)}
+              ${isPdf ? '<span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">PDF (OCR/Teks)</span>' : ''}
+              ${f.mdFile ? `<button onclick="viewWorkMarkdown('${escJs(f.syncedWorkId || f.id)}')" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 hover:bg-emerald-200 font-bold cursor-pointer" title="Lihat dokumen .md ringan hasil konversi">📄 .MD Aktif</button>` : ''}
+            </div>
+            <div class="text-[10px] font-mono text-on-surface-variant truncate">${esc(f.mimeType)} • ID: ${esc(f.id)} ${f.extractionMethod ? '• Metode: ' + esc(f.extractionMethod) : ''}</div>
           </div>
-          <div class="text-[10px] font-mono text-on-surface-variant truncate">${esc(f.mimeType)} • ID: ${esc(f.id)}</div>
         </div>
         <div class="flex flex-wrap items-center gap-1.5 shrink-0">
-          <button onclick="previewGDriveFileText('${escJs(f.id)}', '${escJs(f.name)}')" class="px-2.5 py-1 rounded border border-outline-variant bg-white hover:bg-surface-container text-primary text-[11px] font-semibold cursor-pointer">Baca Teks</button>
-          ${[0, 1, 2, 3].map((rk) => `
-            <button onclick="importSingleGDriveFile('${escJs(f.id)}', ${rk}, '${escJs(cur.name || '')}')" class="px-2 py-1 rounded ${rk === (cur.ring ?? 0) ? 'bg-primary text-white' : 'border border-outline-variant bg-white hover:bg-surface-container text-primary'} text-[10px] font-mono font-bold cursor-pointer">+R${rk}</button>
-          `).join('')}
+          <button onclick="previewGDriveFileText('${escJs(f.id)}', '${escJs(f.name)}')" class="px-2 py-1 rounded border border-outline-variant bg-white hover:bg-surface-container text-primary text-[11px] font-semibold cursor-pointer" title="Intip isi teks (opsional)">Pratinjau Teks</button>
+          ${[0, 1, 2, 3].map((rk) => {
+            const active = Number(effRing) === rk && effRing !== 'unassigned' && effRing !== 'irrelevant';
+            return `
+            <button onclick="importSingleGDriveFile('${escJs(f.id)}', ${active ? "'unassigned'" : rk}, '${escJs(cur.name || '')}')" title="${active ? 'Klik sekali lagi untuk Unassign' : 'Otomatis Baca, Konversi ke .md & Simpan ke Ring ' + rk}" class="px-2 py-1 rounded ${active ? 'bg-primary text-white ring-2 ring-primary' : 'border border-outline-variant bg-white hover:bg-surface-container text-primary'} text-[10px] font-mono font-bold cursor-pointer">${active ? '✓ R' + rk : '+R' + rk}</button>
+          `;
+          }).join('')}
+          <button onclick="importSingleGDriveFile('${escJs(f.id)}', '${effRing === 'irrelevant' ? 'unassigned' : 'irrelevant'}', '${escJs(cur.name || '')}')" title="${effRing === 'irrelevant' ? 'Batalkan status Irrelevant' : 'Tandai sebagai Irrelevant (diabaikan oleh AI)'}" class="px-2 py-1 rounded ${effRing === 'irrelevant' ? 'bg-secondary text-white' : 'border border-red-200 bg-red-50/60 hover:bg-red-100 text-secondary'} text-[10px] font-mono font-bold cursor-pointer">Irrelevant</button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
     html += `</div></div>`;
   }
 
@@ -1936,30 +2239,70 @@ async function browseGDriveFolder(folderId = '') {
 }
 
 async function previewGDriveFileText(fileId, fileName) {
-  toast('Membaca isi file dari Google Drive API...');
+  toast('Membaca isi file (termasuk ekstraksi PDF Non-OCR / OCR) dari Google Drive API...');
   const r = await api('POST', '/admin/api/works/gdrive/read-file', { fileId, importWork: false });
   if (!r.ok || !r.data.ok) {
     toast('Gagal membaca file: ' + (r.data.error || 'Error'), true);
     return;
   }
-  document.getElementById('tp-modal-title').textContent = `Isi File Google Drive: ${fileName}`;
-  document.getElementById('tp-modal-body').textContent = r.data.text || '(File ini berformat biner/media atau tidak memiliki teks yang dapat diekstrak secara langsung. Metadata & tautan tetap dapat disinkronkan.)';
+  const methodLabel = r.data.extractionMethod === 'pdf_ocr'
+    ? ' [Hasil Ekstraksi PDF OCR Vision]'
+    : (r.data.extractionMethod === 'pdf_text' ? ' [Hasil Ekstraksi PDF Digital Non-OCR]' : '');
+  document.getElementById('tp-modal-title').textContent = `Pratinjau Isi File: ${fileName}${methodLabel}`;
+  document.getElementById('tp-modal-body').textContent = r.data.markdown || r.data.text || '(File ini berformat biner/media atau tidak memiliki teks yang dapat diekstrak secara langsung.)';
+  document.getElementById('text-preview-modal').classList.remove('hidden');
+}
+
+async function viewWorkMarkdown(idOrFileId) {
+  if (!idOrFileId) return;
+  const r = await api('GET', '/admin/api/works/md?id=' + encodeURIComponent(idOrFileId));
+  if (!r.ok || !r.data.ok) {
+    toast('Gagal memuat dokumen Markdown (.md).', true);
+    return;
+  }
+  document.getElementById('tp-modal-title').textContent = `📄 Dokumen Konteks .MD Ringan — ${r.data.title || idOrFileId} (${r.data.mdFile || 'auto-generated.md'})`;
+  document.getElementById('tp-modal-body').textContent = r.data.markdown || '';
   document.getElementById('text-preview-modal').classList.remove('hidden');
 }
 
 async function importSingleGDriveFile(fileId, ring, folderName) {
-  toast('Mengimpor file dari Google Drive ke Repositori Karya...');
+  if (ring === 'unassigned' || ring === 'irrelevant') {
+    toast(ring === 'irrelevant' ? 'Menandai file sebagai Irrelevant (diabaikan)...' : 'Mengembalikan file ke status Unassigned...');
+    const r = await api('POST', '/admin/api/works/gdrive/bulk-assign', {
+      ring,
+      items: [{ id: fileId, type: 'file', folderName }]
+    });
+    if (!r.ok || !r.data.ok) {
+      toast('Gagal memperbarui status file: ' + ((r.data && r.data.error) || 'Error'), true);
+      return;
+    }
+    await loadWorks();
+    if (gdCurrentBrowseData.isSearchResult && gdCurrentBrowseData.query) {
+      await runGDriveGlobalSearch();
+    } else {
+      await browseGDriveFolder(gdCurrentFolderId || '');
+    }
+    toast(ring === 'irrelevant' ? 'File ditandai sebagai Irrelevant (di luar R0–R3).' : 'File dikembalikan ke status Unassigned.');
+    return;
+  }
+
+  toast(`Membaca file, mengonversi ke dokumen .md ringan & menyinkronkan ke Ring ${ring}...`);
   const r = await api('POST', '/admin/api/works/gdrive/read-file', { fileId, ring, folderName, importWork: true });
   if (!r.ok || !r.data.ok) {
     toast('Gagal mengimpor file: ' + (r.data.error || 'Error'), true);
     return;
   }
   await loadWorks();
+  if (gdCurrentBrowseData.isSearchResult && gdCurrentBrowseData.query) {
+    await runGDriveGlobalSearch();
+  } else {
+    await browseGDriveFolder(gdCurrentFolderId || '');
+  }
   const imp = r.data.imported;
   if (imp && imp.quarantined) {
-    toast(`File diimpor & otomatis dikarantina ke Ring 0 karena mengandung kata sensitif Protokol Ring!`);
+    toast(`File dibaca (.md) & otomatis dikarantina ke Ring 0 karena mengandung kata sensitif Protokol Ring!`);
   } else {
-    toast(`File "${r.data.file.name}" berhasil disinkronkan ke Repositori Karya!`);
+    toast(`File "${r.data.file.name}" berhasil dibaca, dikonversi ke .md & masuk ke Memori Ring ${ring}!`);
   }
 }
 
@@ -1978,13 +2321,22 @@ function renderWorksGrid() {
   const grid = document.getElementById('works-grid');
   const tbody = document.getElementById('works-table-body');
   if (!grid) return;
-  const list = worksRingFilter === 'all' ? worksData : worksData.filter((w) => Number(w.ring) === Number(worksRingFilter));
+  let list = [];
+  if (worksRingFilter === 'all') {
+    list = worksData.filter((w) => !w.unassigned && !w.irrelevant && w.ring !== 'unassigned' && w.ring !== 'irrelevant');
+  } else if (worksRingFilter === 'unassigned') {
+    list = worksData.filter((w) => w.unassigned || w.irrelevant || w.ring === 'unassigned' || w.ring === 'irrelevant');
+  } else {
+    list = worksData.filter((w) => !w.unassigned && !w.irrelevant && Number(w.ring) === Number(worksRingFilter));
+  }
 
   const ringLabelMap = {
     0: 'RING 0 // PRIVATE',
     1: 'RING 1 // INNER CIRCLE',
     2: 'RING 2 // MEMBER',
-    3: 'RING 3 // PUBLIC'
+    3: 'RING 3 // PUBLIC',
+    unassigned: 'UNASSIGNED',
+    irrelevant: 'IRRELEVANT'
   };
 
   if (tbody) {
@@ -2003,8 +2355,9 @@ function renderWorksGrid() {
           <td class="py-3 px-4 text-slate-body capitalize">${esc(w.type || 'Karya')}</td>
           <td class="py-3 px-4 font-mono">${esc(w.year || '-')}</td>
           <td class="py-3 px-4"><span class="px-1.5 py-0.5 bg-parchment text-navy-imperial font-mono text-[10px] border border-parchment-border rounded uppercase">${esc(w.lang || 'id')}</span></td>
-          <td class="py-3 px-4 ${w.syncKnowledge ? 'text-navy-imperial font-semibold' : 'text-slate-muted'}">${w.syncKnowledge ? 'Tersinkron Enclave' : 'Arsip Saja'}</td>
+          <td class="py-3 px-4 ${w.syncKnowledge ? 'text-navy-imperial font-semibold' : 'text-slate-muted'}">${w.syncKnowledge ? 'Tersinkron (.md)' : 'Arsip / Diabaikan'}</td>
           <td class="py-3 px-4 text-right whitespace-nowrap">
+            <button onclick="viewWorkMarkdown('${esc(w.id)}')" class="p-1 text-emerald-800 hover:text-primary" title="Lihat File .MD"><span class="material-symbols-outlined text-[18px]">description</span></button>
             <button onclick="openWorkModal('${esc(w.id)}')" class="p-1 text-slate-muted hover:text-navy-imperial" title="Edit Karya"><span class="material-symbols-outlined text-[18px]">edit</span></button>
             <button onclick="deleteWorkItem('${esc(w.id)}')" class="p-1 text-slate-muted hover:text-burgundy" title="Hapus Karya"><span class="material-symbols-outlined text-[18px]">delete</span></button>
           </td>
@@ -2014,25 +2367,37 @@ function renderWorksGrid() {
   }
 
   if (!list.length) {
-    grid.innerHTML = '<div class="col-span-full text-xs text-outline p-6 bg-white rounded-lg border border-parchment-border text-center">Belum ada karya pada filter Ring ini.</div>';
+    grid.innerHTML = '<div class="col-span-full text-xs text-outline p-6 bg-white rounded-lg border border-parchment-border text-center">Belum ada karya pada filter ini.</div>';
     return;
   }
-  grid.innerHTML = list.map((w) => `
+  grid.innerHTML = list.map((w) => {
+    const isUnassigned = w.unassigned || w.ring === 'unassigned';
+    const isIrrelevant = w.irrelevant || w.ring === 'irrelevant';
+    const badgeHtml = isIrrelevant
+      ? '<span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded font-bold bg-red-700 text-white">Irrelevant (Diabaikan)</span>'
+      : (isUnassigned
+        ? '<span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded font-bold bg-slate-700 text-white">Unassigned</span>'
+        : `<span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded font-bold ring-badge-${w.ring}">Ring ${w.ring}</span>`);
+    return `
     <div class="bg-white rounded-lg border border-parchment-border overflow-hidden shadow-card flex flex-col justify-between">
       <div>
         <div class="h-40 bg-navy-imperial relative overflow-hidden">
           ${w.coverUrl ? `<img src="${esc(w.coverUrl)}" alt="${esc(w.title)}" class="w-full h-full object-cover"/>` : `<div class="w-full h-full flex items-center justify-center text-gold-light font-serif text-lg px-4 text-center">${esc(w.title)}</div>`}
-          <div class="absolute top-3 left-3 flex items-center gap-1.5">
-            <span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded font-bold ring-badge-${w.ring}">Ring ${w.ring}</span>
+          <div class="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+            ${badgeHtml}
             <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-black/70 text-white">${esc(w.type)}</span>
             ${w.gdriveFileId ? `<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-900/90 text-emerald-100 border border-emerald-400/40">Drive API</span>` : ''}
+            ${w.extractionMethod === 'pdf_ocr' ? `<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-600 text-white">PDF OCR</span>` : (w.extractionMethod === 'pdf_text' ? `<span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-blue-800 text-white">PDF Teks</span>` : '')}
           </div>
           <span class="absolute top-3 right-3 text-[10px] font-mono px-2 py-0.5 rounded ${w.status === 'published' ? 'bg-emerald-700 text-white' : 'bg-amber-600 text-white'}">${w.status === 'published' ? 'Terbit' : 'Draf'}</span>
         </div>
         <div class="p-4 space-y-2">
           <div class="flex items-center justify-between gap-2">
             <div class="text-[11px] font-mono text-gold-antique font-bold truncate">${esc(w.subtitle || (w.year ? 'Tahun ' + w.year : ''))}</div>
-            ${w.link ? `<a href="${esc(w.link)}" target="_blank" rel="noopener" class="text-[10px] font-mono text-primary underline shrink-0">Buka Sumber ↗</a>` : ''}
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="viewWorkMarkdown('${escJs(w.id)}')" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold hover:bg-emerald-100 cursor-pointer">📄 Lihat .MD</button>
+              ${w.link ? `<a href="${esc(w.link)}" target="_blank" rel="noopener" class="text-[10px] font-mono text-primary underline shrink-0">Sumber ↗</a>` : ''}
+            </div>
           </div>
           <h3 class="font-serif text-lg text-navy-imperial font-bold leading-snug">${esc(w.title)}</h3>
           <p class="text-xs text-slate-body line-clamp-3">${esc(w.summary || '')}</p>
@@ -2040,18 +2405,20 @@ function renderWorksGrid() {
           ${w.flagged && w.flagged.length ? `<div class="text-[10px] font-mono text-burgundy bg-burgundy-light px-2 py-1 rounded border border-burgundy/20">Kata sensitif terdeteksi: ${esc(w.flagged.join(', '))}</div>` : ''}
         </div>
       </div>
-      <div class="p-4 pt-2 border-t border-parchment-border flex items-center justify-between gap-2 text-xs">
-        <div class="flex items-center gap-1">
-          <span class="text-[11px] text-slate-muted">Pindah Ring:</span>
-          ${[0, 1, 2, 3].map((r) => `<button onclick="quickMoveWorkRing('${esc(w.id)}', ${w.ring}, ${r})" class="px-1.5 py-0.5 rounded text-[10px] font-mono ${w.ring === r ? 'bg-navy-imperial text-white font-bold' : 'bg-parchment hover:bg-parchment-border'}">R${r}</button>`).join('')}
+      <div class="p-4 pt-2 border-t border-parchment-border flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-1 flex-wrap">
+          <span class="text-[11px] text-slate-muted">Ring:</span>
+          ${[0, 1, 2, 3].map((r) => `<button onclick="quickMoveWorkRing('${esc(w.id)}', '${esc(w.ring)}', ${r})" class="px-1.5 py-0.5 rounded text-[10px] font-mono ${!isUnassigned && !isIrrelevant && Number(w.ring) === r ? 'bg-navy-imperial text-white font-bold' : 'bg-parchment hover:bg-parchment-border'} cursor-pointer">R${r}</button>`).join('')}
+          <button onclick="quickMoveWorkRing('${esc(w.id)}', '${esc(w.ring)}', 'irrelevant')" title="Tandai Irrelevant / Abaikan" class="px-1.5 py-0.5 rounded text-[10px] font-mono ${isIrrelevant ? 'bg-secondary text-white font-bold' : 'bg-red-50 text-secondary border border-red-200'} cursor-pointer">🚫</button>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="openWorkModal('${esc(w.id)}')" class="px-2.5 py-1 rounded bg-navy-imperial text-white text-xs font-semibold">Edit</button>
-          <button onclick="deleteWorkItem('${esc(w.id)}')" class="px-2 py-1 rounded text-burgundy hover:bg-burgundy-light text-xs font-semibold">Hapus</button>
+          <button onclick="openWorkModal('${esc(w.id)}')" class="px-2.5 py-1 rounded bg-navy-imperial text-white text-xs font-semibold cursor-pointer">Edit</button>
+          <button onclick="deleteWorkItem('${esc(w.id)}')" class="px-2 py-1 rounded text-burgundy hover:bg-burgundy-light text-xs font-semibold cursor-pointer">Hapus</button>
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 async function openWorkModal(id = '') {
@@ -2085,7 +2452,7 @@ async function openWorkModal(id = '') {
   document.getElementById('wk-subtitle').value = w.subtitle || '';
   document.getElementById('wk-year').value = w.year || '';
   document.getElementById('wk-type').value = w.type || 'buku';
-  document.getElementById('wk-ring').value = String(w.ring ?? 3);
+  document.getElementById('wk-ring').value = w.irrelevant ? 'irrelevant' : (w.unassigned ? 'unassigned' : String(w.ring ?? 3));
   document.getElementById('wk-status').value = w.status || 'published';
   document.getElementById('wk-lang').value = w.lang || 'id';
   document.getElementById('wk-cover').value = w.coverUrl || '';
@@ -2114,13 +2481,15 @@ async function uploadWorkCover(inputEl) {
 async function saveWorkItem(confirmSensitive = false) {
   const errBox = document.getElementById('wk-error');
   errBox.classList.add('hidden');
+  const rawRing = document.getElementById('wk-ring').value;
+  const ringVal = (rawRing === 'unassigned' || rawRing === 'irrelevant') ? rawRing : Number(rawRing);
   const payload = {
     id: document.getElementById('wk-id').value || undefined,
     title: document.getElementById('wk-title').value,
     subtitle: document.getElementById('wk-subtitle').value,
     year: document.getElementById('wk-year').value,
     type: document.getElementById('wk-type').value,
-    ring: Number(document.getElementById('wk-ring').value),
+    ring: ringVal,
     status: document.getElementById('wk-status').value,
     lang: document.getElementById('wk-lang').value,
     coverUrl: document.getElementById('wk-cover').value,
@@ -2149,20 +2518,27 @@ async function saveWorkItem(confirmSensitive = false) {
   }
   closeWorkModal();
   await loadWorks();
-  toast('Karya berhasil disimpan ke Repositori Ring ' + payload.ring + '!');
+  toast('Karya berhasil disimpan & dikonversi ke dokumen .md!');
 }
 
 async function quickMoveWorkRing(id, fromRing, toRing) {
-  if (fromRing === toRing) return;
+  if (String(fromRing) === String(toRing)) {
+    // 2nd click on active ring unassigns it
+    toRing = 'unassigned';
+  }
   let note = '';
-  if (toRing > fromRing) {
-    note = prompt(`Pelonggaran dari Ring ${fromRing} ke Ring ${toRing} wajib disertai Catatan Preseden:`, 'Disetujui oleh Ring 0 untuk dibuka') || '';
+  const fromNum = Number(fromRing);
+  const toNum = Number(toRing);
+  if (Number.isFinite(fromNum) && Number.isFinite(toNum) && toRing !== 'unassigned' && toRing !== 'irrelevant' && toNum > fromNum) {
+    note = prompt(`Pelonggaran dari Ring ${fromNum} ke Ring ${toNum} wajib disertai Catatan Preseden:`, 'Disetujui oleh Ring 0 untuk dibuka') || '';
     if (!note.trim()) return;
   }
   const r = await api('POST', '/admin/api/works/move', { id, toRing, note, confirmSensitive: true });
   if (r.ok) {
     await loadWorks();
-    toast(`Karya dipindahkan ke Ring ${toRing}.`);
+    toast(toRing === 'unassigned' || toRing === 'irrelevant'
+      ? `Status karya diubah menjadi ${toRing.toUpperCase()}.`
+      : `Karya dipindahkan ke Ring ${toRing} & file .md diperbarui.`);
   }
 }
 
@@ -2390,14 +2766,32 @@ async function loadAiDashboard() {
 
   // Form fields
   document.getElementById('ai-enabled-toggle').checked = cfg.enabled !== false;
-  document.getElementById('ai-model-default').value = cfg.model || 'claude-sonnet-4-5';
+  const defModel = cfg.model || 'claude-sonnet-4-5';
+  document.getElementById('ai-model-default').value = defModel;
+  const presetSel = document.getElementById('ai-model-preset-select');
+  if (presetSel) {
+    const hasOpt = Array.from(presetSel.options).some((o) => o.value === defModel);
+    if (hasOpt) presetSel.value = defModel;
+  }
   document.getElementById('ai-budget-usd').value = cfg.monthlyBudgetUsd || 0;
   document.getElementById('ai-model-r0').value = (cfg.ringModels && cfg.ringModels[0]) || '';
   document.getElementById('ai-model-r1').value = (cfg.ringModels && cfg.ringModels[1]) || '';
   document.getElementById('ai-model-r2').value = (cfg.ringModels && cfg.ringModels[2]) || '';
   document.getElementById('ai-model-r3').value = (cfg.ringModels && cfg.ringModels[3]) || '';
   document.getElementById('ai-max-tokens').value = cfg.maxTokens || 700;
-  document.getElementById('ai-temperature').value = cfg.temperature ?? '';
+  document.getElementById('ai-temperature').value = cfg.temperature ?? 0.25;
+  const topKEl = document.getElementById('ai-top-k-docs');
+  if (topKEl) topKEl.value = cfg.topKDocs || 5;
+  const antiHallEl = document.getElementById('ai-anti-hallucination');
+  if (antiHallEl) antiHallEl.value = cfg.antiHallucinationMode || 'strict';
+  const respStyleEl = document.getElementById('ai-response-style');
+  if (respStyleEl) respStyleEl.value = cfg.responseStyle || 'concise_socratic';
+  const citModeEl = document.getElementById('ai-citation-mode');
+  if (citModeEl) citModeEl.value = cfg.citationMode || 'natural';
+  const dosEl = document.getElementById('ai-dos-list');
+  if (dosEl) dosEl.value = cfg.dosList || aiState.defaultDosList || '';
+  const dontsEl = document.getElementById('ai-donts-list');
+  if (dontsEl) dontsEl.value = cfg.dontsList || aiState.defaultDontsList || '';
   document.getElementById('ai-extra-instructions').value = cfg.extraInstructions || '';
 
   // Recent calls
@@ -2408,6 +2802,14 @@ async function loadAiDashboard() {
       <span>${c.inTok + c.outTok} tok • ${c.latencyMs}ms • ${esc(String(c.at).slice(11, 19))}</span>
     </div>
   `).join('') || '<div class="text-outline">Belum ada panggilan tercatat.</div>';
+}
+
+function restoreDefaultAiDosDonts() {
+  const dosEl = document.getElementById('ai-dos-list');
+  const dontsEl = document.getElementById('ai-donts-list');
+  if (dosEl && aiState && aiState.defaultDosList) dosEl.value = aiState.defaultDosList;
+  if (dontsEl && aiState && aiState.defaultDontsList) dontsEl.value = aiState.defaultDontsList;
+  toast("Daftar Do's & Don'ts dikembalikan ke rekomendasi standar Digital Twin. Klik 'Simpan' untuk menerapkan.");
 }
 
 async function addClaudeKey() {
@@ -2471,11 +2873,17 @@ async function saveAiConfig() {
     },
     maxTokens: Number(document.getElementById('ai-max-tokens').value || 700),
     temperature: document.getElementById('ai-temperature').value,
+    topKDocs: Number(document.getElementById('ai-top-k-docs')?.value || 5),
+    antiHallucinationMode: document.getElementById('ai-anti-hallucination')?.value || 'strict',
+    responseStyle: document.getElementById('ai-response-style')?.value || 'concise_socratic',
+    citationMode: document.getElementById('ai-citation-mode')?.value || 'natural',
+    dosList: document.getElementById('ai-dos-list')?.value || '',
+    dontsList: document.getElementById('ai-donts-list')?.value || '',
     extraInstructions: document.getElementById('ai-extra-instructions').value
   });
   if (r.ok) {
     await loadAiDashboard();
-    toast('Konfigurasi model & parameter Claude AI berhasil disimpan.');
+    toast('Konfigurasi model, parameter, Anti-Halusinasi & Do\'s/Don\'ts Claude AI berhasil disimpan!');
   }
 }
 

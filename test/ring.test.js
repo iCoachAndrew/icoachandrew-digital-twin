@@ -1161,3 +1161,169 @@ test('Admin Left Collapsible Sidebar, Dynamic Visual Editor (Consistent Font, Fu
     app.studio.works.gdrive.setCustomFetch(null);
   }
 });
+
+test('Google Drive Explorer: Unassigned/Irrelevant, Fuzzy Search, Bulk Assign (.md), PDF (Non-OCR & OCR), & AI Governance', async () => {
+  // Build a mock digital PDF buffer with BT (Text) Tj ET
+  const pdfStreamContent = 'BT /F1 12 Tf 72 720 Td (Organizing for Business Excellence and Brain Quotient by Andrew Tani.) Tj ET';
+  const mockDigitalPdfBuf = Buffer.from(`%PDF-1.4\n1 0 obj\n<< /Length ${pdfStreamContent.length} >>\nstream\n${pdfStreamContent}\nendstream\nendobj\n%%EOF`, 'latin1');
+  // Build a mock scanned (image-only) PDF buffer with no text operators
+  const mockScannedPdfBuf = Buffer.from('%PDF-1.4\n1 0 obj\n<< /Subtype /Image /Width 100 /Height 100 >>\nstream\n\x00\x01\x02\x03\nendstream\nendobj\n%%EOF', 'latin1');
+
+  app.studio.works.gdrive.setCustomFetch(async (url) => {
+    const u = new URL(url);
+    if (u.hostname === 'oauth2.googleapis.com') {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ access_token: 'ya29.mock_token_2', expires_in: 3600 })
+      };
+    }
+    const q = u.searchParams.get('q') || '';
+    if (q.includes("'root' in parents")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          files: [
+            { id: 'folder_public_misc', name: 'Public Shared Assets', mimeType: 'application/vnd.google-apps.folder' },
+            { id: 'folder_orbex_ch', name: 'Bab Orbex Leadership', mimeType: 'application/vnd.google-apps.folder' },
+            { id: 'file_digital_pdf', name: 'Orbex_Executive_Guide.pdf', mimeType: 'application/pdf', modifiedTime: '2026-03-10T00:00:00Z' },
+            { id: 'file_scanned_pdf', name: 'Scanned_Board_Notes.pdf', mimeType: 'application/pdf', modifiedTime: '2026-03-10T00:00:00Z' },
+            { id: 'file_random_flyer', name: 'Event_Banner_2025.txt', mimeType: 'text/plain', modifiedTime: '2026-03-10T00:00:00Z' }
+          ]
+        })
+      };
+    }
+    if (u.pathname === '/drive/v3/files' && !q.includes('in parents')) {
+      // Global search endpoint
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          files: [
+            { id: 'file_digital_pdf', name: 'Orbex_Executive_Guide.pdf', mimeType: 'application/pdf' },
+            { id: 'folder_orbex_ch', name: 'Bab Orbex Leadership', mimeType: 'application/vnd.google-apps.folder' }
+          ]
+        })
+      };
+    }
+    if (u.pathname === '/drive/v3/files/file_digital_pdf') {
+      if (u.searchParams.get('alt') === 'media') {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => mockDigitalPdfBuf.buffer.slice(mockDigitalPdfBuf.byteOffset, mockDigitalPdfBuf.byteOffset + mockDigitalPdfBuf.byteLength)
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ id: 'file_digital_pdf', name: 'Orbex_Executive_Guide.pdf', mimeType: 'application/pdf', webViewLink: 'https://drive.google.com/file/d/file_digital_pdf/view' })
+      };
+    }
+    if (u.pathname === '/drive/v3/files/file_scanned_pdf') {
+      if (u.searchParams.get('alt') === 'media') {
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => mockScannedPdfBuf.buffer.slice(mockScannedPdfBuf.byteOffset, mockScannedPdfBuf.byteOffset + mockScannedPdfBuf.byteLength)
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ id: 'file_scanned_pdf', name: 'Scanned_Board_Notes.pdf', mimeType: 'application/pdf', webViewLink: 'https://drive.google.com/file/d/file_scanned_pdf/view' })
+      };
+    }
+    if (u.pathname === '/drive/v3/files/file_random_flyer') {
+      if (u.searchParams.get('alt') === 'media') {
+        return { ok: true, status: 200, text: async () => 'Brosur acara tahunan umum.' };
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ id: 'file_random_flyer', name: 'Event_Banner_2025.txt', mimeType: 'text/plain' })
+      };
+    }
+    return { ok: false, status: 404, json: async () => ({ error: { message: 'Not found' } }) };
+  });
+
+  try {
+    // 1. Unmapped folders/files default to 'unassigned' (not R0)
+    const browse = await admin('GET', '/admin/api/works/gdrive/browse?folderId=root');
+    assert.strictEqual(browse.status, 200);
+    const pubFolder = browse.json.folders.find((f) => f.id === 'folder_public_misc');
+    assert.ok(pubFolder);
+    assert.strictEqual(pubFolder.assignedRing, 'unassigned');
+    const pdfFile = browse.json.files.find((f) => f.id === 'file_digital_pdf');
+    assert.ok(pdfFile);
+    assert.strictEqual(pdfFile.assignedRing, 'unassigned');
+
+    // 2. Fuzzy search endpoint
+    const searchRes = await admin('GET', '/admin/api/works/gdrive/search?q=Orbex%20Guide');
+    assert.strictEqual(searchRes.status, 200);
+    assert.strictEqual(searchRes.json.ok, true);
+    assert.ok(searchRes.json.files.some((f) => f.id === 'file_digital_pdf'));
+
+    // 3. Bulk assign digital PDF & scanned PDF to Ring 3 -> auto-reads PDF & creates .md file!
+    const bulkR3 = await admin('POST', '/admin/api/works/gdrive/bulk-assign', {
+      ring: 3,
+      items: [
+        { id: 'file_digital_pdf', type: 'file', name: 'Orbex_Executive_Guide.pdf' },
+        { id: 'file_scanned_pdf', type: 'file', name: 'Scanned_Board_Notes.pdf' }
+      ]
+    });
+    assert.strictEqual(bulkR3.status, 200);
+    assert.strictEqual(bulkR3.json.ok, true);
+    assert.strictEqual(bulkR3.json.processedFiles, 2);
+
+    // Check generated .md file for digital PDF
+    const mdRes = await admin('GET', '/admin/api/works/md?id=file_digital_pdf');
+    assert.strictEqual(mdRes.status, 200);
+    assert.strictEqual(mdRes.json.ok, true);
+    assert.match(mdRes.json.markdown, /Organizing for Business Excellence and Brain Quotient/);
+    assert.match(mdRes.json.mdFile, /^data\/md_knowledge\/ring3\//);
+
+    // 4. Mark a file as 'irrelevant' (outside R0-R3)
+    const bulkIrr = await admin('POST', '/admin/api/works/gdrive/bulk-assign', {
+      ring: 'irrelevant',
+      items: [{ id: 'file_random_flyer', type: 'file', name: 'Event_Banner_2025.txt' }]
+    });
+    assert.strictEqual(bulkIrr.status, 200);
+    const worksList = await admin('GET', '/admin/api/works');
+    const flyerWork = worksList.json.works.find((w) => w.gdriveFileId === 'file_random_flyer');
+    assert.ok(flyerWork);
+    assert.strictEqual(flyerWork.irrelevant, true);
+    assert.strictEqual(flyerWork.ring, 'irrelevant');
+
+    // 5. Root folder assign & unassign (2x click toggle behavior)
+    const setRoot1 = await admin('POST', '/admin/api/works/gdrive/config', { rootFolderId: 'folder_orbex_ch' });
+    assert.strictEqual(setRoot1.json.gdrive.rootFolderId, 'folder_orbex_ch');
+    const unassignRoot = await admin('POST', '/admin/api/works/gdrive/config', { rootFolderId: '' });
+    assert.strictEqual(unassignRoot.json.gdrive.rootFolderId, '');
+
+    // 6. Claude AI Governance config (Do's & Don'ts, Anti-Hallucination Protocol, Citation Mode, Response Style, Top-K)
+    const aiCfgRes = await admin('POST', '/admin/api/ai/config', {
+      model: 'claude-sonnet-4-5',
+      antiHallucinationMode: 'strict',
+      responseStyle: 'structured_advisory',
+      citationMode: 'explicit',
+      topKDocs: 6,
+      dosList: '- Selalu kaitkan dengan disiplin Orbex',
+      dontsList: '- Jangan pernah mengomentari spekulasi saham'
+    });
+    assert.strictEqual(aiCfgRes.status, 200);
+    assert.strictEqual(aiCfgRes.json.config.antiHallucinationMode, 'strict');
+    assert.strictEqual(aiCfgRes.json.config.responseStyle, 'structured_advisory');
+    assert.strictEqual(aiCfgRes.json.config.citationMode, 'explicit');
+    assert.strictEqual(aiCfgRes.json.config.topKDocs, 6);
+
+    const promptPrev = await admin('GET', '/admin/api/ai/prompt-preview?ring=3&lang=id');
+    assert.strictEqual(promptPrev.status, 200);
+    assert.match(promptPrev.json.system, /ANTI-HALLUCINATION PROTOCOL \(STRICT GROUNDED ONLY\)/i);
+    assert.match(promptPrev.json.system, /Selalu kaitkan dengan disiplin Orbex/);
+    assert.match(promptPrev.json.system, /Jangan pernah mengomentari spekulasi saham/);
+  } finally {
+    app.studio.works.gdrive.setCustomFetch(null);
+  }
+});

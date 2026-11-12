@@ -1464,44 +1464,46 @@
           <summary class="cursor-pointer list-none px-5 py-3.5 flex items-center justify-between gap-3 font-serif font-bold text-primary hover:bg-amber-100/50 transition-colors">
             <span class="flex items-center gap-2 text-sm">
               <span class="material-symbols-outlined text-on-tertiary-container">menu_book</span>
-              📘 Panduan Mudah: Cara Mengatur Folder &amp; File Google Drive (Live API) serta Cara Kerja Sinkronisasi (Klik untuk Buka/Tutup)
+              📘 Panduan Mudah: Cara Mengatur Folder &amp; File Google Drive (Live API), Assign Massal (.md), Baca PDF OCR, &amp; Sinkronisasi (Klik untuk Buka/Tutup)
             </span>
             <span class="text-xs font-mono text-on-tertiary-container group-open:rotate-180 transition-transform">▼</span>
           </summary>
           <div class="px-5 pb-5 pt-2 border-t border-on-tertiary-container/20 text-xs text-on-surface space-y-4 leading-relaxed">
-            <div class="p-3 rounded-xl bg-white border border-outline-variant/40">
-              <strong class="text-primary block mb-1">💡 Konsep Singkat (Bagaimana Cara Kerjanya?):</strong>
-              Setelah status berwarna hijau <strong>GOOGLE DRIVE: TERHUBUNG (OAUTH 2.0)</strong>, Anda cukup memilih 1 <strong>Folder Induk</strong> di Google Drive Anda (mis. folder bernama <code>iCoachAndrew Works</code>) atau memetakan folder untuk masing-masing <strong>Ring 0, Ring 1, Ring 2, dan Ring 3</strong>. Setiap kali Anda menaruh/mengedit dokumen Google Docs, Word (<code>.docx</code>), atau Teks (<code>.txt</code>/<code>.md</code>) di folder tersebut lalu klik <strong>"Sinkronkan dari Google Drive"</strong> (atau mengaktifkan Auto-Sync 15/30/60 menit), sistem otomatis mengekstrak isinya ke Repositori Karya &amp; Memori AI Ring yang sesuai.
+            <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
+              <strong class="text-primary block">💡 Jawaban Penting: Apakah Perlu Memencet "Baca Teks"? Apa Arti "Belum Diimpor"?</strong>
+              <p class="text-[11px] text-on-surface-variant">
+                • <strong>Anda TIDAK perlu memencet tombol "Baca Teks" satu per satu!</strong> Tombol <em>"Baca Teks"</em> hanya berfungsi untuk mengintip/pratinjau isi naskah di layar.<br/>
+                • Begitu Anda menetapkan file atau folder ke <strong>Ring 0 / Ring 1 / Ring 2 / Ring 3</strong> (baik klik satuan <code>+R0..+R3</code>, pilih banyak lewat kotak centang <strong>Baca &amp; Assign Massal</strong>, maupun klik <strong>Sinkronkan dari Google Drive</strong>), mesin <strong>otomatis membaca seluruh isi file, mengekstrak teksnya (termasuk PDF Non-OCR &amp; PDF Scan OCR), mengonversinya menjadi file Markdown (<code>.md</code>) yang sangat ringan di <code>data/md_knowledge/ring0..3/</code>, dan langsung memasukkannya ke Memori Kecerdasan Digital Twin</strong>!<br/>
+                • Status <strong>"Unassigned (Belum Diimpor)"</strong> artinya file di Google Drive tersebut belum dipetakan ke Ring 0–3 sehingga belum dimasukkan ke memori AI. Jika ada file di folder publik yang memang bukan materi Digital Twin, Anda bisa menandainya sebagai <strong>"Irrelevant / Abaikan"</strong>.
+              </p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Cara 1 (Paling Praktis — Tanpa Copy Link)</div>
-                <div class="font-bold text-primary">Pilih Langsung dari Penjelajah Drive</div>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">1. Pilih &amp; Batalkan Folder (Toggle 2x Klik)</div>
+                <div class="font-bold text-primary">Penjelajah Drive &amp; Unassign Mudah</div>
                 <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Klik tombol <strong>"Jelajahi Folder Drive"</strong> di atas.</li>
-                  <li>Daftar seluruh folder dari akun Google Drive Anda (<em>My Drive</em>) akan langsung tampil di layar.</li>
-                  <li>Pada folder karya yang diinginkan, klik tombol <strong>"Jadikan Folder Induk"</strong> (jika di dalamnya ada sub-folder <code>Ring 0</code>..<code>Ring 3</code>) atau klik <strong>"Set R0 / R1 / R2 / R3"</strong> untuk memetakan folder ke Ring tertentu.</li>
-                  <li>Klik tombol hijau <strong>"Sinkronkan dari Google Drive"</strong>!</li>
+                  <li>Klik tombol <strong>"Jelajahi Folder Drive"</strong> di atas untuk melihat isi <em>My Drive</em> Anda.</li>
+                  <li>Klik <strong>"Jadikan Induk"</strong> untuk menetapkan folder utama. <strong>Jika salah pencet, klik sekali lagi (klik ke-2) pada tombol "✓ Folder Induk" untuk membatalkan (unassign)!</strong></li>
+                  <li>Begitu juga tombol <strong>R0 / R1 / R2 / R3</strong>: klik sekali untuk memilih Ring, atau <strong>klik ke-2 kali pada Ring yang sedang aktif</strong> untuk mengembalikannya menjadi <em>Unassigned</em>.</li>
+                  <li>Untuk file/folder yang tidak relevan di folder publik, klik tombol <strong>"Irrelevant"</strong> agar diabaikan oleh AI.</li>
                 </ol>
               </div>
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Cara 2 (Struktur Folder Otomatis)</div>
-                <div class="font-bold text-primary">1 Folder Induk + 4 Sub-Folder Ring</div>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">2. Fuzzy Search &amp; Assign Massal (.md)</div>
+                <div class="font-bold text-primary">Cari Cepat &amp; Baca Sekaligus</div>
                 <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Di Google Drive Anda, buat 1 folder utama (mis. <code>Arsip iCoachAndrew</code>).</li>
-                  <li>Di dalamnya, buat 4 sub-folder bernama: <code>Ring 0</code> (Pribadi), <code>Ring 1</code> (Inner Circle), <code>Ring 2</code> (Member), dan <code>Ring 3</code> (Publik).</li>
-                  <li>Tempel link folder utama tadi ke kolom <strong>Folder Induk Google Drive</strong> di <em>Pengaturan Drive API</em> (atau klik <strong>Jadikan Folder Induk</strong> di Penjelajah Drive).</li>
-                  <li>Sistem otomatis mengenali nama sub-folder dan memasukkan seluruh file ke Ring masing-masing!</li>
+                  <li>Gunakan kotak <strong>Fuzzy Search</strong> di dalam Penjelajah Drive untuk mencari nama file/folder di folder saat ini (tahan salah ketik) atau klik <strong>"🌐 Cari di Seluruh Drive"</strong>.</li>
+                  <li>Centang beberapa file/folder sekaligus (atau klik <strong>"Pilih Semua"</strong>), lalu klik tombol <strong>"Baca &amp; Assign Massal ke R0 / R1 / R2 / R3 (.md)"</strong>.</li>
+                  <li>Semua item terpilih langsung dibaca, dikonversi ke dokumen <code>.md</code> ringan, dan masuk ke memori Digital Twin dalam sekali jalan!</li>
                 </ol>
               </div>
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Aturan Sinkronisasi &amp; Keamanan</div>
-                <div class="font-bold text-primary">Bagaimana Sinkronisasi Bekerja?</div>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">3. Format Dokumen &amp; Pembacaan PDF OCR</div>
+                <div class="font-bold text-primary">PDF Digital, PDF Scan OCR &amp; Konversi .md</div>
                 <ul class="list-disc list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li><strong>Format Didukung:</strong> Google Docs, Google Slides, Google Sheets, Microsoft Word (<code>.docx</code>), Markdown (<code>.md</code>), dan Teks (<code>.txt</code>).</li>
-                  <li><strong>Tag Nama File:</strong> Anda juga bisa memberi awalan <code>[Ring 3] Judul Buku.docx</code> atau <code>[R0] Catatan.docx</code> untuk menentukan Ring otomatis.</li>
-                  <li><strong>Update Cerdas (Tanpa Duplikat):</strong> File yang diedit di Google Drive akan memperbarui karya yang sama berdasarkan ID file Drive.</li>
-                  <li><strong>Karantina Otomatis (Stricter Wins):</strong> Jika file Ring 1–3 memuat kata sensitif keluarga/kesehatan/kekayaan pribadi, sistem otomatis menguncinya ke <strong>Ring 0</strong>.</li>
+                  <li><strong>Format Didukung:</strong> PDF (<code>.pdf</code> Non-OCR &amp; OCR), Google Docs, Google Slides, Google Sheets, Word (<code>.docx</code>), Markdown (<code>.md</code>), dan Teks (<code>.txt</code>).</li>
+                  <li><strong>PDF Non-OCR &amp; OCR Otomatis:</strong> File PDF teks biasa diekstrak langsung secara instan; sedangkan PDF hasil scan gambar otomatis dibaca menggunakan <strong>Claude Document Vision OCR</strong>.</li>
+                  <li><strong>Arsip <code>.md</code> Ringan:</strong> Setiap karya yang di-assign memiliki tombol <strong>"📄 Lihat .MD"</strong> di kartu karya untuk melihat/mengunduh file Markdown ringannya.</li>
                 </ul>
               </div>
             </div>
@@ -1689,15 +1691,60 @@
               <button onclick="toggleGDriveBrowser()" class="px-3 py-1.5 rounded-lg border text-xs text-outline hover:text-primary cursor-pointer">✕ Tutup</button>
             </div>
           </div>
+
+          <!-- Search Bar (Fuzzy Search on Folder + Global Drive Search) & Explorer Ring Filter -->
+          <div class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-2.5 text-xs">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+              <div class="relative flex-1">
+                <span class="material-symbols-outlined text-[16px] text-outline absolute left-2.5 top-1/2 -translate-y-1/2">search</span>
+                <input id="gd-explorer-search" type="text" oninput="onGDriveLocalFuzzySearch(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();runGDriveGlobalSearch();}" placeholder="Cari nama file / folder di folder ini (Fuzzy Search toleran salah ketik) atau tekan Enter untuk Cari Global..." class="w-full border border-outline-variant rounded-lg pl-8 pr-3 py-1.5 text-xs bg-white text-primary"/>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+                <button type="button" onclick="onGDriveLocalFuzzySearch(document.getElementById('gd-explorer-search').value)" class="px-3 py-1.5 rounded-lg border border-primary/30 bg-white hover:bg-primary/5 text-primary font-semibold text-xs cursor-pointer">Cari di Folder Ini</button>
+                <button type="button" onclick="runGDriveGlobalSearch()" class="px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary-container font-semibold text-xs flex items-center gap-1 cursor-pointer">
+                  <span class="material-symbols-outlined text-[14px]">travel_explore</span>Cari di Seluruh Drive
+                </button>
+                <button type="button" onclick="clearGDriveSearch()" class="px-2.5 py-1.5 rounded-lg border border-outline-variant bg-white hover:bg-surface-container text-on-surface-variant text-xs cursor-pointer">Reset</button>
+              </div>
+            </div>
+
+            <!-- Filter Pills inside Explorer + Bulk Action Toolbar -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-outline-variant/30">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-[11px] font-mono text-outline font-semibold">Filter Tampilan:</span>
+                <button type="button" onclick="setGDriveExplorerFilter('all')" data-gdefilter="all" class="gde-filter-btn px-2.5 py-1 rounded-md bg-primary text-white text-[11px] font-semibold cursor-pointer">Semua Item</button>
+                <button type="button" onclick="setGDriveExplorerFilter('assigned')" data-gdefilter="assigned" class="gde-filter-btn px-2.5 py-1 rounded-md bg-white border border-outline-variant text-primary text-[11px] font-semibold cursor-pointer">Sudah Dipetakan (R0–R3)</button>
+                <button type="button" onclick="setGDriveExplorerFilter('unassigned')" data-gdefilter="unassigned" class="gde-filter-btn px-2.5 py-1 rounded-md bg-white border border-outline-variant text-on-surface-variant text-[11px] font-semibold cursor-pointer">Unassigned (Belum Dipetakan)</button>
+                <button type="button" onclick="setGDriveExplorerFilter('irrelevant')" data-gdefilter="irrelevant" class="gde-filter-btn px-2.5 py-1 rounded-md bg-white border border-outline-variant text-secondary text-[11px] font-semibold cursor-pointer">Irrelevant / Diabaikan</button>
+              </div>
+
+              <!-- Bulk Selection & Mass Assign / Read (.md) -->
+              <div id="gd-bulk-action-bar" class="flex flex-wrap items-center gap-1.5 bg-amber-50/90 border border-amber-300 px-2.5 py-1 rounded-lg">
+                <label class="flex items-center gap-1 font-semibold text-primary text-[11px] cursor-pointer pr-1">
+                  <input id="gd-select-all-cb" type="checkbox" onchange="toggleGDriveSelectAll(this.checked)"/> Pilih Semua
+                </label>
+                <span id="gd-selected-count" class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white border border-amber-300 text-amber-950 font-bold">0 dipilih</span>
+                <span class="text-[10px] font-semibold text-primary ml-1">Baca &amp; Assign Massal (.md):</span>
+                <button type="button" onclick="bulkAssignGDriveItems(0)" class="px-2 py-0.5 rounded ring-badge-0 text-[10px] font-mono font-bold cursor-pointer" title="Baca, ubah ke .md &amp; masukkan ke Ring 0">+R0</button>
+                <button type="button" onclick="bulkAssignGDriveItems(1)" class="px-2 py-0.5 rounded ring-badge-1 text-[10px] font-mono font-bold cursor-pointer" title="Baca, ubah ke .md &amp; masukkan ke Ring 1">+R1</button>
+                <button type="button" onclick="bulkAssignGDriveItems(2)" class="px-2 py-0.5 rounded ring-badge-2 text-[10px] font-mono font-bold cursor-pointer" title="Baca, ubah ke .md &amp; masukkan ke Ring 2">+R2</button>
+                <button type="button" onclick="bulkAssignGDriveItems(3)" class="px-2 py-0.5 rounded ring-badge-3 text-[10px] font-mono font-bold cursor-pointer" title="Baca, ubah ke .md &amp; masukkan ke Ring 3">+R3</button>
+                <button type="button" onclick="bulkAssignGDriveItems('irrelevant')" class="px-2 py-0.5 rounded bg-red-100 text-secondary border border-red-300 text-[10px] font-mono font-bold cursor-pointer" title="Tandai sebagai Irrelevant (diabaikan)">🚫 Irrelevant</button>
+                <button type="button" onclick="bulkAssignGDriveItems('unassigned')" class="px-2 py-0.5 rounded bg-white text-on-surface-variant border border-outline-variant text-[10px] font-mono font-semibold cursor-pointer" title="Kembalikan ke Unassigned">↺ Unassign</button>
+              </div>
+            </div>
+          </div>
+
           <div id="gd-browser-content" class="space-y-3 text-xs"></div>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <button onclick="filterWorksRing('all')" data-wring="all" class="wring-btn px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold">Semua Ring</button>
+          <button onclick="filterWorksRing('all')" data-wring="all" class="wring-btn px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold">Semua Ring (R0–R3)</button>
           <button onclick="filterWorksRing(0)" data-wring="0" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-0 text-xs font-semibold">Ring 0 • Sovereign</button>
           <button onclick="filterWorksRing(1)" data-wring="1" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-1 text-xs font-semibold">Ring 1 • Eksekutor</button>
           <button onclick="filterWorksRing(2)" data-wring="2" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-2 text-xs font-semibold">Ring 2 • Anggota</button>
           <button onclick="filterWorksRing(3)" data-wring="3" class="wring-btn px-3.5 py-1.5 rounded-lg ring-badge-3 text-xs font-semibold">Ring 3 • Publik</button>
+          <button onclick="filterWorksRing('unassigned')" data-wring="unassigned" class="wring-btn px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface-variant border border-outline-variant text-xs font-semibold">Unassigned / Irrelevant (Di Luar R0–R3)</button>
         </div>
         <div id="works-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
       </div>
@@ -1755,10 +1802,13 @@
       <!-- ======================================================== -->
       <div id="tab-ai" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
         <div class="flex items-center justify-between">
-          <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Dasbor API Token Claude &amp; Konektivitas AI</h2>
+          <div>
+            <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Dasbor Mesin AI Claude, Pemilihan Model &amp; Protokol Anti-Halusinasi</h2>
+            <p class="font-body-sm text-body-sm text-on-surface-variant">Brankas Token API AES-256-GCM, orkestrasi model per Ring, kontrol Do's &amp; Don'ts, serta tata kelola akurasi Digital Twin Andrew Tani.</p>
+          </div>
           <div class="flex items-center gap-2">
             <span id="ai-status-pill" class="px-3 py-1 rounded text-xs font-mono bg-surface-container">Memeriksa...</span>
-            <button onclick="testClaudeConnection()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold">Tes Claude API</button>
+            <button onclick="testClaudeConnection()" class="px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold cursor-pointer">Tes Claude API</button>
           </div>
         </div>
 
@@ -1767,7 +1817,7 @@
           <summary class="cursor-pointer list-none px-5 py-3.5 flex items-center justify-between gap-3 font-serif font-bold text-primary hover:bg-amber-100/50 transition-colors">
             <span class="flex items-center gap-2 text-sm">
               <span class="material-symbols-outlined text-on-tertiary-container">help_clinic</span>
-              📘 Panduan Mudah (Step-by-Step for Dummies): Cara Mengatur Token Claude AI &amp; Perbedaannya dengan Mode Tanpa Token (Klik untuk Buka/Tutup)
+              📘 Panduan Mudah (Step-by-Step for Dummies): Penjelasan Setiap Kotak Claude API, Pilihan Model, Protokol Anti-Halusinasi &amp; Rekomendasi Proyek Digital Twin (Klik untuk Buka/Tutup)
             </span>
             <span class="text-xs font-mono text-on-tertiary-container group-open:rotate-180 transition-transform">▼</span>
           </summary>
@@ -1778,93 +1828,303 @@
                   <span class="material-symbols-outlined text-[16px]">inventory_2</span>Apa yang Terjadi Jika Token AI BELUM Diisi? (Mode Ekstraktif)
                 </div>
                 <p class="text-[11px] text-on-surface-variant">
-                  • <strong>Membaca &amp; Menyinkronkan Google Drive TIDAK butuh Token AI:</strong> Sistem tetap bisa membaca seluruh file Google Docs/Word/Txt Anda, mendeteksi kata sensitif Ring 0, dan mengindeksnya ke database.<br/>
-                  • <strong>Saat Penanya Bertanya di Chat:</strong> Sistem menggunakan mesin pencari kata kunci (FTS5) untuk mengambil <strong>kutipan paragraf asli (400 karakter pertama)</strong> dari buku/karya Andrew Tani. Namun sistem <strong>belum bisa merangkum lintas bab, belum bisa berbicara dengan gaya suara bariton Socrates Andrew Tani, dan belum bisa menganalisis studi kasus baru</strong>.
+                  • <strong>Membaca Google Drive &amp; Konversi ke <code>.md</code> TIDAK butuh Token AI:</strong> Sistem tetap membaca file Google Docs, Word, Teks, dan PDF Digital (Non-OCR), lalu menyimpannya sebagai dokumen <code>.md</code> ringan di <code>data/md_knowledge/ring0..3/</code>.<br/>
+                  • <strong>Saat Penanya Bertanya di Chat:</strong> Sistem mencari kecocokan kata kunci di dokumen <code>.md</code> dan mengembalikan kutipan paragraf asli (400 karakter pertama) atau menolak dengan sopan jika tidak ada di Ring 3.
                 </p>
               </div>
               <div class="p-3.5 rounded-xl bg-white border border-emerald-300 space-y-1">
                 <div class="font-bold text-emerald-900 flex items-center gap-1">
-                  <span class="material-symbols-outlined text-[16px]">psychology</span>Apa yang Terjadi Setelah Token Claude AI Diisi? (Mode Inteligensia Penuh)
+                  <span class="material-symbols-outlined text-[16px]">psychology</span>Apa yang Terjadi Setelah Token Claude AI Diisi? (Mode Inteligensia Penuh + OCR PDF)
                 </div>
                 <p class="text-[11px] text-on-surface-variant">
-                  • <strong>Meneladani Kebijaksanaan Andrew Tani:</strong> Setiap pertanyaan dijawab dengan memadukan <strong>Memori Protokoler &amp; Persona Andrew Tani</strong> (gaya Socrates tenang, <em>Tut Wuri Handayani</em>) + <strong>Intisari Karya dari Google Drive/Repositori</strong> sesuai level Ring penanya.<br/>
-                  • <strong>Ikhtisar Otomatis:</strong> Anda juga bisa menekan tombol <em>"✨ Buat Ikhtisar Otomatis"</em> pada setiap karya untuk merangkum naskah panjang menjadi intisari eksekutif.
+                  • <strong>Nalar Eksekutif Berbasis Dokumen <code>.md</code>:</strong> Setiap kali ada pertanyaan, sistem mengambil hingga <em>Top-K</em> dokumen <code>.md</code> paling relevan sesuai Ring penanya, menggabungkannya dengan <strong>Memori Persona</strong> + <strong>Do's &amp; Don'ts</strong> + <strong>Protokol Anti-Halusinasi</strong>, lalu menyusun jawaban mendalam dengan suara asli Pak Andrew.<br/>
+                  • <strong>Membaca PDF Hasil Scan (Vision OCR):</strong> File PDF hasil scan gambar yang tidak memiliki lapisan teks otomatis dibaca menggunakan <em>Claude Document Vision OCR</em> dan diubah menjadi file <code>.md</code>!
                 </p>
               </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 1: Buat Akun Anthropic</div>
-                <div class="font-bold text-primary">Buka Console Claude</div>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 1: Buat Akun &amp; API Key</div>
+                <div class="font-bold text-primary">Ambil Kunci <code>sk-ant-api03-...</code></div>
                 <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Buka <a href="https://console.anthropic.com/" target="_blank" rel="noopener" class="text-primary underline font-semibold">console.anthropic.com</a> dan daftar/masuk.</li>
-                  <li>Buka menu <strong>Settings &rarr; Billing</strong>, lalu isi saldo kredit awal minimal (mis. <strong>$5 USD</strong> — cukup untuk ribuan percakapan eksekutif).</li>
+                  <li>Buka <a href="https://console.anthropic.com/" target="_blank" rel="noopener" class="text-primary underline font-semibold">console.anthropic.com</a>, masuk ke <strong>Settings &rarr; Billing</strong>, dan isi saldo kredit awal (mis. <strong>$10–$25 USD</strong>).</li>
+                  <li>Buka menu <strong>API Keys &rarr; + Create Key</strong>, lalu salin kode yang diawali <code>sk-ant-api03-...</code>.</li>
+                  <li>Tempel ke kotak <strong>Brankas Kunci API Claude</strong> di bawah lalu klik <strong>+ Simpan</strong>.</li>
                 </ol>
               </div>
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 2: Buat API Key</div>
-                <div class="font-bold text-primary">Salin Kunci <code>sk-ant-api03-...</code></div>
-                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Di halaman Console Anthropic, klik menu <strong>API Keys</strong> &rarr; tombol <strong>+ Create Key</strong>.</li>
-                  <li>Beri nama (mis. <code>iCoachAndrew-Live</code>), lalu salin kode kunci yang diawali dengan <code>sk-ant-api03-...</code>.</li>
-                </ol>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 2: Pilih Jenis Model Claude</div>
+                <div class="font-bold text-primary">Panduan Memilih Model</div>
+                <ul class="list-disc list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li><strong>Claude Sonnet 4.5 (<code>claude-sonnet-4-5</code>):</strong> <em>Rekomendasi Utama</em> — Keseimbangan terbaik antara kecerdasan eksekutif, kepatuhan instruksi, kecepatan (2–4 detik), dan efisiensi biaya.</li>
+                  <li><strong>Claude Opus 4.1 (<code>claude-opus-4-1</code>):</strong> Sangat mendalam untuk analisis strategis rumit di <strong>Ring 0 / Ring 1</strong>.</li>
+                  <li><strong>Claude Haiku 4.5 (<code>claude-haiku-4-5</code>):</strong> Sangat cepat &amp; hemat biaya untuk tanya-jawab publik berfrekuensi tinggi di <strong>Ring 3</strong>.</li>
+                </ul>
               </div>
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 3: Simpan di Brankas</div>
-                <div class="font-bold text-primary">Tempel &amp; Klik Tes Claude API</div>
-                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Pada kotak <strong>Brankas Kunci API Claude</strong> di bawah, isi Label (mis. <code>Kunci Utama</code>) dan tempel kode <code>sk-ant-api03-...</code>.</li>
-                  <li>Klik <strong>+ Simpan</strong> (kunci langsung dienkripsi dengan AES-256-GCM).</li>
-                  <li>Klik tombol <strong>"Tes Claude API"</strong> di kanan atas untuk memastikan status berubah menjadi <strong>TERHUBUNG</strong>!</li>
-                </ol>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 3: Parameter &amp; Anti-Halusinasi</div>
+                <div class="font-bold text-primary">Setelan Ideal Digital Twin</div>
+                <ul class="list-disc list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li><strong>Temperature = <code>0.25</code>:</strong> Menjaga jawaban tetap faktual, konsisten, dan tidak mengarang di luar buku Pak Andrew.</li>
+                  <li><strong>Max Tokens = <code>700–900</code>:</strong> Menghasilkan 3–4 paragraf reflektif yang padat tanpa bertele-tele.</li>
+                  <li><strong>Anti-Halusinasi = <code>Strict Grounding</code>:</strong> Memaksa AI menolak dengan sopan jika ditanya gosip politik, prediksi saham, atau hal di luar dokumen <code>.md</code>.</li>
+                </ul>
               </div>
             </div>
           </div>
         </details>
 
         <div id="ai-telemetry-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div class="lg:col-span-7 bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-4">
-            <h3 class="font-serif text-lg font-bold text-primary">Brankas Kunci API Claude (Multi-Key AES-256-GCM)</h3>
-            <div class="grid grid-cols-12 gap-2">
-              <input id="ai-new-key-label" type="text" placeholder="Label Kunci..." class="col-span-4 border rounded p-2 text-xs bg-white"/>
-              <input id="ai-new-key-val" type="password" placeholder="sk-ant-api03-..." class="col-span-5 border rounded p-2 text-xs font-mono bg-white"/>
-              <button onclick="addClaudeKey()" class="col-span-3 rounded bg-primary text-white text-xs font-semibold">+ Simpan</button>
-            </div>
-            <div id="ai-keys-list" class="space-y-2"></div>
-            <div id="ai-test-result" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t text-xs">
-              <label><input id="ai-enabled-toggle" type="checkbox"/> Aktifkan AI</label>
-              <input id="ai-model-default" list="claude-models-datalist" type="text" placeholder="Model Default" class="border rounded p-1 font-mono"/>
-              <datalist id="claude-models-datalist"><option value="claude-sonnet-4-5"></option></datalist>
-              <input id="ai-budget-usd" type="number" placeholder="Budget USD" class="border rounded p-1 font-mono"/>
-              <input id="ai-model-r0" type="text" placeholder="Model R0" class="border rounded p-1 font-mono"/>
-              <input id="ai-model-r1" type="text" placeholder="Model R1" class="border rounded p-1 font-mono"/>
-              <input id="ai-model-r2" type="text" placeholder="Model R2" class="border rounded p-1 font-mono"/>
-              <input id="ai-model-r3" type="text" placeholder="Model R3" class="border rounded p-1 font-mono"/>
-              <input id="ai-max-tokens" type="number" placeholder="Max Tokens" class="border rounded p-1 font-mono"/>
-              <input id="ai-temperature" type="number" placeholder="Temp" class="border rounded p-1 font-mono"/>
-            </div>
-            <textarea id="ai-extra-instructions" rows="2" placeholder="Instruksi tambahan R0..." class="w-full border rounded p-2 text-xs"></textarea>
-            <button onclick="saveAiConfig()" class="w-full py-2 rounded bg-primary text-white text-xs font-semibold">Simpan Konfigurasi AI</button>
-          </div>
-          <div class="lg:col-span-5 space-y-4">
-            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3">
-              <h3 class="font-serif text-lg font-bold text-primary">Playground Percakapan</h3>
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <select id="ai-pg-ring" class="border rounded p-1"><option value="3">Ring 3</option><option value="2">Ring 2</option><option value="1">Ring 1</option><option value="0">Ring 0</option></select>
-                <select id="ai-pg-lang" class="border rounded p-1"><option value="id">ID</option><option value="en">EN</option></select>
-              </div>
-              <textarea id="ai-pg-question" rows="2" placeholder="Pertanyaan simulasi..." class="w-full border rounded p-2 text-xs"></textarea>
-              <button onclick="runAiPlayground()" class="w-full py-1.5 rounded bg-primary text-white text-xs font-semibold">Uji Coba</button>
-              <button onclick="previewSystemPrompt()" class="w-full py-1 rounded border text-xs">Lihat System Prompt</button>
-              <div id="ai-pg-output" class="hidden p-3 rounded bg-surface border text-xs space-y-1"></div>
-            </div>
-            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-2">
+          <!-- Left 7 Cols: Vault, Model Selection, Technical Parameters, Anti-Hallucination & Do's/Don'ts -->
+          <div class="lg:col-span-7 space-y-5">
+            <!-- 1. Brankas Kunci API Claude -->
+            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3 shadow-xs">
               <div class="flex items-center justify-between">
-                <h4 class="font-serif text-sm font-bold text-primary">Log AI (Zero-PII)</h4>
-                <button onclick="resetAiUsage()" class="text-[11px] text-secondary underline">Reset</button>
+                <div>
+                  <h3 class="font-serif text-lg font-bold text-primary">1. Brankas Kunci API Claude (Multi-Key AES-256-GCM)</h3>
+                  <p class="text-[11px] text-on-surface-variant">Simpan satu atau lebih kunci API Anthropic (otomatis dienkripsi &amp; mendukung rotasi kunci).</p>
+                </div>
+                <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs font-bold cursor-pointer">
+                  <input id="ai-enabled-toggle" type="checkbox"/> Aktifkan Mesin AI Claude
+                </label>
+              </div>
+              <div class="grid grid-cols-12 gap-2">
+                <input id="ai-new-key-label" type="text" placeholder="Nama / Label Kunci (mis. Kunci Produksi Utama)" class="col-span-12 sm:col-span-4 border rounded-lg p-2 text-xs bg-white"/>
+                <input id="ai-new-key-val" type="password" placeholder="Tempel kode sk-ant-api03-... di sini" class="col-span-8 sm:col-span-5 border rounded-lg p-2 text-xs font-mono bg-white"/>
+                <button onclick="addClaudeKey()" class="col-span-4 sm:col-span-3 rounded-lg bg-primary text-white text-xs font-semibold py-2 cursor-pointer">+ Simpan Kunci</button>
+              </div>
+              <div id="ai-keys-list" class="space-y-2"></div>
+              <div id="ai-test-result" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
+            </div>
+
+            <!-- 2. Pemilihan Jenis Model & Penjelasan Setiap Kotak Parameter -->
+            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-4 shadow-xs text-xs">
+              <div>
+                <h3 class="font-serif text-lg font-bold text-primary">2. Pilihan Jenis Model Claude &amp; Parameter Teknis API</h3>
+                <p class="text-[11px] text-on-surface-variant">Setiap kotak di bawah dilengkapi penjelasan fungsinya agar mudah diatur sesuai kebutuhan Digital Twin.</p>
+              </div>
+
+              <datalist id="claude-models-datalist">
+                <option value="claude-sonnet-4-5">Claude Sonnet 4.5 (Rekomendasi Utama — Cerdas, Cepat &amp; Seimbang)</option>
+                <option value="claude-opus-4-1">Claude Opus 4.1 (Penalaran Paling Mendalam — Cocok untuk Ring 0 &amp; Ring 1)</option>
+                <option value="claude-haiku-4-5">Claude Haiku 4.5 (Sangat Cepat &amp; Hemat Biaya — Cocok untuk Ring 3 Publik)</option>
+                <option value="claude-3-7-sonnet-latest">Claude 3.7 Sonnet (Penalaran Hibrida Strategis)</option>
+                <option value="claude-3-5-sonnet-latest">Claude 3.5 Sonnet (Stabil &amp; Teruji)</option>
+              </datalist>
+
+              <!-- Model Default / Utama -->
+              <div class="p-3.5 rounded-xl bg-surface border border-outline-variant/40 space-y-2">
+                <label class="block space-y-1">
+                  <span class="font-bold text-primary flex items-center justify-between">
+                    <span>🤖 Jenis Model Utama (Default Claude Model)</span>
+                    <span class="font-mono text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">Rekomendasi: claude-sonnet-4-5</span>
+                  </span>
+                  <span class="block text-[11px] text-on-surface-variant">Model utama yang dipakai menjawab seluruh percakapan (dan OCR PDF) jika Ring tertentu tidak diisi model khusus.</span>
+                  <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1">
+                    <select id="ai-model-preset-select" onchange="if(this.value)document.getElementById('ai-model-default').value=this.value" class="sm:col-span-7 border rounded-lg p-2 bg-white font-semibold text-primary text-xs">
+                      <option value="claude-sonnet-4-5">★ Claude Sonnet 4.5 — Rekomendasi Utama (Cerdas &amp; Efisien)</option>
+                      <option value="claude-opus-4-1">👑 Claude Opus 4.1 — Penalaran Eksekutif Tertinggi (Flagship)</option>
+                      <option value="claude-haiku-4-5">⚡ Claude Haiku 4.5 — Super Cepat &amp; Hemat Biaya</option>
+                      <option value="claude-3-7-sonnet-latest">🧠 Claude 3.7 Sonnet — Penalaran Hibrida</option>
+                      <option value="claude-3-5-sonnet-latest">🛡️ Claude 3.5 Sonnet — Versi Stabil</option>
+                    </select>
+                    <input id="ai-model-default" list="claude-models-datalist" type="text" placeholder="claude-sonnet-4-5" class="sm:col-span-5 border rounded-lg p-2 font-mono text-xs bg-white"/>
+                  </div>
+                </label>
+              </div>
+
+              <!-- 4 Kotak Parameter Teknis dengan Penjelasan Lengkap -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
+                  <span class="font-bold text-primary flex items-center justify-between">
+                    <span>💰 Batas Anggaran Bulanan (USD)</span>
+                    <span class="font-mono text-[10px] text-outline">0 = Tanpa Batas</span>
+                  </span>
+                  <span class="block text-[11px] text-on-surface-variant">Pengaman tagihan bulanan (mis. <code>25</code> untuk $25/bulan). Jika terlampaui, AI otomatis beralih ke mode ekstraktif gratis.</span>
+                  <input id="ai-budget-usd" type="number" step="1" min="0" placeholder="Mis. 25 (atau 0 untuk tanpa batas)" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
+                </label>
+
+                <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
+                  <span class="font-bold text-primary flex items-center justify-between">
+                    <span>📏 Panjang Maksimal Jawaban (Max Tokens)</span>
+                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 700–1000</span>
+                  </span>
+                  <span class="block text-[11px] text-on-surface-variant">Batas panjang respons AI per satu pertanyaan (<code>700</code> token ≈ 3–4 paragraf nasihat eksekutif yang padat).</span>
+                  <input id="ai-max-tokens" type="number" step="50" min="150" max="4096" placeholder="700" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
+                </label>
+
+                <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
+                  <span class="font-bold text-primary flex items-center justify-between">
+                    <span>🎯 Temperature (Akurasi vs Variasi)</span>
+                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 0.2 – 0.3</span>
+                  </span>
+                  <span class="block text-[11px] text-on-surface-variant">Rentang <code>0.0</code> – <code>1.0</code>. Angka rendah (<code>0.25</code>) membuat AI sangat patuh pada dokumen <code>.md</code> &amp; bebas halusinasi.</span>
+                  <input id="ai-temperature" type="number" step="0.05" min="0" max="1" placeholder="0.25" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
+                </label>
+
+                <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
+                  <span class="font-bold text-primary flex items-center justify-between">
+                    <span>📚 Jumlah Dokumen .MD per Tanya (Top-K)</span>
+                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 5 Dokumen</span>
+                  </span>
+                  <span class="block text-[11px] text-on-surface-variant">Jumlah karya/bab <code>.md</code> paling relevan yang dibaca AI setiap kali menjawab pertanyaan (<code>1</code>–<code>15</code>).</span>
+                  <input id="ai-top-k-docs" type="number" step="1" min="1" max="15" placeholder="5" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
+                </label>
+              </div>
+
+              <!-- Model Spesifik per Ring (Opsional) -->
+              <details class="p-3 rounded-xl bg-surface border border-outline-variant/40">
+                <summary class="cursor-pointer font-bold text-primary flex items-center justify-between">
+                  <span>⚙️ Pengaturan Model Khusus per Ring (R0 – R3) — Opsional</span>
+                  <span class="text-[10px] font-mono text-outline">Kosongkan jika ingin mengikuti Model Utama</span>
+                </summary>
+                <p class="text-[11px] text-on-surface-variant mt-1 mb-2.5">
+                  Anda dapat membedakan kecerdasan model per tingkatan akses. Contoh: gunakan <code>claude-opus-4-1</code> untuk diskusi strategis mendalam di <strong>Ring 0 / Ring 1</strong>, dan <code>claude-sonnet-4-5</code> atau <code>claude-haiku-4-5</code> untuk <strong>Ring 2 / Ring 3</strong>.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-secondary">Model Ring 0 (Sovereign / Pribadi):</span>
+                    <input id="ai-model-r0" list="claude-models-datalist" type="text" placeholder="Kosong = Ikut Model Utama (atau claude-opus-4-1)" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
+                  </label>
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-amber-800">Model Ring 1 (Inner Circle Eksekutor):</span>
+                    <input id="ai-model-r1" list="claude-models-datalist" type="text" placeholder="Kosong = Ikut Model Utama (atau claude-opus-4-1)" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
+                  </label>
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-primary">Model Ring 2 (Anggota Eksekutif):</span>
+                    <input id="ai-model-r2" list="claude-models-datalist" type="text" placeholder="Kosong = Ikut Model Utama (claude-sonnet-4-5)" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
+                  </label>
+                  <label class="block space-y-0.5">
+                    <span class="text-[11px] font-mono font-bold text-emerald-800">Model Ring 3 (Tamu Publik):</span>
+                    <input id="ai-model-r3" list="claude-models-datalist" type="text" placeholder="Kosong = Ikut Model Utama (atau claude-haiku-4-5)" class="w-full border rounded-lg p-2 font-mono text-xs bg-white"/>
+                  </label>
+                </div>
+              </details>
+            </div>
+
+            <!-- 3. Protokol Anti-Halusinasi, Do's & Don'ts, & Gaya Jawaban Digital Twin -->
+            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-4 shadow-xs text-xs">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 class="font-serif text-lg font-bold text-primary">3. Protokol Anti-Halusinasi, Do's &amp; Don'ts &amp; Gaya Jawaban</h3>
+                  <p class="text-[11px] text-on-surface-variant">Pagar pembatas perilaku (*Guardrails*) agar Digital Twin selalu menjaga marwah, keaslian pemikiran, dan batas privasi Pak Andrew Tani.</p>
+                </div>
+                <button type="button" onclick="restoreDefaultAiDosDonts()" class="px-2.5 py-1 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-[11px] font-semibold text-primary cursor-pointer">
+                  ↺ Pulihkan Default Do's &amp; Don'ts
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
+                  <span class="font-bold text-primary block">🛡️ Mode Protokol Anti-Halusinasi</span>
+                  <span class="block text-[10px] text-on-surface-variant">Sikap AI saat ditanya topik di luar arsip buku/dokumen <code>.md</code>.</span>
+                  <select id="ai-anti-hallucination" class="w-full border rounded-lg p-2 bg-white font-semibold text-primary text-xs mt-1">
+                    <option value="strict">Strict Grounding (Ketat — Wajib Tolak Jika Di Luar Dokumen)</option>
+                    <option value="guided">Guided Reflective (Terpandu — Refleksi Prinsip Umum)</option>
+                  </select>
+                </label>
+
+                <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
+                  <span class="font-bold text-primary block">🗣️ Gaya Penyampaian Jawaban</span>
+                  <span class="block text-[10px] text-on-surface-variant">Format struktur paragraf saat berdialog dengan penanya.</span>
+                  <select id="ai-response-style" class="w-full border rounded-lg p-2 bg-white font-semibold text-primary text-xs mt-1">
+                    <option value="concise_socratic">Sokratik Padat &amp; Reflektif (2–4 Paragraf)</option>
+                    <option value="structured_advisory">Terstruktur Eksekutif (Prinsip &amp; Langkah)</option>
+                    <option value="deep_monograph">Mendalam &amp; Naratif (Gaya Esai / Buku)</option>
+                  </select>
+                </label>
+
+                <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
+                  <span class="font-bold text-primary block">📖 Mode Penyebutan Sumber Karya</span>
+                  <span class="block text-[10px] text-on-surface-variant">Cara AI merujuk buku/karya (mis. <em>Orbex</em>, <em>Brain Quotient</em>).</span>
+                  <select id="ai-citation-mode" class="w-full border rounded-lg p-2 bg-white font-semibold text-primary text-xs mt-1">
+                    <option value="natural">Natural (Mengalir di dalam kalimat)</option>
+                    <option value="explicit">Eksplisit (Sebutkan judul dokumen sumber)</option>
+                    <option value="none">Tanpa Sitasi Eksplisit</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="p-3 rounded-xl bg-emerald-50/50 border border-emerald-300/80 space-y-1.5 block">
+                  <span class="font-bold text-emerald-950 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">check_circle</span>DO'S — Hal yang WAJIB Dilakukan Digital Twin
+                  </span>
+                  <span class="block text-[11px] text-emerald-900/80">Tulis satu aturan per baris. Disuntikkan langsung ke <code>&lt;mandatory_dos&gt;</code> di System Prompt Claude.</span>
+                  <textarea id="ai-dos-list" rows="6" placeholder="- Gunakan sapaan hangat dan berwibawa..." class="w-full border border-emerald-300 rounded-lg p-2.5 text-xs bg-white leading-relaxed"></textarea>
+                </label>
+
+                <label class="p-3 rounded-xl bg-red-50/50 border border-red-200 space-y-1.5 block">
+                  <span class="font-bold text-secondary flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">block</span>DON'TS — Pantangan Keras Digital Twin
+                  </span>
+                  <span class="block text-[11px] text-secondary/80">Tulis satu pantangan per baris. Disuntikkan langsung ke <code>&lt;strict_donts&gt;</code> untuk mencegah halusinasi &amp; salah jawab.</span>
+                  <textarea id="ai-donts-list" rows="6" placeholder="- JANGAN PERNAH mengarang pengalaman korporasi..." class="w-full border border-red-200 rounded-lg p-2.5 text-xs bg-white leading-relaxed"></textarea>
+                </label>
+              </div>
+
+              <label class="block space-y-1">
+                <span class="font-bold text-primary">🔒 Instruksi Tambahan Khusus Sovereign (Ring 0 Override):</span>
+                <span class="block text-[11px] text-on-surface-variant">Arahan ekstra yang selalu ditempelkan di akhir System Prompt (mis. fokus tema kuartal ini atau penekanan istilah tertentu).</span>
+                <textarea id="ai-extra-instructions" rows="2" placeholder="Contoh: Saat membahas suksesi bisnis keluarga, selalu tekankan keselarasan nilai lintas generasi sebelum struktur saham..." class="w-full border rounded-lg p-2.5 text-xs bg-white"></textarea>
+              </label>
+
+              <button onclick="saveAiConfig()" class="w-full py-2.5 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+                <span class="material-symbols-outlined text-[17px]">save</span>Simpan Seluruh Konfigurasi Model, Parameter &amp; Protokol AI
+              </button>
+            </div>
+          </div>
+
+          <!-- Right 5 Cols: Playground, Logs, & Expert Advise for Digital Twin Project -->
+          <div class="lg:col-span-5 space-y-4">
+            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-3 shadow-xs">
+              <h3 class="font-serif text-lg font-bold text-primary">Simulasi &amp; Playground Percakapan per Ring</h3>
+              <p class="text-[11px] text-on-surface-variant">Uji bagaimana Digital Twin menjawab pertanyaan pada level Ring 0–3 sekaligus memeriksa System Prompt lengkapnya.</p>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <select id="ai-pg-ring" class="border rounded-lg p-2 bg-white font-semibold text-primary">
+                  <option value="3">Simulasi Penanya: Ring 3 (Publik)</option>
+                  <option value="2">Simulasi Penanya: Ring 2 (Anggota)</option>
+                  <option value="1">Simulasi Penanya: Ring 1 (Inner Circle)</option>
+                  <option value="0">Simulasi Penanya: Ring 0 (Sovereign)</option>
+                </select>
+                <select id="ai-pg-lang" class="border rounded-lg p-2 bg-white font-semibold text-primary">
+                  <option value="id">Bahasa Indonesia (ID)</option>
+                  <option value="en">English (EN)</option>
+                </select>
+              </div>
+              <textarea id="ai-pg-question" rows="2" placeholder="Ketik pertanyaan uji coba (mis. Bagaimana menyelaraskan strategi dengan eksekusi tim, atau uji pertanyaan di luar konteks seperti politik/rights issue)..." class="w-full border rounded-lg p-2.5 text-xs bg-white"></textarea>
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="runAiPlayground()" class="py-2 rounded-lg bg-primary text-white text-xs font-semibold cursor-pointer">▶ Jalankan Uji Coba</button>
+                <button onclick="previewSystemPrompt()" class="py-2 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-primary font-semibold text-xs cursor-pointer">🔍 Lihat System Prompt</button>
+              </div>
+              <div id="ai-pg-output" class="hidden p-3 rounded-xl bg-surface border text-xs space-y-1.5"></div>
+            </div>
+
+            <!-- Advise Card: Rekomendasi Pengaturan Tambahan untuk Proyek Executive Digital Twin -->
+            <div class="bg-amber-50/80 p-5 rounded-2xl border border-on-tertiary-container/40 space-y-2.5 text-xs">
+              <div class="flex items-center gap-1.5 font-serif text-base font-bold text-primary">
+                <span class="material-symbols-outlined text-on-tertiary-container text-[20px]">lightbulb</span>
+                Advise Arsitektur AI: Pengaturan Penting untuk Proyek Executive Digital Twin
+              </div>
+              <p class="text-[11px] text-on-surface-variant leading-relaxed">
+                Untuk proyek <strong>Executive Mentorship Digital Twin</strong> seperti iCoachAndrew, kualitas jawaban sangat bergantung pada <strong>kemurnian konteks (Context Hygiene)</strong> dan <strong>pagar epistimologis (Epistemic Boundary)</strong>. Berikut rekomendasi pengaturan terbaik yang sudah kami siapkan di sistem ini:
+              </p>
+              <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-on-surface leading-relaxed">
+                <li><strong>Gunakan Format <code>.md</code> Terstruktur per Bab/Topik:</strong> Mesin kini otomatis mengubah setiap file Drive yang di-assign menjadi file <code>.md</code> ringan dengan <em>YAML Frontmatter</em> (Ring, Judul, Ringkasan, Isi). Di Google Drive, pisahkan buku panjang menjadi per bab/topik agar pengambilan konteks <em>Top-K</em> jauh lebih tajam.</li>
+                <li><strong>Setel <code>Temperature = 0.20 – 0.30</code> &amp; <code>Strict Grounding</code>:</strong> Tokoh eksekutif tidak boleh terlihat "mengarang bebas". Dengan suhu <code>0.25</code> dan mode <em>Strict</em>, Twin hanya berbicara dari karya asli Pak Andrew dan berani berkata <em>"Topik tersebut berada di luar fokus literatur saya"</em> saat dipancing isu politik/spekulasi.</li>
+                <li><strong>Strategi Dual-Model (Hemat &amp; Tajam):</strong> Gunakan <code>claude-sonnet-4-5</code> sebagai Model Utama (Ring 2 &amp; 3), lalu isi <code>claude-opus-4-1</code> khusus pada kotak <strong>Model Ring 0 &amp; Ring 1</strong> untuk diskusi tingkat dewan direksi.</li>
+                <li><strong>Pisahkan File Non-Materi ke Status <code>Irrelevant</code>:</strong> Jika folder Google Drive berisi file jadwal, poster, atau draf kasar, tandai sebagai <strong>Irrelevant</strong> di Penjelajah Drive agar tidak mengotori indeks pencarian FTS5 AI.</li>
+                <li><strong>Audit Berkala via Tombol "Lihat System Prompt":</strong> Setiap kali Anda menambah <em>Do's &amp; Don'ts</em> atau <em>Memori Persona</em>, klik tombol <strong>"🔍 Lihat System Prompt"</strong> di atas untuk memastikan instruksi akhir yang diterima Claude tidak saling bertentangan.</li>
+              </ol>
+            </div>
+
+            <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/40 space-y-2 shadow-xs">
+              <div class="flex items-center justify-between">
+                <h4 class="font-serif text-sm font-bold text-primary">Log Panggilan AI Terbaru (Zero-PII)</h4>
+                <button onclick="resetAiUsage()" class="text-[11px] text-secondary underline cursor-pointer">Reset Statistik</button>
               </div>
               <div id="ai-recent-calls" class="space-y-1 max-h-48 overflow-y-auto thin-scroll text-xs font-mono"></div>
             </div>
@@ -1950,7 +2210,14 @@
         <input id="wk-subtitle" type="text" placeholder="Subjudul / Jilid" class="border rounded p-2 bg-white"/>
         <input id="wk-year" type="number" placeholder="Tahun" class="border rounded p-2 bg-white"/>
         <select id="wk-type" class="border rounded p-2 bg-white"><option value="buku">Buku</option><option value="esai">Esai</option><option value="modul">Modul</option></select>
-        <select id="wk-ring" class="border rounded p-2 bg-white font-bold"><option value="3">Ring 3</option><option value="2">Ring 2</option><option value="1">Ring 1</option><option value="0">Ring 0</option></select>
+        <select id="wk-ring" class="border rounded p-2 bg-white font-bold">
+          <option value="3">Ring 3 (Publik)</option>
+          <option value="2">Ring 2 (Anggota)</option>
+          <option value="1">Ring 1 (Inner Circle)</option>
+          <option value="0">Ring 0 (Sovereign)</option>
+          <option value="unassigned">Unassigned (Belum Dipetakan)</option>
+          <option value="irrelevant">Irrelevant / Diabaikan (Di Luar R0–R3)</option>
+        </select>
         <select id="wk-status" class="border rounded p-2 bg-white"><option value="published">Terbit</option><option value="draft">Draf</option></select>
         <select id="wk-lang" class="border rounded p-2 bg-white"><option value="id">ID</option><option value="en">EN</option></select>
         <div class="sm:col-span-2 flex gap-2">
