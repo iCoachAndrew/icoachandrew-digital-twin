@@ -1102,8 +1102,15 @@ test('Admin Left Collapsible Sidebar, Dynamic Visual Editor (Consistent Font, Fu
     assert.strictEqual(urlRes.json.ok, true);
     assert.match(urlRes.json.url, /accounts\.google\.com\/o\/oauth2\/v2\/auth/);
     assert.match(urlRes.json.url, /access_type=offline/);
+    assert.ok(urlRes.json.state, 'OAuth consent URL includes cryptographic state token');
 
-    // Exchange authorization code for Refresh Token
+    // Simulate cross-site redirect from accounts.google.com to /admin/api/works/gdrive/oauth-callback WITHOUT SameSite=Strict cookie
+    const cbRes = await fetch(A + `/admin/api/works/gdrive/oauth-callback?code=mock_auth_code_xyz&state=${encodeURIComponent(urlRes.json.state)}`);
+    assert.strictEqual(cbRes.status, 200, 'OAuth callback succeeds even when SameSite=Strict cookie is withheld on cross-site redirect');
+    const cbHtml = await cbRes.text();
+    assert.match(cbHtml, /Google Drive OAuth 2\.0 Berhasil Terhubung/);
+
+    // Also verify POST /admin/api/works/gdrive/oauth-exchange works directly
     const exRes = await admin('POST', '/admin/api/works/gdrive/oauth-exchange', {
       code: 'mock_auth_code_xyz',
       redirectUri: 'https://twin.andrewtani.id/admin/api/works/gdrive/oauth-callback'

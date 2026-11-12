@@ -487,11 +487,24 @@ function toggleCanvasBioSections() {
     : 'Kanvas kembali menampilkan Ruang Diskusi Utama.');
 }
 
-window.addEventListener('message', (e) => {
+window.addEventListener('message', async (e) => {
   const iframe = document.getElementById('ve-preview-iframe');
   if (e.origin === window.location.origin && e.data && e.data.type === 'gdrive:oauth-success') {
     toast('Google Drive OAuth 2.0 berhasil terhubung!');
     loadWorks();
+    return;
+  }
+  if (e.origin === window.location.origin && e.data && e.data.type === 'gdrive:oauth-code' && e.data.code) {
+    toast('Menukar kode otorisasi Google OAuth 2.0...');
+    const redirectUri = (document.getElementById('gd-oauth-redirect-uri')?.value || '').trim()
+      || (window.location.origin + '/admin/api/works/gdrive/oauth-callback');
+    const ex = await api('POST', '/admin/api/works/gdrive/oauth-exchange', { code: e.data.code, redirectUri });
+    if (ex.ok && ex.data.ok) {
+      toast('Google Drive OAuth 2.0 berhasil terhubung!');
+      loadWorks();
+    } else {
+      toast(ex.data.error || 'Gagal menukar kode OAuth 2.0.', true);
+    }
     return;
   }
   if (e.origin !== window.location.origin || !iframe || e.source !== iframe.contentWindow) return;
@@ -1598,11 +1611,25 @@ async function saveGDriveConfig() {
   if (keyVal) payload.apiKey = keyVal;
   if (oauthClientId) payload.oauthClientId = oauthClientId;
   if (oauthClientSecret) payload.oauthClientSecret = oauthClientSecret;
+  let extractedAuthCode = '';
+  let cleanRefreshToken = oauthRefreshToken;
   if (oauthRefreshToken) {
-    payload.oauthRefreshToken = oauthRefreshToken;
+    if (oauthRefreshToken.includes('code=')) {
+      try {
+        const u = new URL(oauthRefreshToken.startsWith('http') ? oauthRefreshToken : ('https://x.local/?' + oauthRefreshToken));
+        extractedAuthCode = u.searchParams.get('code') || '';
+        cleanRefreshToken = '';
+      } catch (_) {}
+    } else if (oauthRefreshToken.startsWith('4/')) {
+      extractedAuthCode = oauthRefreshToken;
+      cleanRefreshToken = '';
+    }
+  }
+  if (cleanRefreshToken) {
+    payload.oauthRefreshToken = cleanRefreshToken;
     payload.authMode = 'oauth2';
-  } else if (oauthClientId && oauthClientSecret && !saVal && !keyVal) {
-    payload.authMode = 'oauth2';
+  } else if ((oauthClientId && oauthClientSecret) || extractedAuthCode) {
+    if (!saVal && !keyVal) payload.authMode = 'oauth2';
   }
   if (oauthRedirectUri) payload.oauthRedirectUri = oauthRedirectUri;
 
@@ -1611,11 +1638,21 @@ async function saveGDriveConfig() {
     toast(r.data.message || r.data.error || 'Gagal menyimpan konfigurasi Google Drive.', true);
     return;
   }
+  if (extractedAuthCode) {
+    const redir = oauthRedirectUri || (window.location.origin + '/admin/api/works/gdrive/oauth-callback');
+    const ex = await api('POST', '/admin/api/works/gdrive/oauth-exchange', { code: extractedAuthCode, redirectUri: redir });
+    if (!ex.ok || !ex.data.ok) {
+      toast(ex.data.error || 'Gagal menukar kode OAuth menjadi Refresh Token.', true);
+      return;
+    }
+    gdriveState = ex.data.gdrive || gdriveState;
+  } else {
+    gdriveState = r.data.gdrive || gdriveState;
+  }
   if (document.getElementById('gd-service-account-json')) document.getElementById('gd-service-account-json').value = '';
   if (document.getElementById('gd-api-key')) document.getElementById('gd-api-key').value = '';
   if (document.getElementById('gd-oauth-client-secret')) document.getElementById('gd-oauth-client-secret').value = '';
   if (document.getElementById('gd-oauth-refresh-token')) document.getElementById('gd-oauth-refresh-token').value = '';
-  gdriveState = r.data.gdrive || gdriveState;
   renderGDriveConfigState();
   toast('Konfigurasi Google Drive berhasil disimpan di brankas AES-256-GCM!');
 }

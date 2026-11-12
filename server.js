@@ -772,10 +772,11 @@ async function handleAdmin(req, res) {
       return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=; ${cookieAttributes(req, 0)}` }, req);
     }
 
-    if (!isAuthedAdmin) {
+    if (!isAuthedAdmin && !(req.method === 'GET' && pathname === '/admin/api/works/gdrive/oauth-callback')) {
       audit({ event: 'admin_unauthorized_attempt', path: pathname });
       return send(res, 401, { error: 'denied' }, {}, req);
     }
+    req.__isAuthedAdmin = isAuthedAdmin;
 
     // Same-origin Visual Website Editor preview routes on the Admin port
     if (req.method === 'GET' && pathname === '/preview-site') {
