@@ -248,6 +248,7 @@
       const wrapper = document.createElement('section');
       wrapper.id = b.id;
       wrapper.setAttribute('data-cms-injected', 'block');
+      wrapper.setAttribute('data-bio-section', '1');
       wrapper.setAttribute('data-cms-block-label', b.label || 'Blok Kustom');
       if (b.hidden) wrapper.setAttribute('data-cms-section-hidden', 'true');
       wrapper.className = 'w-full py-space-xl px-6 md:px-margin bg-surface';
@@ -414,6 +415,7 @@
       sec = document.createElement('section');
       sec.id = 'cms-pricing-section';
       sec.setAttribute('data-cms-injected', 'pricing');
+      sec.setAttribute('data-bio-section', '1');
       sec.className = 'w-full bg-surface py-space-xl px-6 md:px-margin border-t border-outline-variant/20';
       const anchor = document.getElementById('lingkaran-pendampingan');
       if (anchor && anchor.parentNode === fp) anchor.insertAdjacentElement('afterend', sec);
@@ -543,6 +545,7 @@
 
   // ---------- Studio Visual Canvas Bridge (?studio=1) ----------
   function initStudioBridge() {
+    document.body.classList.add('bio-revealed');
     const badge = document.createElement('div');
     badge.setAttribute('data-cms-injected', 'studio-ui');
     badge.style.cssText = 'position:fixed;pointer-events:none;z-index:99998;border:2px solid #b18d48;border-radius:6px;transition:all 80ms ease;display:none;box-shadow:0 0 0 2px rgba(0,22,55,0.18);';

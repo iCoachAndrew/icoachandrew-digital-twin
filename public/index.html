@@ -66,6 +66,10 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #A41034;
     }
+    /* Collapse "Siapa Andrew Tani" & rest of landing page until user taps to reveal */
+    body:not(.bio-revealed) [data-bio-section="1"] {
+      display: none;
+    }
   </style>
 </head>
 <body class="flex flex-col min-h-screen text-hbs-charcoal bg-white antialiased selection:bg-hbs-crimson selection:text-white">
@@ -116,20 +120,31 @@
       </div>
 
       <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
-        <a href="#karya-buku" id="nav-books" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors">Khazanah &amp; Buku</a>
-        <a href="#ruang-diskusi" id="nav-chat" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors">Ruang Bincang Eksekutif</a>
-        <a href="#lingkaran-pendampingan" id="nav-circles" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors">Pilihan Akses</a>
+      <nav class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium">
+        <a href="#ruang-diskusi" onclick="focusChatEngine(); return false;" class="text-hbs-crimson font-semibold hover:text-hbs-crimsonDark transition-colors flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">forum</span>
+          <span id="nav-chat">Ruang Bincang Eksekutif</span>
+        </a>
+        <a href="#beranda" id="nav-who-andrew" onclick="revealWhoIsAndrew('beranda'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px] text-hbs-crimson">person_book</span>
+          <span id="nav-who-andrew-text">Siapa Andrew Tani</span>
+        </a>
+        <a href="#karya-buku" id="nav-books" onclick="revealWhoIsAndrew('karya-buku'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors">Khazanah &amp; Buku</a>
+        <a href="#lingkaran-pendampingan" id="nav-circles" onclick="revealWhoIsAndrew('lingkaran-pendampingan'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors">Pilihan Akses</a>
       </nav>
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
         <!-- Guest controls (default) -->
-        <div id="header-guest-controls" class="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-charcoal border border-hbs-stoneDark rounded hover:border-hbs-crimson hover:text-hbs-crimson transition-all whitespace-nowrap">
+        <div id="header-guest-controls" class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <button type="button" id="header-who-btn" onclick="revealWhoIsAndrew('beranda')" class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-crimson bg-hbs-crimsonLight border border-hbs-crimson/30 rounded hover:bg-hbs-crimson hover:text-white transition-all flex items-center gap-1 whitespace-nowrap">
+            <span class="material-symbols-outlined text-[14px] sm:text-[16px]">person_book</span>
+            <span id="header-who-btn-text">Siapa Andrew Tani</span>
+          </button>
+          <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-charcoal border border-hbs-stoneDark rounded hover:border-hbs-crimson hover:text-hbs-crimson transition-all whitespace-nowrap">
             Masuk Rekan
           </button>
-          <a href="#ruang-diskusi" id="header-cta-btn" class="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white bg-hbs-crimson rounded hover:bg-hbs-crimsonDark transition-all shadow-xs flex items-center gap-1 sm:gap-1.5 whitespace-nowrap">
+          <a href="#ruang-diskusi" id="header-cta-btn" onclick="focusChatEngine(); return false;" class="hidden sm:flex px-3 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white bg-hbs-crimson rounded hover:bg-hbs-crimsonDark transition-all shadow-xs items-center gap-1 sm:gap-1.5 whitespace-nowrap">
             <span id="header-cta-text">Mulai Diskusi</span>
             <span class="material-symbols-outlined text-[14px] sm:text-[16px]">arrow_forward</span>
           </a>
@@ -156,26 +171,241 @@
   <main class="flex-1 w-full">
 
     <!-- =================================================================== -->
-    <!-- VIEW 1: FRONTPAGE (HBS CASE-METHOD EDITORIAL LAYOUT)                -->
+    <!-- VIEW 1: FRONTPAGE (DIRECT CHAT-FIRST LAYOUT + SIAPA ANDREW TANI)    -->
     <!-- =================================================================== -->
     <div id="frontpage-view" class="flex flex-col w-full">
 
       <!-- ========================================== -->
-      <!-- SECTION 1: HBS CASE-METHOD HERO SECTION   -->
+      <!-- SECTION 1: DIRECT CHAT ENGINE (FIRST!)     -->
       <!-- ========================================== -->
-      <section id="beranda" class="w-full bg-white py-10 lg:py-20 border-b border-hbs-stoneDark">
+      <section id="ruang-diskusi" class="w-full bg-white py-5 sm:py-8 border-b border-hbs-stoneDark">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-4 sm:space-y-5">
+          
+          <!-- Compact Header & Value Proposition -->
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-hbs-stoneDark pb-3.5">
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span id="chat-badge" class="font-mono text-[11px] uppercase tracking-widest text-hbs-crimson font-bold">INTERACTIVE CASE ROOM • AKSES LANGSUNG</span>
+                <span class="hidden sm:inline text-hbs-stoneDark">•</span>
+                <span id="chat-free-pill" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-hbs-crimsonLight text-hbs-crimson font-mono text-[10px] font-bold">
+                  10x Tanya Jawab Gratis → Lanjut Unlimited
+                </span>
+              </div>
+              <h1 id="chat-title" class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-hbs-charcoal leading-tight">Berbincang Langsung Bersama Andrew Tani</h1>
+              <p id="chat-subtitle" class="text-hbs-muted text-xs sm:text-sm leading-relaxed max-w-3xl">
+                Ketuk salah satu topik di bawah (1x klik langsung tanya) atau ketik langsung dilema kepemimpinan, suksesi, maupun tata kelola organisasi Anda.
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" onclick="shareChatUrl()" id="chat-share-btn" class="px-3 py-1.5 rounded border border-hbs-stoneDark bg-hbs-stone hover:border-hbs-crimson hover:bg-white text-hbs-charcoal text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer" title="Bagikan tautan Chat Engine ini">
+                <span class="material-symbols-outlined text-[15px] text-hbs-crimson">share</span>
+                <span id="chat-share-text">Bagikan Link</span>
+              </button>
+              <button type="button" onclick="revealWhoIsAndrew('beranda')" id="chat-top-who-btn" class="px-3 py-1.5 rounded border border-hbs-crimson/30 bg-hbs-crimsonLight hover:bg-hbs-crimson text-hbs-crimson hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[15px]">person_book</span>
+                <span id="chat-top-who-text">Siapa Andrew Tani?</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 1-Tap Quick Start Prompt Chips (<= 2 Taps from Shared URL!) -->
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-hbs-muted">
+              <span class="material-symbols-outlined text-[14px] text-hbs-crimson">bolt</span>
+              <span id="quick-prompt-label">Mulai Cepat (1x Ketuk Langsung Tanya):</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="submitSuggestedPrompt(1)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-1">“Menyelaraskan strategi &amp; eksekusi tim”</span>
+              </button>
+              <button type="button" onclick="submitSuggestedPrompt(2)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-2">“Neurosains &amp; Brain Quotient”</span>
+              </button>
+              <button type="button" onclick="submitSuggestedPrompt(3)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-3">“Suksesi bisnis keluarga tanpa benturan”</span>
+              </button>
+              <button type="button" onclick="submitSuggestedPrompt(4)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-4">“Otentisitas Digital Twin”</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Chat Box Container -->
+          <div class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-xl shadow-md overflow-hidden flex flex-col">
+            
+            <!-- Chat Header Bar -->
+            <div class="bg-white px-4 sm:px-6 py-3.5 border-b border-hbs-stoneDark flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-lg shadow-xs shrink-0 overflow-hidden border border-hbs-crimson">
+                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="AT" class="w-full h-full object-cover object-top" onerror="this.style.display='none'; this.parentElement.textContent='AT';"/>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span id="chat-box-speaker" class="font-serif font-bold text-hbs-charcoal leading-tight">Andrew Tani</span>
+                    <button type="button" onclick="revealWhoIsAndrew('beranda')" class="text-[10px] font-mono text-hbs-crimson hover:underline font-semibold flex items-center gap-0.5 cursor-pointer">
+                      <span id="chat-speaker-who-link">(Siapa Beliau?)</span>
+                    </button>
+                  </div>
+                  <div id="chat-box-speaker-sub" class="text-[11px] font-mono text-hbs-muted uppercase">Senior Management Advisor &amp; Author • Digital Twin</div>
+                </div>
+              </div>
+
+              <!-- Quota Counter & Status -->
+              <div class="flex items-center gap-2.5 shrink-0">
+                <div id="free-qa-badge" class="px-2.5 py-1 rounded-full bg-hbs-stone border border-hbs-stoneDark text-[11px] font-mono font-semibold text-hbs-charcoal flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[14px] text-hbs-crimson" id="free-qa-icon">chat_bubble</span>
+                  <span id="free-qa-text">Gratis: 0 / 10 Tanya Jawab</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span id="chat-box-status" class="text-xs font-mono font-bold text-gray-700">ONLINE</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message History Stream -->
+            <div id="frontpage-messages" class="custom-scrollbar p-4 sm:p-6 space-y-5 max-h-[420px] sm:max-h-[460px] overflow-y-auto bg-white/70">
+              <!-- Opening Welcome Note -->
+              <div class="flex items-start gap-3 sm:gap-4">
+                <div class="w-9 h-9 rounded-full bg-hbs-charcoal text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">
+                  AT
+                </div>
+                <div class="bg-white border border-hbs-stoneDark rounded-lg p-4 sm:p-5 shadow-xs max-w-3xl space-y-2.5">
+                  <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-hbs-muted pb-1 border-b border-hbs-stoneDark">
+                    <span class="text-hbs-crimson font-bold" id="chat-welcome-header">ANDREW TANI • SAPAAN PEMBUKA</span>
+                    <span id="chat-welcome-sub">10x Tanya Jawab Gratis • Lanjut Unlimited</span>
+                  </div>
+                  <p id="chat-welcome-body" class="font-serif text-base text-hbs-charcoal leading-relaxed">
+                    Selamat datang, Sahabatku. Anda dapat langsung berdiskusi bersama saya secara gratis tanpa perlu login. Silakan ketuk salah satu topik di atas atau tulis langsung persoalan kepemimpinan, keselarasan tim, maupun suksesi organisasi yang sedang Anda pikirkan hari ini.
+                  </p>
+                  <div class="text-[11px] text-hbs-muted italic flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <span id="chat-welcome-foot">Didasarkan pada karya buku <em>Organizing for Business Excellence</em>, <em>Brain Quotient</em>, dan 40+ tahun praktik dewan.</span>
+                    <button type="button" onclick="revealWhoIsAndrew('beranda')" class="not-italic font-sans font-semibold text-hbs-crimson hover:underline inline-flex items-center gap-0.5 cursor-pointer">
+                      <span id="chat-welcome-who-link">Mengenal Siapa Andrew Tani →</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- INLINE LEAD CAPTURE GATE (SHOWN AFTER 10x FREE Q&A TO UNLOCK UNLIMITED!) -->
+            <!-- ========================================================================= -->
+            <div id="lead-capture-gate" class="hidden bg-hbs-crimsonLight/90 border-t-2 border-hbs-crimson p-5 sm:p-6 transition-all">
+              <div class="max-w-2xl mx-auto bg-white border border-hbs-crimson/30 rounded-xl p-5 sm:p-6 shadow-lg space-y-4">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-hbs-crimson text-white font-mono text-[10px] font-bold uppercase tracking-wider">
+                      <span class="material-symbols-outlined text-[13px]">lock_open</span>
+                      <span id="lead-gate-badge">LANJUTKAN TANYA JAWAB GRATIS UNLIMITED</span>
+                    </div>
+                    <h3 id="lead-gate-title" class="font-serif text-xl sm:text-2xl font-bold text-hbs-charcoal">
+                      Anda Telah Menyelesaikan 10x Tanya Jawab Gratis
+                    </h3>
+                    <p id="lead-gate-desc" class="text-xs sm:text-sm text-hbs-muted leading-relaxed">
+                      Untuk melanjutkan tanya jawab gratis tanpa batas (<strong>unlimited</strong>) bersama Digital Twin Pak Andrew Tani, silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda agar tim kami dapat menghubungi Anda lebih lanjut:
+                    </p>
+                  </div>
+                </div>
+
+                <form id="lead-capture-form" onsubmit="event.preventDefault(); submitLeadGate();" class="space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label for="lead-name-input" id="lead-label-name" class="block text-[11px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Nama Lengkap *</label>
+                      <input type="text" id="lead-name-input" required class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="Nama Anda"/>
+                    </div>
+                    <div>
+                      <label for="lead-email-input" id="lead-label-email" class="block text-[11px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Alamat Email *</label>
+                      <input type="email" id="lead-email-input" required class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="nama@email.com"/>
+                    </div>
+                    <div>
+                      <label for="lead-phone-input" id="lead-label-phone" class="block text-[11px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Nomor Telepon / WA Pribadi *</label>
+                      <input type="tel" id="lead-phone-input" required class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="0812xxxxxxxx"/>
+                    </div>
+                  </div>
+                  <div id="lead-gate-error" class="hidden p-2.5 bg-red-50 text-hbs-crimson text-xs rounded border border-red-200"></div>
+                  <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <span id="lead-gate-privacy" class="text-[11px] text-hbs-muted flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[14px] text-hbs-crimson">verified_user</span>
+                      <span>Data Anda dijaga kerahasiaannya khusus untuk silaturahmi &amp; tindak lanjut Sekretariat Andrew Tani.</span>
+                    </span>
+                    <button type="submit" id="lead-submit-btn" class="px-5 py-2.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-semibold text-xs sm:text-sm rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer">
+                      <span id="lead-submit-btn-text">Simpan &amp; Lanjut Tanya Jawab Gratis Unlimited</span>
+                      <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Input Composer Form -->
+            <form id="frontpage-chat-form" onsubmit="event.preventDefault(); handleChatSubmit('frontpage');" class="bg-white p-3.5 sm:p-4 border-t border-hbs-stoneDark flex flex-col gap-2.5">
+              <div class="relative flex items-center gap-2">
+                <textarea id="frontpage-chat-input" rows="2" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleChatSubmit('frontpage');}" class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg p-3 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none transition-all resize-none text-hbs-charcoal leading-relaxed font-sans" placeholder="Ketik langsung pertanyaan Anda untuk Pak Andrew di sini (tekan Enter atau klik Kirim)..."></textarea>
+                <button type="submit" id="frontpage-send-btn" class="shrink-0 self-stretch px-5 py-2.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-semibold text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer">
+                  <span id="chat-send-btn">Kirim Pesan</span>
+                  <span class="material-symbols-outlined text-[18px]">send</span>
+                </button>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-hbs-muted">
+                <span class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[14px] text-hbs-crimson">shield</span>
+                  <span id="chat-privacy-note">Dialog Anda privat, terjaga, dan tidak disimpan ke data publik.</span>
+                </span>
+                <span id="chat-quota-footnote" class="font-mono text-[11px] text-hbs-charcoal">
+                  10x tanya jawab gratis langsung • Isi kontak untuk lanjut gratis unlimited
+                </span>
+              </div>
+            </form>
+
+          </div>
+
+          <!-- ========================================================================= -->
+          <!-- TAP TO DISCOVER "SIAPA ANDREW TANI" (REVEALS INTRO, BOOKS & TRACK RECORD) -->
+          <!-- ========================================================================= -->
+          <div class="pt-2">
+            <button type="button" id="who-is-andrew-trigger" onclick="toggleWhoIsAndrew()" aria-expanded="false" class="w-full group bg-hbs-stone hover:bg-hbs-crimsonLight/50 border-2 border-hbs-stoneDark hover:border-hbs-crimson rounded-xl p-4 sm:p-5 shadow-xs transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left cursor-pointer">
+              <div class="flex items-center gap-3.5 sm:gap-4">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="Pak Andrew Tani" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover object-top border-2 border-hbs-crimson shrink-0"/>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span id="who-trigger-badge" class="text-[10px] font-mono uppercase tracking-widest text-hbs-crimson font-bold">PROFIL PENASIHAT SENIOR &amp; KHAZANAH KARYA</span>
+                  </div>
+                  <h2 id="who-trigger-title" class="font-serif text-lg sm:text-xl font-bold text-hbs-charcoal group-hover:text-hbs-crimson transition-colors">
+                    Ketuk untuk Mengenal “Siapa Andrew Tani”
+                  </h2>
+                  <p id="who-trigger-desc" class="text-xs text-hbs-muted mt-0.5 leading-relaxed">
+                    Pelajari latar belakang Pak Andrew Tani, dengarkan rekaman suara beliau, serta telaah buku resmi <em>Organizing for Business Excellence</em>, <em>Brain Quotient</em>, dan 40+ tahun pendampingan 28 grup konglomerasi.
+                  </p>
+                </div>
+              </div>
+              <div class="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-hbs-crimson text-white group-hover:bg-hbs-crimsonDark text-xs font-semibold uppercase tracking-wider transition-all self-end sm:self-center shadow-xs">
+                <span id="who-trigger-btn-text">Siapa Andrew Tani</span>
+                <span id="who-trigger-icon" class="material-symbols-outlined text-[18px] transition-transform duration-300">expand_more</span>
+              </div>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 2: SIAPA ANDREW TANI (INTRO/HERO)  -->
+      <!-- (Placed after Chat Engine; revealed on tap) -->
+      <!-- ========================================== -->
+      <section id="beranda" data-bio-section="1" class="w-full bg-white py-10 lg:py-20 border-b border-hbs-stoneDark">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
             <!-- Left Column: Editorial Case Headline (7 Cols) -->
             <div class="lg:col-span-7 space-y-6">
               <div class="inline-flex items-center gap-2 px-3 py-1 bg-hbs-crimsonLight text-hbs-crimson rounded text-xs font-mono font-bold uppercase tracking-wider border border-hbs-crimson/20">
-                <span id="hero-badge">EXECUTIVE PERSPECTIVE • CASE REFLECTION</span>
+                <span id="hero-badge">SIAPA ANDREW TANI • EXECUTIVE PERSPECTIVE</span>
               </div>
 
-              <h1 id="hero-title" class="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-hbs-charcoal leading-[1.14] tracking-tight">
+              <h2 id="hero-title" class="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-hbs-charcoal leading-[1.14] tracking-tight">
                 The Discipline of Listening: Menyelaraskan Ketegasan Strategi dengan Empati Manusia.
-              </h1>
+              </h2>
 
               <p id="hero-subtitle" class="text-base lg:text-lg text-hbs-muted leading-relaxed max-w-2xl font-sans">
                 Selama lebih dari empat dekade mendampingi dewan direksi, komisaris, dan pendiri usaha, saya menyaksikan bahwa kegagalan transformasi bisnis jarang terletak pada kalkulasi angka, melainkan pada ketidakmampuan organisasi untuk mendengarkan manusia di balik setiap keputusan.
@@ -183,11 +413,11 @@
 
               <!-- HBS Action Deck -->
               <div class="pt-2 flex flex-wrap items-center gap-4">
-                <a href="#ruang-diskusi" id="hero-cta-primary" class="px-6 py-3.5 bg-hbs-crimson text-white rounded font-medium text-sm hover:bg-hbs-crimsonDark transition-all shadow-md flex items-center gap-2">
-                  <span id="hero-cta-primary-text">Buka Ruang Bincang Bersama Andrew</span>
+                <a href="#ruang-diskusi" id="hero-cta-primary" onclick="focusChatEngine(); return false;" class="px-6 py-3.5 bg-hbs-crimson text-white rounded font-medium text-sm hover:bg-hbs-crimsonDark transition-all shadow-md flex items-center gap-2">
+                  <span id="hero-cta-primary-text">Kembali ke Ruang Chat Bersama Andrew</span>
                   <span class="material-symbols-outlined text-[18px]">forum</span>
                 </a>
-                <a href="#karya-buku" id="hero-cta-secondary" class="px-5 py-3.5 bg-hbs-stone text-hbs-charcoal border border-hbs-stoneDark rounded font-medium text-sm hover:bg-white hover:border-hbs-charcoal transition-all">
+                <a href="#karya-buku" id="hero-cta-secondary" onclick="revealWhoIsAndrew('karya-buku'); return false;" class="px-5 py-3.5 bg-hbs-stone text-hbs-charcoal border border-hbs-stoneDark rounded font-medium text-sm hover:bg-white hover:border-hbs-charcoal transition-all">
                   Telaah Buku &amp; Khazanah Karya
                 </a>
               </div>
@@ -269,9 +499,9 @@
       </section>
 
       <!-- ========================================== -->
-      <!-- SECTION 2: PUBLISHED BOOKS & SCHOLARSHIP  -->
+      <!-- SECTION 3: PUBLISHED BOOKS & SCHOLARSHIP  -->
       <!-- ========================================== -->
-      <section id="karya-buku" class="w-full bg-hbs-stone py-16 border-b border-hbs-stoneDark">
+      <section id="karya-buku" data-bio-section="1" class="w-full bg-hbs-stone py-16 border-b border-hbs-stoneDark">
         <div id="pokok-pemikiran" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-12">
           
           <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-hbs-stoneDark pb-6">
@@ -374,102 +604,9 @@
       </section>
 
       <!-- ========================================== -->
-      <!-- SECTION 3: HBS CASE-DISCUSSION CHAT ROOM   -->
-      <!-- ========================================== -->
-      <section id="ruang-diskusi" class="w-full bg-white py-16 border-b border-hbs-stoneDark">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-8">
-          
-          <div class="text-center space-y-3 max-w-2xl mx-auto">
-            <span id="chat-badge" class="font-mono text-xs uppercase tracking-widest text-hbs-crimson font-bold">INTERACTIVE CASE ROOM</span>
-            <h2 id="chat-title" class="font-serif text-3xl lg:text-4xl font-bold text-hbs-charcoal">Berbincang Langsung Bersama Andrew Tani</h2>
-            <p id="chat-subtitle" class="text-hbs-muted text-sm leading-relaxed">
-              Sampaikan dilema kepemimpinan, dinamika suksesi tim, atau pertanyaan tata kelola organisasi Anda. Digital Twin Pak Andrew menjawab dengan marwah, pengalaman nyata, dan gaya bertutur khas beliau.
-            </p>
-          </div>
-
-          <!-- Suggested Prompt Chips -->
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <button onclick="submitSuggestedPrompt(1)" class="text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all">
-              <span id="prompt-chip-1">“Menyelaraskan strategi &amp; eksekusi tim”</span>
-            </button>
-            <button onclick="submitSuggestedPrompt(2)" class="text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all">
-              <span id="prompt-chip-2">“Neurosains &amp; Brain Quotient”</span>
-            </button>
-            <button onclick="submitSuggestedPrompt(3)" class="text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all">
-              <span id="prompt-chip-3">“Suksesi bisnis keluarga tanpa benturan”</span>
-            </button>
-            <button onclick="submitSuggestedPrompt(4)" class="text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all">
-              <span id="prompt-chip-4">“Otentisitas Digital Twin”</span>
-            </button>
-          </div>
-
-          <!-- Main Chat Box Container -->
-          <div class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-xl shadow-md overflow-hidden flex flex-col">
-            
-            <!-- Chat Header Bar -->
-            <div class="bg-white px-5 sm:px-6 py-4 border-b border-hbs-stoneDark flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-lg shadow-xs shrink-0">
-                  AT
-                </div>
-                <div>
-                  <div id="chat-box-speaker" class="font-serif font-bold text-hbs-charcoal leading-tight">Andrew Tani</div>
-                  <div id="chat-box-speaker-sub" class="text-[11px] font-mono text-hbs-muted uppercase">Senior Management Advisor &amp; Author • Digital Twin</div>
-                </div>
-              </div>
-              <div class="flex items-center gap-2 shrink-0">
-                <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span id="chat-box-status" class="text-xs font-mono font-bold text-gray-700">ONLINE</span>
-              </div>
-            </div>
-
-            <!-- Message History Stream -->
-            <div id="frontpage-messages" class="custom-scrollbar p-5 sm:p-6 space-y-6 max-h-[520px] overflow-y-auto bg-white/70">
-              <!-- Opening Welcome Note -->
-              <div class="flex items-start gap-3 sm:gap-4">
-                <div class="w-9 h-9 rounded-full bg-hbs-charcoal text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">
-                  AT
-                </div>
-                <div class="bg-white border border-hbs-stoneDark rounded-lg p-4 sm:p-5 shadow-xs max-w-3xl space-y-3">
-                  <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-hbs-muted pb-1 border-b border-hbs-stoneDark">
-                    <span class="text-hbs-crimson font-bold">ANDREW TANI • CATATAN PEMBUKA</span>
-                    <span>Ruang Kerja Senior Advisor</span>
-                  </div>
-                  <p class="font-serif text-base text-hbs-charcoal leading-relaxed">
-                    Selamat datang, Sahabatku. Baik Anda sedang memimpin konsolidasi organisasi, merancang suksesi kepemimpinan, maupun menata keselarasan tim, silakan ceritakan apa yang sedang ada dalam benak dan pertimbangan Anda hari ini.
-                  </p>
-                  <div class="text-[11px] text-hbs-muted italic">
-                    Didasarkan pada karya buku <em>Organizing for Business Excellence</em>, <em>Brain Quotient</em>, dan 40+ tahun praktik dewan.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Input Composer Form -->
-            <form id="frontpage-chat-form" onsubmit="event.preventDefault(); handleChatSubmit('frontpage');" class="bg-white p-4 border-t border-hbs-stoneDark flex flex-col gap-3">
-              <div class="relative flex items-center">
-                <textarea id="frontpage-chat-input" rows="2" class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg p-3 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none transition-all resize-none text-hbs-charcoal leading-relaxed font-sans" placeholder="Tuliskan pertanyaan, studi kasus kepemimpinan, atau refleksi yang ingin Anda diskusikan bersama Pak Andrew..."></textarea>
-              </div>
-              <div class="flex flex-wrap items-center justify-between gap-3 text-xs text-hbs-muted">
-                <span class="flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[15px] text-hbs-crimson">shield</span>
-                  <span id="chat-privacy-note">Dialog Anda privat, terjaga, dan tidak disimpan ke data publik.</span>
-                </span>
-                <button type="submit" id="frontpage-send-btn" class="px-5 py-2.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-medium rounded transition-all shadow-xs flex items-center gap-2">
-                  <span id="chat-send-btn">Kirim Pesan</span>
-                  <span class="material-symbols-outlined text-[16px]">send</span>
-                </button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      </section>
-
-      <!-- ========================================== -->
       <!-- SECTION 4: 2 BALANCED TIERS (CANON RULE)   -->
       <!-- ========================================== -->
-      <section id="lingkaran-pendampingan" class="w-full bg-hbs-stone py-16 border-b border-hbs-stoneDark">
+      <section id="lingkaran-pendampingan" data-bio-section="1" class="w-full bg-hbs-stone py-16 border-b border-hbs-stoneDark">
         <div id="cara-terhubung" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-8">
           
           <div class="text-center space-y-2">
@@ -484,31 +621,31 @@
             <div class="bg-white border-2 border-hbs-stoneDark rounded-xl p-8 flex flex-col justify-between shadow-xs relative">
               <div class="space-y-4">
                 <div id="tier1-badge" class="inline-block px-2.5 py-1 bg-hbs-stone text-hbs-charcoal font-mono text-[10px] uppercase font-bold tracking-wider rounded border border-hbs-stoneDark">
-                  AKSES PUBLIK
+                  AKSES PUBLIK • LANGSUNG CHAT
                 </div>
                 <h3 id="tier1-name" class="font-serif text-2xl font-bold text-hbs-charcoal">Ruang Diskusi Terbuka</h3>
                 <p id="tier1-desc" class="text-sm text-hbs-muted leading-relaxed">
-                  Terbuka bagi setiap insan pemimpin, manajer, dan pembelajar untuk berdialog seputar konsep kepemimpinan, budaya kerja, dan pemikiran umum Pak Andrew.
+                  Terbuka bagi setiap insan pemimpin, manajer, dan pembelajar untuk berdialog langsung seputar konsep kepemimpinan, budaya kerja, dan pemikiran Pak Andrew.
                 </p>
                 <ul class="space-y-2.5 pt-2 text-sm text-hbs-charcoal">
                   <li class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-hbs-crimson text-[18px]">check_circle</span>
-                    <span>3 pertanyaan mendalam per sesi dialog</span>
+                    <span id="tier1-bullet-1">10x tanya jawab gratis langsung tanpa login</span>
                   </li>
                   <li class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-hbs-crimson text-[18px]">check_circle</span>
-                    <span>Berbasis khazanah terbuka &amp; buku rujukan</span>
+                    <span id="tier1-bullet-2">Lanjut tanya jawab gratis unlimited setelah isi Nama, Email &amp; No. Telepon</span>
                   </li>
                   <li class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-hbs-crimson text-[18px]">check_circle</span>
-                    <span>Tanpa biaya registrasi awal</span>
+                    <span id="tier1-bullet-3">Berbasis khazanah terbuka &amp; buku rujukan resmi</span>
                   </li>
                 </ul>
               </div>
               <div class="pt-6 mt-6 border-t border-hbs-stoneDark">
-                <a href="#ruang-diskusi" id="tier1-btn" class="w-full py-3 bg-hbs-stone hover:bg-hbs-stoneDark text-hbs-charcoal font-medium text-sm rounded flex items-center justify-center gap-2 transition-all">
+                <a href="#ruang-diskusi" onclick="focusChatEngine(); return false;" id="tier1-btn" class="w-full py-3 bg-hbs-stone hover:bg-hbs-stoneDark text-hbs-charcoal font-medium text-sm rounded flex items-center justify-center gap-2 transition-all">
                   <span id="tier1-btn-text">Mulai Berbincang Sekarang</span>
-                  <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
                 </a>
               </div>
             </div>
@@ -556,7 +693,7 @@
       <!-- ========================================== -->
       <!-- SECTION 5: ABOUT PAK ANDREW & REFLECTION   -->
       <!-- ========================================== -->
-      <section id="tentang-pak-andrew-tani" class="w-full bg-white py-16 border-b border-hbs-stoneDark">
+      <section id="tentang-pak-andrew-tani" data-bio-section="1" class="w-full bg-white py-16 border-b border-hbs-stoneDark">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-8">
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div class="lg:col-span-8 space-y-4">
@@ -1187,7 +1324,38 @@
     "tier1-btn-text": "Mulai Berbincang Sekarang",
     "tier2-btn-text": "Bergabung sebagai Rekan (Bebas Biaya)",
     "notice-label": "Pemberitahuan Resmi:",
-    "notice-body": "Ruang ini ditenagai oleh Digital Twin Andrew Tani berdasarkan karya dan 40+ tahun pengalaman beliau. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal."
+    "notice-body": "Ruang ini ditenagai oleh Digital Twin Andrew Tani berdasarkan karya dan 40+ tahun pengalaman beliau. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.",
+    "nav-who-andrew-text": "Siapa Andrew Tani",
+    "header-who-btn-text": "Siapa Andrew Tani",
+    "chat-free-pill": "10x Tanya Jawab Gratis",
+    "chat-share-text": "Bagikan Link Chat",
+    "chat-top-who-text": "Siapa Andrew Tani?",
+    "quick-prompt-label": "Ketuk 1x untuk langsung bertanya:",
+    "chat-speaker-who-link": "Siapa Andrew Tani?",
+    "chat-welcome-header": "ANDREW TANI • SAMBUTAN LANGSUNG",
+    "chat-welcome-sub": "10x Tanya Jawab Gratis",
+    "chat-welcome-body": "Selamat datang, Sahabatku. Anda berada langsung di Ruang Diskusi Bersama Andrew Tani. Silakan ketuk salah satu topik di atas (1 ketukan) atau ketik langsung pertanyaan kepemimpinan, bisnis, dan tim Anda di bawah ini.",
+    "chat-welcome-who-link": "Kenali Siapa Andrew Tani →",
+    "lead-gate-badge": "10/10 TANYA JAWAB GRATIS SELESAI",
+    "lead-gate-title": "Lanjutkan Tanya Jawab Gratis Tanpa Batas (Unlimited)",
+    "lead-gate-desc": "Anda telah menyelesaikan 10x tanya jawab gratis bersama Pak Andrew Tani. Untuk melanjutkan diskusi gratis sepuasnya (unlimited) sekaligus agar Sekretariat Andrew Tani & Co. dapat menghubungi Anda lebih lanjut, silakan lengkapi data singkat berikut:",
+    "lead-label-name": "Nama Lengkap",
+    "lead-label-email": "Alamat Email",
+    "lead-label-phone": "Nomor Telepon Pribadi / WhatsApp",
+    "lead-gate-privacy": "Data pribadi Anda dijaga kerahasiaannya & hanya digunakan untuk tindak lanjut resmi.",
+    "lead-submit-btn-text": "Kirim & Lanjut Tanya Jawab Gratis Unlimited",
+    "chat-quota-footnote": "Melayani 10x tanya jawab gratis • Isi Nama, Email & Nomor Telepon untuk lanjut gratis unlimited",
+    "who-trigger-badge": "KETUK UNTUK MENGENAL LEBIH DEKAT",
+    "who-trigger-title": "Siapa Andrew Tani?",
+    "who-trigger-desc": "Ketuk di sini untuk mengenal profil lengkap Pak Andrew Tani, mendengarkan memo suara beliau, menelaah buku-buku terbitan resmi (Organizing for Business Excellence & Brain Quotient), serta rekam jejak 40+ tahun mendampingi 28 grup usaha.",
+    "who-trigger-btn-text": "Kenali Siapa Andrew Tani",
+    "tier1-bullet-1": "10x tanya jawab gratis langsung (≤ 3 ketukan dari link)",
+    "tier1-bullet-2": "Lanjut tanya jawab gratis unlimited setelah mengisi Nama, Email & Nomor Telepon",
+    "tier1-bullet-3": "Dihubungi lebih lanjut untuk pendampingan relevan",
+    "frontpage-chat-input": { "placeholder": "Tulis langsung pertanyaan Anda di sini (Tekan Enter atau klik Kirim)..." },
+    "lead-name-input": { "placeholder": "Nama lengkap Anda" },
+    "lead-email-input": { "placeholder": "nama@email.com" },
+    "lead-phone-input": { "placeholder": "0812xxxx / +62812xxxx" }
   },
   "en": {
     "header-subtitle": "Executive Mentorship & Thought Leadership",
@@ -1447,9 +1615,84 @@
     "tier1-btn-text": "Start Dialogue Now",
     "tier2-btn-text": "Join as Executive Colleague (Complimentary)",
     "notice-label": "Official Notice:",
-    "notice-body": "This space is powered by Andrew Tani’s Digital Twin, drawing upon his published works and 40+ years of board advisory experience. It serves as a thinking partner, not a substitute for formal legal or financial counsel."
+    "notice-body": "This space is powered by Andrew Tani’s Digital Twin, drawing upon his published works and 40+ years of board advisory experience. It serves as a thinking partner, not a substitute for formal legal or financial counsel.",
+    "nav-who-andrew-text": "Who is Andrew Tani",
+    "header-who-btn-text": "Who is Andrew Tani",
+    "chat-free-pill": "10 Free Q&A Exchanges",
+    "chat-share-text": "Share Chat Link",
+    "chat-top-who-text": "Who is Andrew Tani?",
+    "quick-prompt-label": "Tap once to ask immediately:",
+    "chat-speaker-who-link": "Who is Andrew Tani?",
+    "chat-welcome-header": "ANDREW TANI • DIRECT WELCOME",
+    "chat-welcome-sub": "10 Free Q&A Exchanges",
+    "chat-welcome-body": "Welcome, my friend. You are directly inside the Andrew Tani Dialogue Room. Tap any topic chip above (1 tap) or type your leadership, business, or team question directly below.",
+    "chat-welcome-who-link": "Discover Who is Andrew Tani →",
+    "lead-gate-badge": "10/10 FREE Q&A EXCHANGES COMPLETED",
+    "lead-gate-title": "Continue with Unlimited Free Q&A",
+    "lead-gate-desc": "You have completed your 10 free Q&A exchanges with Pak Andrew Tani. To continue with unlimited free Q&A and allow the Secretariat of Andrew Tani & Co. to follow up with you personally, please share your contact details below:",
+    "lead-label-name": "Full Name",
+    "lead-label-email": "Email Address",
+    "lead-label-phone": "Personal Phone / WhatsApp Number",
+    "lead-gate-privacy": "Your personal details are kept strictly confidential and used solely for official follow-up.",
+    "lead-submit-btn-text": "Submit & Continue Unlimited Free Q&A",
+    "chat-quota-footnote": "10 free Q&A exchanges • Submit Name, Email & Phone to unlock unlimited free Q&A",
+    "who-trigger-badge": "TAP TO DISCOVER",
+    "who-trigger-title": "Who is Andrew Tani?",
+    "who-trigger-desc": "Tap here to explore Pak Andrew Tani's full profile, listen to his voice memo, browse his official published books (Organizing for Business Excellence & Brain Quotient), and view his 40+ year track record advising 28 business groups.",
+    "who-trigger-btn-text": "Discover Who is Andrew Tani",
+    "tier1-bullet-1": "10 instant free Q&A exchanges (≤ 3 taps from shared link)",
+    "tier1-bullet-2": "Unlimited free Q&A after submitting Name, Email & Personal Phone",
+    "tier1-bullet-3": "Personal follow-up for relevant executive advisory",
+    "frontpage-chat-input": { "placeholder": "Type your question directly here (Press Enter or click Send)..." },
+    "lead-name-input": { "placeholder": "Your full name" },
+    "lead-email-input": { "placeholder": "name@company.com" },
+    "lead-phone-input": { "placeholder": "+62 812 xxxx xxxx" }
   }
 };
+
+    let freeQuotaState = {
+      used: 0,
+      limit: 10,
+      remaining: 10,
+      unlimited: false,
+      leadSubmitted: false,
+      requireLead: false
+    };
+    let pendingQuestionAfterLead = null;
+
+    function getGuestId() {
+      try {
+        let gid = localStorage.getItem('icoachandrew_guest_id');
+        if (!gid) {
+          gid = 'guest_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+          localStorage.setItem('icoachandrew_guest_id', gid);
+        }
+        return gid;
+      } catch (_) {
+        if (!window.__icoachGuestId) {
+          window.__icoachGuestId = 'guest_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        }
+        return window.__icoachGuestId;
+      }
+    }
+
+    function loadLocalFreeQuotaBackup() {
+      try {
+        const raw = localStorage.getItem('icoachandrew_free_quota');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            freeQuotaState = Object.assign({}, freeQuotaState, parsed);
+          }
+        }
+      } catch (_) {}
+    }
+
+    function saveLocalFreeQuotaBackup() {
+      try {
+        localStorage.setItem('icoachandrew_free_quota', JSON.stringify(freeQuotaState));
+      } catch (_) {}
+    }
 
     const BOOK_PROMPTS = {
       kepemimpinan_mendengarkan: {
@@ -1522,6 +1765,249 @@
       if (fp) { fp.classList.add('hidden'); fp.classList.remove('flex'); }
       if (cb) { cb.classList.remove('hidden'); cb.classList.add('flex'); }
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function focusChatEngine() {
+      showFrontpageView();
+      const sec = document.getElementById('ruang-diskusi');
+      if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+      const input = document.getElementById('frontpage-chat-input');
+      if (input) setTimeout(() => input.focus(), 150);
+    }
+
+    function updateWhoTriggerUI() {
+      const revealed = document.body.classList.contains('bio-revealed');
+      const trigger = document.getElementById('who-is-andrew-trigger');
+      const btnText = document.getElementById('who-trigger-btn-text');
+      const btnIcon = document.getElementById('who-trigger-icon');
+      const isEn = currentLang === 'en';
+      if (trigger) trigger.setAttribute('aria-expanded', revealed ? 'true' : 'false');
+      if (btnText) {
+        if (revealed) {
+          btnText.textContent = isEn ? 'Hide Profile Section' : 'Sembunyikan Profil';
+        } else {
+          btnText.textContent = isEn ? 'Discover Who is Andrew Tani' : 'Kenali Siapa Andrew Tani';
+        }
+      }
+      if (btnIcon) {
+        btnIcon.textContent = revealed ? 'expand_less' : 'expand_more';
+      }
+    }
+
+    function revealWhoIsAndrew(targetSectionId) {
+      showFrontpageView();
+      document.body.classList.add('bio-revealed');
+      updateWhoTriggerUI();
+      const targetId = targetSectionId || 'beranda';
+      const el = document.getElementById(targetId);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 60);
+      }
+    }
+
+    function toggleWhoIsAndrew() {
+      const revealed = document.body.classList.contains('bio-revealed');
+      if (revealed) {
+        document.body.classList.remove('bio-revealed');
+        updateWhoTriggerUI();
+        const chatSec = document.getElementById('ruang-diskusi');
+        if (chatSec) chatSec.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        revealWhoIsAndrew('beranda');
+      }
+    }
+
+    async function shareChatUrl() {
+      const shareUrl = window.location.origin + window.location.pathname;
+      const isEn = currentLang === 'en';
+      const title = isEn ? 'Direct Dialogue with Pak Andrew Tani' : 'Bincang Langsung Bersama Pak Andrew Tani';
+      const text = isEn
+        ? 'Tap to chat directly with Andrew Tani (10 free Q&A exchanges):'
+        : 'Ketuk untuk berbincang langsung secara gratis dengan Pak Andrew Tani (10x tanya jawab gratis):';
+      const labelEl = document.getElementById('chat-share-text');
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url: shareUrl });
+          return;
+        } catch (_) {}
+      }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+        }
+        if (labelEl) {
+          const orig = labelEl.textContent;
+          labelEl.textContent = isEn ? 'Link Copied!' : 'Link Tersalin!';
+          setTimeout(() => { labelEl.textContent = orig; }, 2200);
+        }
+      } catch (_) {}
+    }
+
+    function renderFreeQuotaUI() {
+      const isEn = currentLang === 'en';
+      const isAuth = sessionState.ring === 1 || sessionState.ring === 2;
+      const unlimited = isAuth || Boolean(freeQuotaState.unlimited) || Boolean(freeQuotaState.leadSubmitted);
+      const limit = Number(freeQuotaState.limit) || 10;
+      const used = Math.min(limit, Math.max(0, Number(freeQuotaState.used) || 0));
+      const remaining = Math.max(0, limit - used);
+
+      const badgeEl = document.getElementById('free-qa-badge');
+      const textEl = document.getElementById('free-qa-text');
+      const iconEl = document.getElementById('free-qa-icon');
+      const pillEl = document.getElementById('chat-free-pill');
+      const footnoteEl = document.getElementById('chat-quota-footnote');
+      const gateEl = document.getElementById('lead-capture-gate');
+
+      if (unlimited) {
+        if (badgeEl) {
+          badgeEl.className = 'px-2.5 py-1 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-mono text-[11px] flex items-center gap-1.5';
+        }
+        if (iconEl) iconEl.textContent = 'all_inclusive';
+        if (textEl) {
+          textEl.textContent = isEn ? 'UNLIMITED FREE Q&A ACTIVE' : 'TANYA JAWAB GRATIS UNLIMITED AKTIF';
+        }
+        if (pillEl) {
+          pillEl.textContent = isEn ? 'Unlimited Free Q&A Active' : 'Tanya Jawab Gratis Unlimited Aktif';
+        }
+        if (footnoteEl) {
+          footnoteEl.textContent = isEn
+            ? 'Thank you — Unlimited Free Q&A is unlocked for your session.'
+            : 'Terima kasih — Akses Tanya Jawab Gratis Unlimited telah aktif untuk Anda.';
+        }
+        if (gateEl) gateEl.classList.add('hidden');
+      } else {
+        if (iconEl) iconEl.textContent = remaining === 0 ? 'lock_open' : 'verified';
+        if (textEl) {
+          textEl.textContent = isEn
+            ? `FREE Q&A: ${remaining}/${limit} REMAINING`
+            : `KUOTA GRATIS: ${remaining}/${limit} TERSISA`;
+        }
+        if (pillEl) {
+          pillEl.textContent = isEn
+            ? `${remaining} of ${limit} Free Q&A Left`
+            : `${ used === 0 ? '10x Tanya Jawab Gratis' : `Sisa ${remaining} dari ${limit} Tanya Jawab Gratis` }`;
+        }
+        if (footnoteEl) {
+          footnoteEl.textContent = isEn
+            ? `10 free Q&A exchanges (${used}/${limit} used) • Submit Name, Email & Phone to continue unlimited`
+            : `Melayani 10x tanya jawab gratis (${used}/${limit} terpakai) • Isi Nama, Email & Nomor Telepon untuk lanjut gratis unlimited`;
+        }
+        if (gateEl) {
+          if (used >= limit || freeQuotaState.requireLead) {
+            gateEl.classList.remove('hidden');
+          } else {
+            gateEl.classList.add('hidden');
+          }
+        }
+      }
+    }
+
+    function showLeadCaptureGate(scrollToGate) {
+      const gateEl = document.getElementById('lead-capture-gate');
+      if (!gateEl) return;
+      gateEl.classList.remove('hidden');
+      if (scrollToGate) {
+        setTimeout(() => {
+          gateEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const nameIn = document.getElementById('lead-name-input');
+          if (nameIn) nameIn.focus();
+        }, 100);
+      }
+    }
+
+    async function submitLeadGate() {
+      const nameIn = document.getElementById('lead-name-input');
+      const emailIn = document.getElementById('lead-email-input');
+      const phoneIn = document.getElementById('lead-phone-input');
+      const errEl = document.getElementById('lead-gate-error');
+      const btnEl = document.getElementById('lead-submit-btn');
+
+      const name = (nameIn ? nameIn.value : '').trim();
+      const email = (emailIn ? emailIn.value : '').trim();
+      const phone = (phoneIn ? phoneIn.value : '').trim();
+      const isEn = currentLang === 'en';
+
+      if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+
+      if (!name || !email || !email.includes('@') || !phone || phone.replace(/[^0-9+]/g, '').length < 6) {
+        if (errEl) {
+          errEl.textContent = isEn
+            ? 'Please enter your valid Full Name, Email Address, and Personal Phone Number.'
+            : 'Mohon lengkapi Nama Lengkap, Email yang valid, dan Nomor Telepon Pribadi Anda.';
+          errEl.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (btnEl) btnEl.disabled = true;
+
+      try {
+        const res = await fetch('/api/chat/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            email,
+            phone,
+            guestId: getGuestId(),
+            lang: currentLang
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          if (errEl) {
+            errEl.textContent = data.message || (isEn
+              ? 'Please complete your Name, Email, and Personal Phone Number.'
+              : 'Mohon lengkapi Nama, Email, dan Nomor Telepon Pribadi Anda.');
+            errEl.classList.remove('hidden');
+          }
+          if (btnEl) btnEl.disabled = false;
+          return;
+        }
+
+        freeQuotaState.unlimited = true;
+        freeQuotaState.leadSubmitted = true;
+        freeQuotaState.requireLead = false;
+        if (data.freeUsage) {
+          freeQuotaState = Object.assign({}, freeQuotaState, data.freeUsage);
+        }
+        saveLocalFreeQuotaBackup();
+        renderFreeQuotaUI();
+
+        const welcomeMsg = data.message || (isEn
+          ? `Thank you, ${name}. Your details have been received for personal follow-up, and your Unlimited Free Q&A access with Pak Andrew Tani is now active. Please continue with your questions.`
+          : `Terima kasih, ${name}. Data Anda telah kami terima untuk tindak lanjut bersama Sekretariat Andrew Tani & Co., dan akses Tanya Jawab Gratis Unlimited Anda kini telah aktif. Silakan lanjutkan pertanyaan Anda sepuasnya.`);
+        appendFrontpageTurn('twin', welcomeMsg);
+
+        if (pendingQuestionAfterLead) {
+          const nextQ = pendingQuestionAfterLead;
+          pendingQuestionAfterLead = null;
+          submitFrontpageQuestion(nextQ);
+        } else {
+          const chatIn = document.getElementById('frontpage-chat-input');
+          if (chatIn) chatIn.focus();
+        }
+      } catch (_) {
+        // Offline / static fallback: unlock locally so user is never stuck
+        freeQuotaState.unlimited = true;
+        freeQuotaState.leadSubmitted = true;
+        freeQuotaState.requireLead = false;
+        saveLocalFreeQuotaBackup();
+        renderFreeQuotaUI();
+        appendFrontpageTurn('twin', isEn
+          ? `Thank you, ${name}. Unlimited Free Q&A is now unlocked. Please continue your dialogue.`
+          : `Terima kasih, ${name}. Akses Tanya Jawab Gratis Unlimited kini telah aktif. Silakan lanjutkan diskusi Anda.`);
+        if (pendingQuestionAfterLead) {
+          const nextQ = pendingQuestionAfterLead;
+          pendingQuestionAfterLead = null;
+          submitFrontpageQuestion(nextQ);
+        }
+      } finally {
+        if (btnEl) btnEl.disabled = false;
+      }
     }
 
     function openModal(id) {
@@ -1608,16 +2094,23 @@
         }
       }
 
+      updateWhoTriggerUI();
+      renderFreeQuotaUI();
       renderSessionUI();
     }
 
     async function syncSession() {
       try {
-        const res = await fetch('/api/session');
+        const res = await fetch('/api/session?guestId=' + encodeURIComponent(getGuestId()));
         if (res.ok) {
           sessionState = await res.json();
+          if (sessionState.freeUsage) {
+            freeQuotaState = Object.assign({}, freeQuotaState, sessionState.freeUsage);
+            saveLocalFreeQuotaBackup();
+          }
         }
       } catch (_) {}
+      renderFreeQuotaUI();
       renderSessionUI();
     }
 
@@ -1666,6 +2159,7 @@
         if (userTierEl) userTierEl.textContent = isEn ? 'PUBLIC' : 'PUBLIK';
         if (usageBox) usageBox.classList.add('hidden');
       }
+      renderFreeQuotaUI();
     }
 
     function askBookPrompt(bookKey) {
@@ -1795,6 +2289,16 @@
       const btn = document.getElementById(btnId);
       const message = (input ? input.value : '').trim();
       if (!message) return;
+
+      const isPublicFrontpage = source !== 'chamber' && sessionState.ring === 3;
+      const isUnlimited = Boolean(freeQuotaState.unlimited) || Boolean(freeQuotaState.leadSubmitted);
+      if (isPublicFrontpage && !isUnlimited && (freeQuotaState.used >= (freeQuotaState.limit || 10) || freeQuotaState.requireLead)) {
+        pendingQuestionAfterLead = message;
+        input.value = '';
+        showLeadCaptureGate(true);
+        return;
+      }
+
       input.value = '';
 
       if (source === 'chamber') appendChamberTurn('user', message);
@@ -1823,7 +2327,7 @@
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, lang: currentLang })
+          body: JSON.stringify({ message, lang: currentLang, guestId: getGuestId() })
         });
         const data = await res.json();
         const lb = document.getElementById('loading-bubble-' + source);
@@ -1836,19 +2340,53 @@
           sessionState.usage = data.usage;
           renderSessionUI();
         }
+        if (data.freeUsage) {
+          freeQuotaState = Object.assign({}, freeQuotaState, data.freeUsage);
+          saveLocalFreeQuotaBackup();
+          renderFreeQuotaUI();
+        }
+        if (res.status === 402 || data.requireLead) {
+          pendingQuestionAfterLead = message;
+          freeQuotaState.requireLead = true;
+          saveLocalFreeQuotaBackup();
+          renderFreeQuotaUI();
+          const gateReply = data.reply || (currentLang === 'id'
+            ? 'Sahabatku, Anda telah menyelesaikan 10x sesi tanya jawab gratis bersama saya. Untuk melanjutkan diskusi gratis tanpa batas (unlimited) dan agar tim kami dapat menghubungi Anda lebih lanjut, silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda pada formulir di bawah ini.'
+            : 'My friend, you have completed your 10 free Q&A sessions with me. To continue with unlimited free Q&A and allow our team to follow up with you personally, please share your Name, Email, and Personal Phone Number in the form below.');
+          appendFrontpageTurn('twin', gateReply);
+          showLeadCaptureGate(true);
+          return;
+        }
         const reply = data.reply || (currentLang === 'id'
           ? 'Mohon maaf. Itu bersifat pribadi. Semoga Anda mengerti.'
           : 'I’m sorry. That is private. Hope you understand.');
         if (source === 'chamber') appendChamberTurn('twin', reply);
         else appendFrontpageTurn('twin', reply);
+
+        if (data.promptLead || (!freeQuotaState.unlimited && freeQuotaState.used >= (freeQuotaState.limit || 10))) {
+          showLeadCaptureGate(true);
+        }
       } catch (_) {
         const lb = document.getElementById('loading-bubble-' + source);
         if (lb) lb.remove();
+        // Offline / static fallback counter so 10x free Q&A gate also works in static previews
+        if (isPublicFrontpage && !freeQuotaState.unlimited) {
+          freeQuotaState.used = (Number(freeQuotaState.used) || 0) + 1;
+          freeQuotaState.remaining = Math.max(0, (freeQuotaState.limit || 10) - freeQuotaState.used);
+          if (freeQuotaState.used >= (freeQuotaState.limit || 10)) {
+            freeQuotaState.requireLead = true;
+          }
+          saveLocalFreeQuotaBackup();
+          renderFreeQuotaUI();
+        }
         const fallback = currentLang === 'id'
           ? 'Mohon maaf. Terjadi gangguan koneksi ke ruang diskusi. Silakan coba kembali sesaat lagi.'
           : 'I’m sorry. A connection error occurred with the advisory chamber. Please try again in a moment.';
         if (source === 'chamber') appendChamberTurn('twin', fallback);
         else appendFrontpageTurn('twin', fallback);
+        if (isPublicFrontpage && !freeQuotaState.unlimited && freeQuotaState.used >= (freeQuotaState.limit || 10)) {
+          showLeadCaptureGate(true);
+        }
       } finally {
         if (btn) btn.disabled = false;
       }
@@ -2009,9 +2547,18 @@
     }
 
     // Initialize on load
+    loadLocalFreeQuotaBackup();
     const initialLang = (typeof localStorage !== 'undefined' && localStorage.getItem('icoachandrew_lang')) || 'id';
     setLanguage(initialLang);
-    syncSession();
+    syncSession().then(() => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const sharedQuestion = (params.get('q') || params.get('ask') || '').trim();
+        if (sharedQuestion) {
+          submitFrontpageQuestion(sharedQuestion);
+        }
+      } catch (_) {}
+    });
   </script>
   <script src="/cms-runtime.js"></script>
 </body>

@@ -819,3 +819,92 @@ test('Ring 0 Studio: Google Drive API v3 Connector (Service Account JWT, Folder/
     app.studio.works.gdrive.setCustomFetch(null);
   }
 });
+
+test('Chat-First UX & 10x Free Q&A -> Lead Capture (Nama, Email, Nomor Telepon) -> Unlimited Free Q&A', async () => {
+  // 1. Verify Chat Engine (#ruang-diskusi) is placed BEFORE Intro (#beranda) and "Siapa Andrew Tani" trigger + Lead Gate exist
+  const homeRes = await fetch(U + '/');
+  assert.strictEqual(homeRes.status, 200);
+  const html = await homeRes.text();
+  const chatPos = html.indexOf('<section id="ruang-diskusi"');
+  const berandaPos = html.indexOf('<section id="beranda"');
+  const booksPos = html.indexOf('<section id="karya-buku"');
+  const tiersPos = html.indexOf('<section id="lingkaran-pendampingan"');
+  const aboutPos = html.indexOf('<section id="tentang-pak-andrew-tani"');
+  assert.ok(chatPos > 0, '#ruang-diskusi exists');
+  assert.ok(berandaPos > chatPos, '#ruang-diskusi appears BEFORE #beranda (Chat-First layout)');
+  assert.ok(booksPos > berandaPos, '#karya-buku preserved after #beranda');
+  assert.ok(tiersPos > booksPos, '#lingkaran-pendampingan preserved after #karya-buku');
+  assert.ok(aboutPos > tiersPos, '#tentang-pak-andrew-tani preserved after #lingkaran-pendampingan');
+  assert.ok(html.includes('id="who-is-andrew-trigger"'), 'Tap trigger for Siapa Andrew Tani exists');
+  assert.ok(html.includes('id="lead-capture-gate"'), 'Lead capture gate exists');
+  assert.ok(html.includes('data-bio-section="1"'), 'Bio sections are collapsible behind Siapa Andrew Tani');
+
+  // 2. Verify 10x free Q&A quota tracking for a guest visitor
+  const guestId = 'guest_test_10x_' + Date.now();
+  for (let i = 1; i <= 10; i++) {
+    const r = await user('POST', '/api/chat', {
+      message: `Pertanyaan kepemimpinan ke-${i}: bagaimana menyelaraskan strategi dan eksekusi tim?`,
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(r.status, 200, `Free question #${i} succeeds`);
+    assert.strictEqual(r.json.freeUsage.used, i);
+    assert.strictEqual(r.json.freeUsage.limit, 10);
+    assert.strictEqual(r.json.freeUsage.remaining, 10 - i);
+    assert.strictEqual(r.json.freeUsage.unlimited, false);
+    if (i === 10) {
+      assert.strictEqual(r.json.promptLead, true, '10th answer prompts lead capture');
+      assert.strictEqual(r.json.freeUsage.requireLead, true);
+    }
+  }
+
+  // 3. 11th question before submitting lead data must return 402 lead_required
+  const r11Blocked = await user('POST', '/api/chat', {
+    message: 'Pertanyaan ke-11 sebelum isi data',
+    lang: 'id',
+    guestId
+  });
+  assert.strictEqual(r11Blocked.status, 402, '11th question blocked until lead is submitted');
+  assert.strictEqual(r11Blocked.json.error, 'lead_required');
+  assert.strictEqual(r11Blocked.json.requireLead, true);
+
+  // 4. Incomplete lead submission (missing phone) returns 400
+  const badLead = await user('POST', '/api/chat/lead', {
+    name: 'Budi Santoso',
+    email: 'budi@contoh.co.id',
+    phone: '',
+    guestId
+  });
+  assert.strictEqual(badLead.status, 400);
+
+  // 5. Valid lead submission (Nama, Email, Nomor Telepon Pribadi) unlocks unlimited free Q&A
+  const okLead = await user('POST', '/api/chat/lead', {
+    name: 'Budi Santoso',
+    email: 'budi@contoh.co.id',
+    phone: '+6281234567890',
+    guestId,
+    lang: 'id'
+  });
+  assert.strictEqual(okLead.status, 200);
+  assert.strictEqual(okLead.json.ok, true);
+  assert.strictEqual(okLead.json.unlimited, true);
+  assert.strictEqual(okLead.json.freeUsage.unlimited, true);
+
+  // 6. Visitor can now continue asking unlimited free questions (11th, 12th, ...)
+  const r11Ok = await user('POST', '/api/chat', {
+    message: 'Pertanyaan ke-11 setelah submit data: bagaimana membangun budaya mendengarkan?',
+    lang: 'id',
+    guestId
+  });
+  assert.strictEqual(r11Ok.status, 200);
+  assert.strictEqual(r11Ok.json.freeUsage.unlimited, true);
+  assert.strictEqual(r11Ok.json.freeUsage.requireLead, false);
+
+  const r12Ok = await user('POST', '/api/chat', {
+    message: 'Pertanyaan ke-12 unlimited: bagaimana penerapan Brain Quotient?',
+    lang: 'id',
+    guestId
+  });
+  assert.strictEqual(r12Ok.status, 200);
+  assert.strictEqual(r12Ok.json.freeUsage.unlimited, true);
+});

@@ -35,6 +35,11 @@ const CAP_REACHED = {
   en: 'You have reached your monthly fair-use message allowance. Please wait for the next cycle or upgrade your plan.',
   id: 'Anda telah mencapai batas pemakaian wajar pesan bulanan Anda. Silakan tunggu periode berikutnya atau perbarui paket Anda.'
 };
+const PUBLIC_FREE_CHAT_LIMIT = Number(process.env.PUBLIC_FREE_CHAT_LIMIT || 10);
+const LEAD_GATE_PROMPT = {
+  en: 'You have completed your 10 free Q&A exchanges with Andrew Tani. To continue with unlimited free Q&A, please submit your Name, Email, and Personal Phone Number so our team may follow up with you.',
+  id: 'Anda telah menyelesaikan 10x tanya jawab gratis bersama Andrew Tani. Untuk melanjutkan tanya jawab gratis tanpa batas (unlimited), silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda untuk dihubungi lebih lanjut.'
+};
 const FIXED_DUTIES = [
   { id: 'disclosure', label: 'Kejujuran Identitas Digital Twin', rule: 'Selalu menyatakan diri sebagai digital twin Andrew Tani (bukan Andrew sendiri) bila ditanya secara tulus.' },
   { id: 'no_commitment', label: 'Larangan Mengikat Komitmen', rule: 'Tidak pernah mengikat Andrew pada uang, kontrak, investasi, pertemuan, atau janji apa pun.' },
@@ -288,9 +293,29 @@ async function answer(askerRing, question, lang, opts = {}) {
 }
 
 // ---------- sessions: ring comes from the server, never from the browser ----------
-const sessions = new Map(); // token -> { id, ring, exp, codeName?, memberId?, passphraseHash? }
+const sessions = new Map(); // token -> { id, ring, exp, codeName?, memberId?, passphraseHash?, unlimited?, leadSubmitted? }
+const guestQuotas = new Map(); // guestKey -> { used, unlimited, leadSubmitted, displayName, email, phone, memberId, updatedAt }
 const USER_COOKIE = 'icoach_session';
 const ADMIN_COOKIE = 'icoach_admin';
+
+function getOrInitGuestQuota(guestKey) {
+  if (!guestKey) return null;
+  const key = String(guestKey).slice(0, 128);
+  const now = Date.now();
+  if (guestQuotas.size > 2000) {
+    for (const [k, v] of guestQuotas.entries()) {
+      if (!v || now - (v.updatedAt || 0) > 7 * 86400000) guestQuotas.delete(k);
+    }
+  }
+  let q = guestQuotas.get(key);
+  if (!q) {
+    q = { used: 0, unlimited: false, leadSubmitted: false, displayName: null, email: null, phone: null, memberId: null, updatedAt: now };
+    guestQuotas.set(key, q);
+  } else {
+    q.updatedAt = now;
+  }
+  return q;
+}
 
 function newSession(ring, meta = {}) {
   const now = Date.now();
@@ -299,7 +324,8 @@ function newSession(ring, meta = {}) {
   }
   const t = crypto.randomBytes(32).toString('hex');
   const sid = 's_' + crypto.randomBytes(4).toString('hex');
-  sessions.set(t, { id: sid, ring, exp: now + 30 * 60 * 1000, ...meta });
+  const ttlMs = meta.ttlMs || (30 * 60 * 1000);
+  sessions.set(t, { id: sid, ring, exp: now + ttlMs, ...meta });
   return t;
 }
 
@@ -360,7 +386,17 @@ function resolveUserSession(req) {
     return { ring: 2, sessionId: s.id, label: 'member', memberId: member.id };
   }
 
-  return { ring: 3, sessionId: s.id, label: 'public' };
+  return {
+    ring: 3,
+    sessionId: s.id,
+    label: 'public',
+    unlimited: Boolean(s.unlimited),
+    leadSubmitted: Boolean(s.leadSubmitted),
+    displayName: s.displayName || null,
+    email: s.email || null,
+    phone: s.phone || null,
+    memberId: s.memberId || null
+  };
 }
 
 const attempts = new Map(); // bucketKey -> { n, reset }
@@ -897,14 +933,21 @@ const userServer = http.createServer(async (req, res) => {
     // Current session info
     if (req.method === 'GET' && pathname === '/api/session') {
       const sess = resolveUserSession(req);
+      const guestId = urlObj.searchParams.get('guestId') || getCookieToken(req, USER_COOKIE) || null;
+      const gq = guestId ? getOrInitGuestQuota(guestId) : null;
       if (sess.ring === 2 && sess.memberId) {
         const member = loadMembers().find((m) => m.id === sess.memberId);
+        const isUnlimited = Boolean(member && (member.unlimited || member.leadSubmitted));
         return send(res, 200, {
           ring: 2,
           label: 'member',
           displayName: member ? (member.displayName || 'Raden S. Wiryawan') : 'Raden S. Wiryawan',
           corporateHolding: member ? (member.corporateHolding || 'Group CEO, Bimasakti Holdings') : 'Group CEO, Bimasakti Holdings',
-          usage: { used: member ? member.used : 0, limit: member ? member.cap : DEFAULT_MONTHLY_CAP },
+          phone: member ? (member.phone || null) : null,
+          unlimited: isUnlimited,
+          leadSubmitted: isUnlimited,
+          usage: { used: member ? member.used : 0, limit: isUnlimited ? null : (member ? member.cap : DEFAULT_MONTHLY_CAP), unlimited: isUnlimited },
+          freeUsage: { used: member ? member.used : 0, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false },
           conversations: member ? (member.conversations || []).slice(-10) : []
         });
       }
@@ -913,10 +956,129 @@ const userServer = http.createServer(async (req, res) => {
           ring: 1,
           label: 'ring1',
           codeName: sess.codeName,
-          channel: sess.channel || null
+          channel: sess.channel || null,
+          unlimited: true,
+          leadSubmitted: true,
+          freeUsage: { used: 0, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false }
         });
       }
-      return send(res, 200, { ring: 3, label: 'public', revoked: Boolean(sess.revoked) });
+      const isPublicUnlimited = Boolean(sess.unlimited || (gq && gq.unlimited));
+      const publicUsed = gq ? gq.used : 0;
+      return send(res, 200, {
+        ring: 3,
+        label: 'public',
+        revoked: Boolean(sess.revoked),
+        unlimited: isPublicUnlimited,
+        leadSubmitted: Boolean(sess.leadSubmitted || (gq && gq.leadSubmitted)),
+        displayName: sess.displayName || (gq && gq.displayName) || null,
+        email: sess.email || (gq && gq.email) || null,
+        phone: sess.phone || (gq && gq.phone) || null,
+        freeUsage: {
+          used: publicUsed,
+          limit: isPublicUnlimited ? null : PUBLIC_FREE_CHAT_LIMIT,
+          remaining: isPublicUnlimited ? null : Math.max(0, PUBLIC_FREE_CHAT_LIMIT - publicUsed),
+          unlimited: isPublicUnlimited,
+          leadSubmitted: Boolean(sess.leadSubmitted || (gq && gq.leadSubmitted)),
+          requireLead: !isPublicUnlimited && publicUsed >= PUBLIC_FREE_CHAT_LIMIT
+        }
+      });
+    }
+
+    // Lead capture after 10 free Q&A -> unlocks unlimited free Q&A (Nama, Email, Nomor Telepon Pribadi)
+    if (req.method === 'POST' && (pathname === '/api/chat/lead' || pathname === '/api/auth/lead')) {
+      const b = await body(req, 4000);
+      const lang = langOf(b.lang);
+      const displayName = String(b.name || b.displayName || '').trim();
+      const email = String(b.email || '').trim().toLowerCase();
+      const phone = String(b.phone || b.phoneNumber || b.nomorTelepon || b.whatsapp || '').trim();
+      const guestId = String(b.guestId || '').trim();
+
+      if (!displayName || displayName.length < 2 || !email || !email.includes('@') || !phone || phone.replace(/\D/g, '').length < 6) {
+        return send(res, 400, {
+          error: 'bad_request',
+          message: lang === 'id'
+            ? 'Mohon lengkapi Nama, Email aktif, dan Nomor Telepon pribadi Anda.'
+            : 'Please complete your Name, valid Email, and Personal Phone Number.'
+        }, {}, req);
+      }
+
+      const members = loadMembers();
+      let member = members.find((m) => m.email === email);
+      const gq = guestId ? getOrInitGuestQuota(guestId) : null;
+      const priorUsed = gq ? gq.used : PUBLIC_FREE_CHAT_LIMIT;
+
+      if (member) {
+        member.displayName = displayName;
+        member.phone = phone;
+        if (!member.corporateHolding || member.corporateHolding.startsWith('Telp/WA:')) {
+          member.corporateHolding = 'Telp/WA: ' + phone;
+        }
+        member.unlimited = true;
+        member.leadSubmitted = true;
+        member.entitlement = 'active';
+        member.cap = Math.max(Number(member.cap) || 0, 999999);
+        member.updatedAt = new Date().toISOString();
+      } else {
+        member = {
+          id: 'm_' + crypto.randomBytes(5).toString('hex'),
+          email,
+          displayName,
+          phone,
+          corporateHolding: 'Telp/WA: ' + phone,
+          credentialHash: hashSecret(phone + ':' + email),
+          entitlement: 'active',
+          unlimited: true,
+          leadSubmitted: true,
+          leadSource: 'chat_10_gate',
+          used: priorUsed,
+          cap: 999999,
+          conversations: [],
+          createdAt: new Date().toISOString()
+        };
+        members.push(member);
+      }
+      saveMembers(members);
+
+      const token = newSession(3, {
+        ttlMs: 30 * 24 * 60 * 60 * 1000,
+        unlimited: true,
+        leadSubmitted: true,
+        memberId: member.id,
+        displayName,
+        email,
+        phone
+      });
+
+      for (const k of [guestId, token].filter(Boolean)) {
+        const q = getOrInitGuestQuota(k);
+        if (q) {
+          q.unlimited = true;
+          q.leadSubmitted = true;
+          q.displayName = displayName;
+          q.email = email;
+          q.phone = phone;
+          q.memberId = member.id;
+        }
+      }
+
+      audit({ event: 'chat_lead_submitted', ring: 3, sessionId: member.id, unlimited: true });
+      return send(res, 200, {
+        ok: true,
+        ring: 3,
+        unlimited: true,
+        leadSubmitted: true,
+        displayName,
+        email,
+        phone,
+        freeUsage: {
+          used: member.used,
+          limit: null,
+          remaining: null,
+          unlimited: true,
+          leadSubmitted: true,
+          requireLead: false
+        }
+      }, { 'set-cookie': `${USER_COOKIE}=${token}; ${cookieAttributes(req, 30 * 24 * 3600)}` }, req);
     }
 
     // Ring 2 Member sign-up (Free-for-now entitlement flag)
@@ -1118,13 +1280,15 @@ const userServer = http.createServer(async (req, res) => {
       }
       const ring = sess.ring;
 
-      // Enforce Ring 2 monthly fair-use cap
+      // Enforce Ring 2 monthly fair-use cap (unless unlimited is active)
       let usageInfo;
+      let freeUsage;
       if (ring === 2 && sess.memberId) {
         const members = loadMembers();
         const member = members.find((m) => m.id === sess.memberId);
         if (member) {
-          if (member.used >= member.cap) {
+          const isUnlimited = Boolean(member.unlimited || member.leadSubmitted);
+          if (!isUnlimited && member.used >= member.cap) {
             audit({ event: 'chat_cap_reached', site: 'user', ring: 2, sessionId: sess.sessionId, outcome: 'refused_politely' });
             return send(res, 429, { error: 'cap_reached', reply: CAP_REACHED[lang], usage: { used: member.used, limit: member.cap } });
           }
@@ -1132,7 +1296,52 @@ const userServer = http.createServer(async (req, res) => {
           member.conversations = member.conversations || [];
           member.conversations.push({ title: q.slice(0, 48), at: new Date().toISOString() });
           saveMembers(members);
-          usageInfo = { used: member.used, limit: member.cap };
+          usageInfo = { used: member.used, limit: isUnlimited ? null : member.cap, unlimited: isUnlimited };
+          freeUsage = { used: member.used, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false };
+        }
+      } else if (ring === 3) {
+        const guestKey = String(b.guestId || getCookieToken(req, USER_COOKIE) || '').trim();
+        if (guestKey) {
+          const gq = getOrInitGuestQuota(guestKey);
+          const isUnlimited = Boolean(sess.unlimited || (gq && gq.unlimited));
+          if (!isUnlimited && gq.used >= PUBLIC_FREE_CHAT_LIMIT) {
+            audit({ event: 'public_free_limit_reached', site: 'user', ring: 3, sessionId: sess.sessionId, outcome: 'lead_required' });
+            return send(res, 402, {
+              error: 'lead_required',
+              requireLead: true,
+              reply: LEAD_GATE_PROMPT[lang],
+              freeUsage: {
+                used: gq.used,
+                limit: PUBLIC_FREE_CHAT_LIMIT,
+                remaining: 0,
+                unlimited: false,
+                leadSubmitted: false,
+                requireLead: true,
+                promptLead: true
+              }
+            }, {}, req);
+          }
+          gq.used += 1;
+          const memId = sess.memberId || gq.memberId;
+          if (memId) {
+            const members = loadMembers();
+            const member = members.find((m) => m.id === memId);
+            if (member) {
+              member.used = gq.used;
+              member.conversations = member.conversations || [];
+              member.conversations.push({ title: q.slice(0, 48), at: new Date().toISOString() });
+              saveMembers(members);
+            }
+          }
+          freeUsage = {
+            used: gq.used,
+            limit: isUnlimited ? null : PUBLIC_FREE_CHAT_LIMIT,
+            remaining: isUnlimited ? null : Math.max(0, PUBLIC_FREE_CHAT_LIMIT - gq.used),
+            unlimited: isUnlimited,
+            leadSubmitted: Boolean(sess.leadSubmitted || gq.leadSubmitted),
+            requireLead: !isUnlimited && gq.used >= PUBLIC_FREE_CHAT_LIMIT,
+            promptLead: !isUnlimited && gq.used >= PUBLIC_FREE_CHAT_LIMIT
+          };
         }
       }
 
@@ -1152,7 +1361,8 @@ const userServer = http.createServer(async (req, res) => {
         reply: r.text,
         disclosure: DISCLOSURE[lang],
         ring: sess.label,
-        usage: usageInfo
+        usage: usageInfo,
+        ...(freeUsage ? { freeUsage, promptLead: Boolean(freeUsage.promptLead) } : {})
       });
     }
 
