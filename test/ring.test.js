@@ -908,3 +908,92 @@ test('Chat-First UX & 10x Free Q&A -> Lead Capture (Nama, Email, Nomor Telepon) 
   assert.strictEqual(r12Ok.status, 200);
   assert.strictEqual(r12Ok.json.freeUsage.unlimited, true);
 });
+
+test('Quick Prompts Book Spill (Brain Quotient, Organizing for Business Excellence, Succession), Tab Title & Web Info / Favicon Editor', async () => {
+  // 1. Verify frontpage HTML has no Harvard Business School mention in title and has favicon & non-overlapping header classes
+  const htmlRes = await fetch(U + '/');
+  assert.strictEqual(htmlRes.status, 200);
+  const html = await htmlRes.text();
+  assert.ok(!html.includes('Harvard Business School Style'), 'No HBS mention in browser tab title');
+  assert.ok(html.includes('id="site-favicon"'), 'Default favicon link exists');
+  assert.ok(html.includes('id="header-subtitle" class="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-hbs-muted mt-1 whitespace-nowrap"'), 'Header subtitle has whitespace-nowrap');
+
+  // 2. Verify all 4 Quick Prompt topics return warm book-spill answers in both EN and ID (never "That is private")
+  const bqEn = await user('POST', '/api/chat', {
+    message: 'Pak Andrew, could you share a glimpse into your book Brain Quotient and how cognitive neuroscience helps executive decision-making under high pressure?',
+    lang: 'en'
+  });
+  assert.strictEqual(bqEn.status, 200);
+  assert.doesNotMatch(bqEn.json.reply, /private/i, 'Brain Quotient EN prompt must not return private refusal');
+  assert.match(bqEn.json.reply, /Brain Quotient|neuroscience|Gramedia/i);
+
+  const bqId = await user('POST', '/api/chat', {
+    message: 'Pak Andrew, boleh beri sedikit spill mengenai buku Brain Quotient dan bagaimana neurosains membantu pengambilan keputusan eksekutif di bawah tekanan?',
+    lang: 'id'
+  });
+  assert.strictEqual(bqId.status, 200);
+  assert.doesNotMatch(bqId.json.reply, /bersifat pribadi/i, 'Brain Quotient ID prompt must not return private refusal');
+  assert.match(bqId.json.reply, /Brain Quotient|neurosains|Gramedia/i);
+
+  const orgEn = await user('POST', '/api/chat', {
+    message: 'Pak Andrew, could you share a glimpse into your book Organizing for Business Excellence and the core principles of aligning strategy with daily team execution?',
+    lang: 'en'
+  });
+  assert.strictEqual(orgEn.status, 200);
+  assert.match(orgEn.json.reply, /Organizing for Business Excellence/i);
+
+  const succId = await user('POST', '/api/chat', {
+    message: 'Bagaimana pengalaman 40+ tahun Pak Andrew menjembatani kebijaksanaan pendiri dengan visi generasi penerus dalam suksesi bisnis keluarga?',
+    lang: 'id'
+  });
+  assert.strictEqual(succId.status, 200);
+  assert.match(succId.json.reply, /suksesi|pendiri|Tut Wuri Handayani/i);
+
+  // 3. Verify Web Info & Tab Logo (Favicon) Editor endpoint (/admin/api/site/web-info) saves & publishes immediately
+  const png1x1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+  const favUp = await admin('POST', '/admin/api/media', { filename: 'favicon-at.png', alt: 'Logo Tab AT', data: png1x1 });
+  assert.strictEqual(favUp.status, 200);
+
+  const webInfoRes = await admin('POST', '/admin/api/site/web-info', {
+    seo: {
+      title: 'iCoachAndrew — Ruang Diskusi Andrew Tani',
+      titleEn: 'iCoachAndrew — Executive Mentorship | Andrew Tani',
+      description: 'Ruang diskusi resmi bersama Digital Twin Pak Andrew Tani.',
+      favicon: favUp.json.item.url
+    }
+  });
+  assert.strictEqual(webInfoRes.status, 200);
+  assert.strictEqual(webInfoRes.json.seo.title, 'iCoachAndrew — Ruang Diskusi Andrew Tani');
+  assert.strictEqual(webInfoRes.json.seo.titleEn, 'iCoachAndrew — Executive Mentorship | Andrew Tani');
+  assert.strictEqual(webInfoRes.json.seo.favicon, favUp.json.item.url);
+
+  const pubSite = await user('GET', '/api/site-content');
+  assert.strictEqual(pubSite.status, 200);
+  assert.strictEqual(pubSite.json.seo.titleEn, 'iCoachAndrew — Executive Mentorship | Andrew Tani');
+  assert.strictEqual(pubSite.json.seo.favicon, favUp.json.item.url);
+
+  // 4. Verify Out-of-Scope / Unrelated questions (e.g. "Do you have any opinion on current Indonesia presidency?",
+  // "Do you have exprerience on Rights Issue", random topics) never match on stopwords like "have" and honestly answer "do not know / tidak tahu"
+  const outPresEn = await user('POST', '/api/chat', {
+    message: 'Do you have any opinion on current Indonesia presidency?',
+    lang: 'en'
+  });
+  assert.strictEqual(outPresEn.status, 200);
+  assert.match(outPresEn.json.reply, /do not know/i, 'Presidency question in EN honestly replies do not know');
+  assert.doesNotMatch(outPresEn.json.reply, /everyday team habits/i, 'Never returns random strategy quote on stopword "have"');
+
+  const outRightsEn = await user('POST', '/api/chat', {
+    message: 'Do you have exprerience on Rights Issue',
+    lang: 'en'
+  });
+  assert.strictEqual(outRightsEn.status, 200);
+  assert.match(outRightsEn.json.reply, /do not know/i, 'Rights Issue question in EN honestly replies do not know');
+  assert.doesNotMatch(outRightsEn.json.reply, /everyday team habits/i);
+
+  const outRandomId = await user('POST', '/api/chat', {
+    message: 'Bagaimana pendapat Bapak mengenai presiden saat ini atau cara memasak rendang?',
+    lang: 'id'
+  });
+  assert.strictEqual(outRandomId.status, 200);
+  assert.match(outRandomId.json.reply, /tidak tahu/i, 'Unrelated ID question honestly replies tidak tahu');
+});

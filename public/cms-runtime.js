@@ -329,15 +329,22 @@
 
   function applySeo(seo) {
     if (!seo) return;
-    if (seo.title) document.title = seo.title;
+    window.__cmsSeo = seo;
+    const lang = activeLang();
+    if (lang === 'en' && seo.titleEn) {
+      document.title = seo.titleEn;
+    } else if (seo.title) {
+      document.title = seo.title;
+    }
     if (seo.description) {
       let m = document.querySelector('meta[name="description"]');
       if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); }
       m.content = seo.description;
     }
     if (seo.favicon) {
-      let l = document.querySelector('link[rel="icon"]');
-      if (!l) { l = document.createElement('link'); l.rel = 'icon'; document.head.appendChild(l); }
+      let l = document.getElementById('site-favicon') || document.querySelector('link[rel="icon"]');
+      if (!l) { l = document.createElement('link'); l.id = 'site-favicon'; l.rel = 'icon'; document.head.appendChild(l); }
+      l.removeAttribute('type');
       l.href = seo.favicon;
     }
   }

@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>iCoachAndrew — Warisan Pemikiran &amp; Ruang Diskusi Bersama Andrew Tani</title>
+  <title>iCoachAndrew — Ruang Diskusi &amp; Warisan Pemikiran Andrew Tani</title>
+  <meta name="description" id="site-meta-desc" content="Berbincang langsung dengan Digital Twin Pak Andrew Tani — Senior Management Advisor &amp; Co-author buku Organizing for Business Excellence dan Brain Quotient."/>
+  <link id="site-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A41034'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%23FFFFFF' font-family='Georgia,serif' font-weight='bold' font-size='28'%3EAT%3C/text%3E%3C/svg%3E"/>
   
   <!-- Google Fonts: Newsreader (Editorial Serif), Figtree (High Readability Sans), JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -105,39 +107,39 @@
   <!-- MAIN HEADER & BRAND NAVIGATION             -->
   <!-- ========================================== -->
   <header class="w-full bg-white border-b border-hbs-stoneDark sticky top-0 z-40 shadow-xs backdrop-blur-md bg-white/95">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-5">
       
-      <!-- Brand Logo -->
-      <div class="flex items-center gap-2 sm:gap-4 min-w-0">
-        <a href="#" onclick="showFrontpageView(); return false;" class="flex flex-col group">
-          <span class="font-serif text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-hbs-charcoal leading-none group-hover:text-hbs-crimson transition-colors">
+      <!-- Brand Logo (shrink-0 & whitespace-nowrap so subtitle never overlaps adjacent nav/buttons) -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <a href="#" onclick="showFrontpageView(); return false;" class="flex flex-col group shrink-0">
+          <span class="font-serif text-xl sm:text-2xl lg:text-[26px] font-bold tracking-tight text-hbs-charcoal leading-none group-hover:text-hbs-crimson transition-colors whitespace-nowrap">
             iCoachAndrew<span class="text-hbs-crimson">.</span>
           </span>
-          <span id="header-subtitle" class="text-[9px] sm:text-[11px] font-mono uppercase tracking-widest text-hbs-muted mt-0.5 sm:mt-1 truncate max-w-[165px] sm:max-w-none">
+          <span id="header-subtitle" class="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-hbs-muted mt-1 whitespace-nowrap">
             Executive Mentorship &amp; Thought Leadership
           </span>
         </a>
       </div>
 
-      <!-- Navigation Links -->
-      <nav class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium">
-        <a href="#ruang-diskusi" onclick="focusChatEngine(); return false;" class="text-hbs-crimson font-semibold hover:text-hbs-crimsonDark transition-colors flex items-center gap-1.5">
+      <!-- Navigation Links (single-line whitespace-nowrap on xl+) -->
+      <nav class="hidden xl:flex items-center gap-5 2xl:gap-7 text-xs 2xl:text-sm font-medium shrink-0">
+        <a href="#ruang-diskusi" onclick="focusChatEngine(); return false;" class="text-hbs-crimson font-semibold hover:text-hbs-crimsonDark transition-colors flex items-center gap-1.5 whitespace-nowrap">
           <span class="material-symbols-outlined text-[16px]">forum</span>
           <span id="nav-chat">Ruang Bincang Eksekutif</span>
         </a>
-        <a href="#beranda" id="nav-who-andrew" onclick="revealWhoIsAndrew('beranda'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors flex items-center gap-1">
+        <a href="#beranda" id="nav-who-andrew" onclick="revealWhoIsAndrew('beranda'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors flex items-center gap-1 whitespace-nowrap">
           <span class="material-symbols-outlined text-[16px] text-hbs-crimson">person_book</span>
           <span id="nav-who-andrew-text">Siapa Andrew Tani</span>
         </a>
-        <a href="#karya-buku" id="nav-books" onclick="revealWhoIsAndrew('karya-buku'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors">Khazanah &amp; Buku</a>
-        <a href="#lingkaran-pendampingan" id="nav-circles" onclick="revealWhoIsAndrew('lingkaran-pendampingan'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors">Pilihan Akses</a>
+        <a href="#karya-buku" id="nav-books" onclick="revealWhoIsAndrew('karya-buku'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors whitespace-nowrap">Khazanah &amp; Buku</a>
+        <a href="#lingkaran-pendampingan" id="nav-circles" onclick="revealWhoIsAndrew('lingkaran-pendampingan'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors whitespace-nowrap">Pilihan Akses</a>
       </nav>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         <!-- Guest controls (default) -->
         <div id="header-guest-controls" class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          <button type="button" id="header-who-btn" onclick="revealWhoIsAndrew('beranda')" class="px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-crimson bg-hbs-crimsonLight border border-hbs-crimson/30 rounded hover:bg-hbs-crimson hover:text-white transition-all flex items-center gap-1 whitespace-nowrap">
+          <button type="button" id="header-who-btn" onclick="revealWhoIsAndrew('beranda')" class="xl:hidden px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-crimson bg-hbs-crimsonLight border border-hbs-crimson/30 rounded hover:bg-hbs-crimson hover:text-white transition-all flex items-center gap-1 whitespace-nowrap">
             <span class="material-symbols-outlined text-[14px] sm:text-[16px]">person_book</span>
             <span id="header-who-btn-text">Siapa Andrew Tani</span>
           </button>
@@ -216,16 +218,16 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <button type="button" onclick="submitSuggestedPrompt(1)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-1">“Menyelaraskan strategi &amp; eksekusi tim”</span>
+                <span id="prompt-chip-1">“Buku Organizing for Business Excellence: Strategi &amp; Eksekusi Tim”</span>
               </button>
               <button type="button" onclick="submitSuggestedPrompt(2)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-2">“Neurosains &amp; Brain Quotient”</span>
+                <span id="prompt-chip-2">“Buku Brain Quotient: Neurosains &amp; Keputusan Eksekutif”</span>
               </button>
               <button type="button" onclick="submitSuggestedPrompt(3)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-3">“Suksesi bisnis keluarga tanpa benturan”</span>
+                <span id="prompt-chip-3">“Suksesi Bisnis Keluarga &amp; Disiplin Mendengarkan”</span>
               </button>
               <button type="button" onclick="submitSuggestedPrompt(4)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-4">“Otentisitas Digital Twin”</span>
+                <span id="prompt-chip-4">“Mengenal Buku, Pemikiran &amp; Digital Twin Pak Andrew”</span>
               </button>
             </div>
           </div>
@@ -1299,10 +1301,10 @@
     "chat-badge": "INTERACTIVE CASE ROOM",
     "chat-title": "Berbincang Langsung Bersama Andrew Tani",
     "chat-subtitle": "Sampaikan dilema kepemimpinan, dinamika suksesi tim, atau pertanyaan tata kelola organisasi Anda. Digital Twin Pak Andrew menjawab dengan marwah, pengalaman nyata, dan gaya bertutur khas beliau.",
-    "prompt-chip-1": "“Menyelaraskan strategi & eksekusi tim”",
-    "prompt-chip-2": "“Neurosains & Brain Quotient”",
-    "prompt-chip-3": "“Suksesi bisnis keluarga tanpa benturan”",
-    "prompt-chip-4": "“Otentisitas Digital Twin”",
+    "prompt-chip-1": "“Buku Organizing for Business Excellence: Strategi & Eksekusi Tim”",
+    "prompt-chip-2": "“Buku Brain Quotient: Neurosains & Keputusan Eksekutif”",
+    "prompt-chip-3": "“Suksesi Bisnis Keluarga & Disiplin Mendengarkan”",
+    "prompt-chip-4": "“Mengenal Buku, Pemikiran & Digital Twin Pak Andrew”",
     "chat-box-speaker": "Andrew Tani",
     "chat-box-speaker-sub": "Senior Management Advisor & Author • Digital Twin",
     "chat-box-status": "ONLINE",
@@ -1335,6 +1337,7 @@
     "chat-welcome-header": "ANDREW TANI • SAMBUTAN LANGSUNG",
     "chat-welcome-sub": "10x Tanya Jawab Gratis",
     "chat-welcome-body": "Selamat datang, Sahabatku. Anda berada langsung di Ruang Diskusi Bersama Andrew Tani. Silakan ketuk salah satu topik di atas (1 ketukan) atau ketik langsung pertanyaan kepemimpinan, bisnis, dan tim Anda di bawah ini.",
+    "chat-welcome-foot": { "html": "Didasarkan pada karya buku <em>Organizing for Business Excellence</em>, <em>Brain Quotient</em>, dan 40+ tahun praktik dewan." },
     "chat-welcome-who-link": "Kenali Siapa Andrew Tani →",
     "lead-gate-badge": "10/10 TANYA JAWAB GRATIS SELESAI",
     "lead-gate-title": "Lanjutkan Tanya Jawab Gratis Tanpa Batas (Unlimited)",
@@ -1590,10 +1593,10 @@
     "chat-badge": "INTERACTIVE CASE ROOM",
     "chat-title": "Engage in Direct Dialogue with Andrew Tani",
     "chat-subtitle": "Present your leadership dilemmas, succession dynamics, or organizational alignment challenges. Pak Andrew’s Digital Twin responds with dignity, grounded experience, and his distinctive editorial voice.",
-    "prompt-chip-1": "“Aligning Strategy & Team Execution”",
-    "prompt-chip-2": "“Neuroscience & Brain Quotient”",
-    "prompt-chip-3": "“Family Business Succession Without Friction”",
-    "prompt-chip-4": "“Digital Twin Authenticity”",
+    "prompt-chip-1": "“Book: Organizing for Business Excellence — Strategy & Team”",
+    "prompt-chip-2": "“Book: Brain Quotient — Neuroscience & Executive Decisions”",
+    "prompt-chip-3": "“Family Business Succession & The Discipline of Listening”",
+    "prompt-chip-4": "“About Pak Andrew’s Books, Legacy & Digital Twin”",
     "chat-box-speaker": "Andrew Tani",
     "chat-box-speaker-sub": "Senior Management Advisor & Author • Digital Twin",
     "chat-box-status": "ONLINE",
@@ -1626,6 +1629,7 @@
     "chat-welcome-header": "ANDREW TANI • DIRECT WELCOME",
     "chat-welcome-sub": "10 Free Q&A Exchanges",
     "chat-welcome-body": "Welcome, my friend. You are directly inside the Andrew Tani Dialogue Room. Tap any topic chip above (1 tap) or type your leadership, business, or team question directly below.",
+    "chat-welcome-foot": { "html": "Rooted in the published works <em>Organizing for Business Excellence</em>, <em>Brain Quotient</em>, and 40+ years of board advisory practice." },
     "chat-welcome-who-link": "Discover Who is Andrew Tani →",
     "lead-gate-badge": "10/10 FREE Q&A EXCHANGES COMPLETED",
     "lead-gate-title": "Continue with Unlimited Free Q&A",
@@ -1696,39 +1700,39 @@
 
     const BOOK_PROMPTS = {
       kepemimpinan_mendengarkan: {
-        id: "Bagaimana neurosains dalam Brain Quotient membantu pengambilan keputusan eksekutif di bawah tekanan?",
-        en: "How does cognitive neuroscience in Brain Quotient assist executive decision-making under high pressure?"
+        id: "Pak Andrew, boleh beri sedikit spill mengenai buku Brain Quotient dan bagaimana neurosains membantu pengambilan keputusan eksekutif di bawah tekanan?",
+        en: "Pak Andrew, could you share a glimpse into your book Brain Quotient and how cognitive neuroscience helps executive decision-making under high pressure?"
       },
       penyelarasan_organisasi: {
-        id: "Apa prinsip utama menyelaraskan strategi dengan eksekusi tim menurut buku Organizing for Business Excellence?",
-        en: "What are the core principles of aligning strategy with team execution according to Organizing for Business Excellence?"
+        id: "Pak Andrew, boleh ceritakan sedikit isi buku Organizing for Business Excellence dan prinsip menyelaraskan strategi dengan eksekusi tim sehari-hari?",
+        en: "Pak Andrew, could you share a glimpse into your book Organizing for Business Excellence and the core principles of aligning strategy with daily team execution?"
       },
       suksesi_keberlanjutan: {
-        id: "Bagaimana cara menjembatani kebijaksanaan pendiri dengan visi generasi penerus dalam bisnis keluarga?",
-        en: "How can we bridge founder wisdom with next-generation vision in family businesses without cultural friction?"
+        id: "Bagaimana pengalaman 40+ tahun Pak Andrew menjembatani kebijaksanaan pendiri dengan visi generasi penerus dalam suksesi bisnis keluarga?",
+        en: "From your 40+ years of experience, how can we bridge founder wisdom with next-generation vision in family business succession without friction?"
       },
       refleksi_harmoni: {
-        id: "Bagaimana ketenangan nurani dan refleksi batin membimbing pemimpin menakhodai krisis?",
-        en: "How do inner peace and reflection guide leaders when navigating organizational crises?"
+        id: "Bagaimana disiplin mendengarkan, ketenangan nurani, dan kembaran digital Pak Andrew membimbing pemimpin menakhodai organisasi?",
+        en: "How do the discipline of listening, inner peace, and Pak Andrew's Digital Twin guide leaders when navigating organizational challenges?"
       }
     };
 
     const SUGGESTED_PROMPTS = {
       1: {
-        id: "Apa prinsip utama menyelaraskan strategi dengan eksekusi tim menurut buku Organizing for Business Excellence?",
-        en: "What are the core principles of aligning strategy with team execution according to Organizing for Business Excellence?"
+        id: "Pak Andrew, boleh ceritakan sedikit isi buku Organizing for Business Excellence dan prinsip menyelaraskan strategi dengan eksekusi tim sehari-hari?",
+        en: "Pak Andrew, could you share a glimpse into your book Organizing for Business Excellence and the core principles of aligning strategy with daily team execution?"
       },
       2: {
-        id: "Bagaimana neurosains dalam Brain Quotient membantu pengambilan keputusan eksekutif?",
-        en: "How does cognitive neuroscience in Brain Quotient assist executive decision-making?"
+        id: "Pak Andrew, boleh beri sedikit spill mengenai buku Brain Quotient dan bagaimana neurosains membantu pengambilan keputusan eksekutif di bawah tekanan?",
+        en: "Pak Andrew, could you share a glimpse into your book Brain Quotient and how cognitive neuroscience helps executive decision-making under high pressure?"
       },
       3: {
-        id: "Bagaimana cara menjembatani kebijaksanaan pendiri dengan visi generasi penerus dalam bisnis keluarga?",
-        en: "How can we bridge founder wisdom with next-generation vision in family businesses?"
+        id: "Bagaimana pengalaman 40+ tahun Pak Andrew menjembatani kebijaksanaan pendiri dengan visi generasi penerus dalam suksesi bisnis keluarga?",
+        en: "From your 40+ years of experience, how can we bridge founder wisdom with next-generation vision in family business succession without friction?"
       },
       4: {
-        id: "Apakah saya sedang berbicara dengan Pak Andrew langsung atau dengan kembaran digital beliau?",
-        en: "Am I speaking with Andrew Tani himself or with his digital twin?"
+        id: "Bagaimana kembaran digital ini merangkum 40+ tahun pengalaman serta karya buku Pak Andrew Tani untuk menemani para pemimpin berdiskusi?",
+        en: "How does this Digital Twin draw upon Pak Andrew Tani’s published books and 40+ years of advisory experience to accompany leaders?"
       }
     };
 
@@ -2076,9 +2080,15 @@
         }
       }
 
-      document.title = (currentLang === 'en')
-        ? 'iCoachAndrew — Harvard Business School Style | Senior Management Advisor & Author'
-        : 'iCoachAndrew — Warisan Pemikiran & Ruang Diskusi Bersama Andrew Tani';
+      const cmsSeo = window.__cmsSeo || {};
+      if (currentLang === 'en') {
+        document.title = (cmsSeo.titleEn && String(cmsSeo.titleEn).trim())
+          || (cmsSeo.title && String(cmsSeo.title).trim())
+          || 'iCoachAndrew — Executive Mentorship & Thought Leadership | Andrew Tani';
+      } else {
+        document.title = (cmsSeo.title && String(cmsSeo.title).trim())
+          || 'iCoachAndrew — Ruang Diskusi & Warisan Pemikiran Andrew Tani';
+      }
 
       const dict = I18N_CONTENT[currentLang] || I18N_CONTENT.id;
       for (const [key, val] of Object.entries(dict)) {

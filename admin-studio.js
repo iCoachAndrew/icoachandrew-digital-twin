@@ -100,7 +100,7 @@ function switchStudioTab(tab) {
 
   if (tab === 'overview') loadOverview();
   else if (tab === 'visual-editor') { loadSiteState(); setTimeout(refreshCanvasInventory, 150); }
-  else if (tab === 'media') { loadMediaLibrary(); renderLivePhotoSlots(); }
+  else if (tab === 'media') { loadSiteState(); loadMediaLibrary(); renderLivePhotoSlots(); }
   else if (tab === 'works') loadWorks();
   else if (tab === 'memory') loadMemory();
   else if (tab === 'ai') loadAiDashboard();
@@ -316,6 +316,9 @@ function setEditorLang(lang) {
     topId.className = editorLang === 'id' ? 'px-space-xs py-space-xs text-tertiary-fixed-dim font-bold' : 'px-space-xs py-space-xs text-on-primary-container hover:text-on-primary';
   }
   postToCanvas({ type: 'cms:set-lang', lang: editorLang });
+  if (siteState && siteState.draft && siteState.draft.seo) {
+    populateWebInfoUI(siteState.draft.seo);
+  }
 }
 
 function setEditorViewport(w) {
@@ -630,8 +633,121 @@ function renderThemeDock() {
   document.getElementById('ve-custom-css').value = (siteState.draft.theme && siteState.draft.theme.customCss) || '';
 
   const seo = siteState.draft.seo || {};
-  document.getElementById('ve-seo-title').value = seo.title || '';
-  document.getElementById('ve-seo-desc').value = seo.description || '';
+  populateWebInfoUI(seo);
+}
+
+const DEFAULT_FAVICON_DATA_URI = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E";
+
+function populateWebInfoUI(seo = {}) {
+  const titleId = seo.title || '';
+  const titleEn = seo.titleEn || '';
+  const desc = seo.description || '';
+  const fav = seo.favicon || '';
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  setVal('ve-seo-title', titleId);
+  setVal('ve-seo-title-en', titleEn);
+  setVal('ve-seo-desc', desc);
+  setVal('ve-seo-favicon', fav);
+  setVal('media-seo-title', titleId);
+  setVal('media-seo-title-en', titleEn);
+  setVal('media-seo-desc', desc);
+  setVal('media-seo-favicon', fav);
+  updateWebInfoPreview(titleId, titleEn, fav);
+}
+
+function updateWebInfoPreview(titleId, titleEn, fav) {
+  const iconSrc = (fav && String(fav).trim()) ? String(fav).trim() : DEFAULT_FAVICON_DATA_URI;
+  for (const id of ['ve-seo-favicon-preview', 'media-seo-favicon-preview', 'webinfo-tab-preview-icon']) {
+    const img = document.getElementById(id);
+    if (img) img.src = iconSrc;
+  }
+  const tabTitleEl = document.getElementById('webinfo-tab-preview-title');
+  if (tabTitleEl) {
+    const displayTitle = (editorLang === 'en' ? (titleEn || titleId) : (titleId || titleEn))
+      || 'iCoachAndrew — Ruang Diskusi & Warisan Pemikiran Andrew Tani';
+    tabTitleEl.textContent = displayTitle;
+  }
+}
+
+function syncWebInfoInputs(source) {
+  const prefix = source === 'media' ? 'media' : 've';
+  const getVal = (suffix) => {
+    const el = document.getElementById(`${prefix}-seo-${suffix}`);
+    return el ? el.value : '';
+  };
+  const title = getVal('title');
+  const titleEn = getVal('title-en');
+  const description = getVal('desc');
+  const favicon = getVal('favicon').trim();
+
+  const other = prefix === 've' ? 'media' : 've';
+  const setOther = (suffix, val) => {
+    const el = document.getElementById(`${other}-seo-${suffix}`);
+    if (el && el.value !== val) el.value = val;
+  };
+  setOther('title', title);
+  setOther('title-en', titleEn);
+  setOther('desc', description);
+  setOther('favicon', favicon);
+
+  updateWebInfoPreview(title, titleEn, favicon);
+  updateSeoFromUI();
+}
+
+function toggleWebInfoCard() {
+  const card = document.getElementById('ve-webinfo-card');
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.classList.add('ring-2', 'ring-secondary');
+  setTimeout(() => card.classList.remove('ring-2', 'ring-secondary'), 1800);
+}
+
+async function uploadFaviconFile(inputEl) {
+  if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
+  toast('Mengunggah logo informasi tab (favicon)...');
+  const item = await uploadSingleFile(inputEl.files[0], 'Favicon Logo Tab iCoachAndrew');
+  inputEl.value = '';
+  if (!item) {
+    toast('Gagal mengunggah logo tab. Gunakan format .PNG, .ICO, .JPG, atau .WEBP.', true);
+    return;
+  }
+  await loadMediaLibrary();
+  const veFav = document.getElementById('ve-seo-favicon');
+  const mediaFav = document.getElementById('media-seo-favicon');
+  if (veFav) veFav.value = item.url;
+  if (mediaFav) mediaFav.value = item.url;
+  await saveAndPublishWebInfo();
+}
+
+async function resetFaviconToDefault() {
+  const veFav = document.getElementById('ve-seo-favicon');
+  const mediaFav = document.getElementById('media-seo-favicon');
+  if (veFav) veFav.value = '';
+  if (mediaFav) mediaFav.value = '';
+  await saveAndPublishWebInfo();
+}
+
+async function saveAndPublishWebInfo() {
+  const getVal = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+  };
+  const seoPayload = {
+    title: getVal('ve-seo-title') || getVal('media-seo-title'),
+    titleEn: getVal('ve-seo-title-en') || getVal('media-seo-title-en'),
+    description: getVal('ve-seo-desc') || getVal('media-seo-desc'),
+    favicon: getVal('ve-seo-favicon') || getVal('media-seo-favicon')
+  };
+  const r = await api('POST', '/admin/api/site/web-info', { seo: seoPayload });
+  if (r.ok && r.data.seo) {
+    siteState.draft = r.data.draft || siteState.draft;
+    siteState.draft.seo = r.data.seo;
+    populateWebInfoUI(r.data.seo);
+    postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+    toast('Informasi Tab Browser & Logo Tab berhasil disimpan dan dipublikasikan ke website Live!');
+  } else {
+    toast('Gagal menyimpan informasi tab website.', true);
+  }
 }
 
 function setThemeColor(key, hex) {
@@ -653,10 +769,16 @@ function updateThemeFromUI() {
 }
 
 function updateSeoFromUI() {
+  const getVal = (id) => {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  };
   siteState.draft.seo = {
     ...(siteState.draft.seo || {}),
-    title: document.getElementById('ve-seo-title').value,
-    description: document.getElementById('ve-seo-desc').value
+    title: getVal('ve-seo-title'),
+    titleEn: getVal('ve-seo-title-en'),
+    description: getVal('ve-seo-desc'),
+    favicon: getVal('ve-seo-favicon').trim()
   };
   queueSaveDraft({ seo: siteState.draft.seo });
 }

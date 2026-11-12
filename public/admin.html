@@ -4,6 +4,7 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>iCoachAndrew — Ring 0 Sovereign Registry &amp; Governance Workbench</title>
+  <link id="admin-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E"/>
   <!-- Google Fonts: Newsreader (Editorial Authority), Source Sans 3 (Executive UI), JetBrains Mono (Cryptographic Telemetry) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
@@ -208,20 +209,20 @@
     </div>
 
     <!-- Main Navigation Header -->
-    <div class="h-20 max-w-7xl mx-auto px-gutter flex items-center justify-between gap-space-md">
-      <div class="flex items-center gap-space-lg">
-        <a class="flex flex-col" href="/admin">
-          <span class="font-headline-md text-headline-md tracking-tight text-surface-bright">iCoachAndrew</span>
-          <span class="font-label-sm text-label-sm text-tertiary-fixed-dim italic tracking-wider">The Codified Counsel of Andrew Tani</span>
+    <div class="h-20 max-w-7xl mx-auto px-gutter flex items-center justify-between gap-3 xl:gap-space-md">
+      <div class="flex items-center gap-3 xl:gap-space-lg shrink-0">
+        <a class="flex flex-col shrink-0" href="/admin">
+          <span class="font-headline-md text-headline-md tracking-tight text-surface-bright whitespace-nowrap">iCoachAndrew</span>
+          <span class="font-label-sm text-[10px] xl:text-label-sm text-tertiary-fixed-dim italic tracking-wider whitespace-nowrap">The Codified Counsel of Andrew Tani</span>
         </a>
-        <div class="hidden xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-primary-container text-tertiary-fixed-dim font-label-sm text-label-sm border border-on-tertiary-container/30">
+        <div class="hidden 2xl:flex items-center gap-space-xs px-space-sm py-space-xs rounded bg-primary-container text-tertiary-fixed-dim font-label-sm text-label-sm border border-on-tertiary-container/30 shrink-0 whitespace-nowrap">
           <span class="material-symbols-outlined text-[15px]">military_tech</span>
           <span id="studio-auth-pill">Ring 0: Sovereign Protocol</span>
         </div>
       </div>
 
       <!-- Center System Module Nav Pills -->
-      <nav class="hidden lg:flex items-center gap-2 overflow-x-auto thin-scroll py-1" id="adminTabsNav">
+      <nav class="hidden lg:flex items-center gap-1.5 xl:gap-2 overflow-x-auto thin-scroll py-1 min-w-0" id="adminTabsNav">
         <button onclick="switchStudioTab('governance')" data-tab="governance" class="nav-btn active px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap text-on-primary-container hover:text-white transition-all">
           <span class="material-symbols-outlined text-[16px] nav-icon">shield_lock</span>Ring 0 Archive &amp; Audit
         </button>
@@ -808,6 +809,9 @@
               <button id="ve-lang-id" onclick="setEditorLang('id')" class="px-2 py-1 rounded-md bg-primary text-white font-semibold">ID</button>
               <button id="ve-lang-en" onclick="setEditorLang('en')" class="px-2 py-1 rounded-md text-on-surface-variant">EN</button>
             </div>
+            <button type="button" onclick="toggleWebInfoCard()" class="px-3 py-1 rounded-lg border border-secondary/40 bg-secondary-fixed/40 hover:bg-secondary hover:text-white text-secondary text-xs font-semibold flex items-center gap-1 transition-colors">
+              <span class="material-symbols-outlined text-[15px]">tab</span>Info Tab &amp; Logo Website
+            </button>
           </div>
           <div class="flex items-center gap-2">
             <span id="ve-dirty-indicator" class="text-[11px] font-mono px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Tersinkron</span>
@@ -815,6 +819,70 @@
             <button onclick="publishSiteDraft()" class="px-3.5 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container flex items-center gap-1">
               <span class="material-symbols-outlined text-[15px]">rocket_launch</span>Publikasikan Live
             </button>
+          </div>
+        </div>
+
+        <!-- EDITOR INFORMASI WEB & LOGO TAB BROWSER (FAVICON & JUDUL TAB) -->
+        <div id="ve-webinfo-card" class="bg-surface-container-lowest border border-outline-variant/60 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/40 pb-3">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary text-[18px]">web_asset</span>
+                <h3 class="font-title-md text-primary font-serif font-bold text-base">Editor Informasi Web &amp; Logo Tab Browser (Favicon)</h3>
+              </div>
+              <p class="text-xs text-on-surface-variant">Atur judul yang tampil di tab browser atas (Bahasa Indonesia &amp; Inggris), deskripsi SEO, serta unggah logo ikon tab browser Anda.</p>
+            </div>
+            <!-- Live Browser Tab Preview -->
+            <div class="flex items-center gap-2 bg-surface-container-high px-3 py-2 rounded-t-xl border border-outline-variant/60 shadow-inner max-w-xs sm:max-w-sm shrink-0" title="Pratinjau Tampilan Tab Browser">
+              <img id="webinfo-tab-preview-icon" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E" alt="Icon" class="w-4 h-4 rounded-xs object-contain shrink-0"/>
+              <span id="webinfo-tab-preview-title" class="text-xs font-sans font-medium text-on-surface truncate">iCoachAndrew — Ruang Diskusi &amp; Warisan Pemikiran Andrew Tani</span>
+              <span class="text-outline text-xs ml-1">×</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+            <!-- Left: Tab Titles & Description -->
+            <div class="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <label class="block space-y-1">
+                <span class="font-semibold text-primary">Judul Tab Browser (Indonesia)</span>
+                <input id="ve-seo-title" type="text" oninput="syncWebInfoInputs('ve')" placeholder="iCoachAndrew — Ruang Diskusi &amp; Warisan Pemikiran Andrew Tani" class="w-full border border-outline-variant rounded-lg px-3 py-2 text-xs bg-white focus:border-primary focus:outline-none"/>
+              </label>
+              <label class="block space-y-1">
+                <span class="font-semibold text-primary">Judul Tab Browser (English)</span>
+                <input id="ve-seo-title-en" type="text" oninput="syncWebInfoInputs('ve')" placeholder="iCoachAndrew — Executive Mentorship &amp; Thought Leadership | Andrew Tani" class="w-full border border-outline-variant rounded-lg px-3 py-2 text-xs bg-white focus:border-primary focus:outline-none"/>
+              </label>
+              <label class="block sm:col-span-2 space-y-1">
+                <span class="font-semibold text-primary">Deskripsi Informasi Web (Meta SEO &amp; Pratinjau Link Share)</span>
+                <textarea id="ve-seo-desc" rows="2" oninput="syncWebInfoInputs('ve')" placeholder="Berbincang langsung secara gratis dengan Kembaran Digital (Digital Twin) Pak Andrew Tani — 40+ tahun mendampingi pimpinan puncak &amp; grup usaha." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white focus:border-primary focus:outline-none"></textarea>
+              </label>
+            </div>
+
+            <!-- Right: Favicon / Tab Logo Upload -->
+            <div class="md:col-span-5 bg-surface rounded-xl p-3.5 border border-outline-variant/50 space-y-2.5 text-xs">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-primary flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px] text-secondary">Draw</span>Logo Informasi Tab (Favicon)
+                </span>
+                <button type="button" onclick="resetFaviconToDefault()" class="text-[11px] text-secondary hover:underline font-medium">Reset ke Default AT</button>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-white border border-outline-variant flex items-center justify-center p-1.5 shrink-0 shadow-2xs">
+                  <img id="ve-seo-favicon-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E" alt="Favicon" class="w-full h-full object-contain"/>
+                </div>
+                <div class="flex-1 space-y-1.5 min-w-0">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <label class="cursor-pointer px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary-container text-xs font-semibold inline-flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[15px]">upload</span>Upload Logo Tab
+                      <input type="file" accept=".png,.ico,.jpg,.jpeg,.webp,.gif,.avif,image/*" onchange="uploadFaviconFile(this)" class="hidden"/>
+                    </label>
+                    <button type="button" onclick="saveAndPublishWebInfo()" class="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold inline-flex items-center gap-1">
+                      <span class="material-symbols-outlined text-[15px]">check_circle</span>Simpan &amp; Terapkan Live
+                    </button>
+                  </div>
+                  <input id="ve-seo-favicon" type="text" oninput="syncWebInfoInputs('ve')" placeholder="/media/img_xxx.png atau URL ikon..." class="w-full border border-outline-variant rounded px-2 py-1 text-[11px] font-mono bg-white"/>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -843,8 +911,6 @@
               <select id="ve-font-serif" onchange="updateThemeFromUI()" class="hidden"><option value="Newsreader">Newsreader</option></select>
               <select id="ve-font-sans" onchange="updateThemeFromUI()" class="hidden"><option value="Source Sans 3">Source Sans 3</option></select>
               <input id="ve-announcement" type="text" onchange="updateSiteSettingsFromUI()" class="hidden"/>
-              <input id="ve-seo-title" type="text" onchange="updateSeoFromUI()" class="hidden"/>
-              <textarea id="ve-seo-desc" onchange="updateSeoFromUI()" class="hidden"></textarea>
               <textarea id="ve-custom-css" onchange="updateThemeFromUI()" class="hidden"></textarea>
               <div id="ve-versions-list" class="space-y-1.5 text-xs"></div>
             </div>
@@ -902,11 +968,55 @@
       <!-- ======================================================== -->
       <div id="tab-media" class="studio-panel hidden max-w-7xl mx-auto px-gutter py-space-xl w-full flex flex-col gap-space-lg">
         <div class="flex items-center justify-between">
-          <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Pustaka Foto &amp; Media Website</h2>
+          <h2 class="font-headline-md text-headline-md text-primary font-serif font-bold">Pustaka Foto, Logo Tab &amp; Informasi Website</h2>
           <label class="cursor-pointer px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold flex items-center gap-2">
             <span class="material-symbols-outlined text-[18px]">upload_file</span>Unggah Foto Baru
-            <input id="media-upload-input" type="file" accept="image/*" multiple onchange="handleMediaUploadFiles(this.files)" class="hidden"/>
+            <input id="media-upload-input" type="file" accept="image/*,.ico" multiple onchange="handleMediaUploadFiles(this.files)" class="hidden"/>
           </label>
+        </div>
+
+        <!-- Card Khusus: Upload Logo Tab (Favicon) & Informasi Tab Browser -->
+        <div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant/40 space-y-3 shadow-xs">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-outline-variant/30 pb-2.5">
+            <div>
+              <h3 class="font-title-md text-primary font-serif font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-secondary text-[18px]">tab</span>Logo Informasi Tab Browser (Favicon) &amp; Judul Website
+              </h3>
+              <p class="text-xs text-on-surface-variant">Unggah logo khusus untuk ikon tab browser atas serta sesuaikan judul tab dalam Bahasa Indonesia &amp; Inggris.</p>
+            </div>
+            <button type="button" onclick="saveAndPublishWebInfo()" class="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold flex items-center gap-1.5 shrink-0">
+              <span class="material-symbols-outlined text-[16px]">rocket_launch</span>Simpan &amp; Publikasikan Info Tab
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center text-xs">
+            <div class="md:col-span-4 flex items-center gap-3 bg-surface p-3 rounded-xl border border-outline-variant/40">
+              <div class="w-14 h-14 rounded-xl bg-white border border-outline-variant flex items-center justify-center p-2 shrink-0">
+                <img id="media-seo-favicon-preview" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A51C30'/%3E%3Ctext x='32' y='42' font-family='Georgia,serif' font-size='28' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EAT%3C/text%3E%3C/svg%3E" alt="Favicon" class="w-full h-full object-contain"/>
+              </div>
+              <div class="space-y-1.5 flex-1 min-w-0">
+                <div class="font-bold text-primary">Logo Tab Saat Ini</div>
+                <label class="cursor-pointer px-3 py-1.5 rounded-lg bg-primary text-white hover:bg-primary-container text-xs font-semibold inline-flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[15px]">upload</span>Pilih File Logo (.PNG / .ICO)
+                  <input type="file" accept=".png,.ico,.jpg,.jpeg,.webp,.gif,.avif,image/*" onchange="uploadFaviconFile(this)" class="hidden"/>
+                </label>
+                <input id="media-seo-favicon" type="text" oninput="syncWebInfoInputs('media')" placeholder="/media/img_xxx.png" class="w-full border border-outline-variant rounded px-2 py-1 text-[11px] font-mono bg-white"/>
+              </div>
+            </div>
+            <div class="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="block space-y-1">
+                <span class="font-semibold text-primary">Judul Tab Browser (Bahasa Indonesia)</span>
+                <input id="media-seo-title" type="text" oninput="syncWebInfoInputs('media')" placeholder="iCoachAndrew — Ruang Diskusi &amp; Warisan Pemikiran Andrew Tani" class="w-full border border-outline-variant rounded-lg px-3 py-2 text-xs bg-white"/>
+              </label>
+              <label class="block space-y-1">
+                <span class="font-semibold text-primary">Judul Tab Browser (English)</span>
+                <input id="media-seo-title-en" type="text" oninput="syncWebInfoInputs('media')" placeholder="iCoachAndrew — Executive Mentorship &amp; Thought Leadership | Andrew Tani" class="w-full border border-outline-variant rounded-lg px-3 py-2 text-xs bg-white"/>
+              </label>
+              <label class="block sm:col-span-2 space-y-1">
+                <span class="font-semibold text-primary">Deskripsi Singkat Website (Meta Description)</span>
+                <input id="media-seo-desc" type="text" oninput="syncWebInfoInputs('media')" placeholder="Berbincang langsung secara gratis dengan Kembaran Digital (Digital Twin) Pak Andrew Tani." class="w-full border border-outline-variant rounded-lg px-3 py-2 text-xs bg-white"/>
+              </label>
+            </div>
+          </div>
         </div>
         <div class="bg-surface-container-lowest rounded-xl p-space-md border border-outline-variant/30 space-y-3">
           <h3 class="font-title-md text-primary font-serif font-bold">Slot Foto Aktif di Website</h3>

@@ -19,6 +19,10 @@ const REFUSAL = {
   en: 'I’m sorry. That is private. Hope you understand.',
   id: 'Mohon maaf. Itu bersifat pribadi. Semoga Anda mengerti.'
 };
+const OUT_OF_SCOPE = {
+  en: 'I apologize, I do not know about that topic as it is outside the context of this public discussion space (Ring 3). My reflections here focus on leadership, aligning strategy and team execution (Organizing for Business Excellence), cognitive neuroscience in decision-making (Brain Quotient), and family business succession.',
+  id: 'Mohon maaf, saya tidak tahu mengenai hal tersebut karena berada di luar konteks ruang diskusi publik (Ring 3) ini. Ruang ini berfokus pada kepemimpinan, penyelarasan strategi & eksekusi tim (Organizing for Business Excellence), neurosains keputusan eksekutif (Brain Quotient), serta suksesi bisnis keluarga.'
+};
 const DISCLOSURE = {
   en: 'I am Andrew’s digital twin, not Andrew himself.',
   id: 'Saya adalah digital twin Andrew, bukan Andrew sendiri.'
@@ -176,8 +180,43 @@ function retrieve(askerRing, question, limit = 3) {
   return hits.slice(0, limit);
 }
 
+const STOPWORDS = new Set([
+  // English conversational filler & common functional words
+  'have', 'having', 'what', 'when', 'where', 'which', 'while', 'whom', 'whose', 'that', 'this', 'these', 'those',
+  'with', 'from', 'they', 'them', 'their', 'theirs', 'there', 'here', 'been', 'were', 'will', 'would', 'could',
+  'should', 'shall', 'might', 'must', 'about', 'into', 'onto', 'upon', 'over', 'more', 'most', 'some', 'such',
+  'than', 'then', 'very', 'only', 'also', 'just', 'like', 'make', 'made', 'making', 'sure', 'much', 'many',
+  'every', 'always', 'never', 'before', 'after', 'under', 'between', 'through', 'during', 'without', 'within',
+  'along', 'alongside', 'people', 'person', 'work', 'working', 'works', 'years', 'year', 'four', 'decade', 'decades',
+  'andrew', 'tani', 'does', 'doing', 'done', 'opinion', 'opinions', 'current', 'currently', 'issue', 'issues',
+  'experience', 'experiences', 'exprerience', 'tell', 'share', 'know', 'think', 'thinking', 'thought', 'good',
+  'best', 'better', 'well', 'help', 'helps', 'need', 'needs', 'want', 'wants', 'give', 'take', 'come', 'comes',
+  'going', 'things', 'thing', 'anything', 'something', 'everything', 'nothing', 'really', 'actually', 'please',
+  'thank', 'thanks', 'hello', 'welcome', 'friend', 'friends', 'greetings', 'warm', 'asked', 'asking', 'question',
+  'questions', 'your', 'yours', 'ours', 'mine', 'himself', 'herself', 'itself', 'themselves', 'yourself', 'other',
+  'others', 'another', 'each', 'both', 'same', 'different', 'first', 'second', 'third', 'last', 'next', 'high',
+  'long', 'short', 'small', 'large', 'great', 'little', 'part', 'parts', 'place', 'time', 'times', 'today', 'daily', 'everyday',
+  // Indonesian conversational filler & common functional words
+  'yang', 'untuk', 'pada', 'dalam', 'dari', 'dengan', 'akan', 'atau', 'juga', 'saya', 'anda', 'kita', 'kami',
+  'mereka', 'bisa', 'dapat', 'tidak', 'bukan', 'karena', 'ketika', 'saat', 'oleh', 'sebagai', 'adalah', 'merupakan',
+  'seperti', 'lebih', 'sangat', 'harus', 'sudah', 'telah', 'belum', 'masih', 'hanya', 'saja', 'agar', 'supaya',
+  'bagi', 'tentang', 'mengenai', 'bagaimana', 'apakah', 'mengapa', 'kenapa', 'siapa', 'dimana', 'kapan', 'berapa',
+  'boleh', 'tolong', 'mohon', 'coba', 'kasih', 'tahu', 'pendapat', 'menurut', 'sekarang', 'terkini', 'orang',
+  'setiap', 'selalu', 'semua', 'seluruh', 'banyak', 'sedikit', 'empat', 'dekade', 'tahun', 'bersama', 'tersebut',
+  'punya', 'memiliki', 'pengalaman', 'pertanyaan', 'bertanya', 'terima', 'salam', 'hangat', 'sahabatku', 'ceritakan',
+  'jelaskan', 'beri', 'berikan', 'bapak', 'beliau', 'suatu', 'satu', 'tiga', 'lima', 'enam', 'tujuh', 'delapan',
+  'sembilan', 'sepuluh', 'sebelum', 'sesudah', 'setelah', 'paling', 'dekat', 'kecil', 'besar', 'baik', 'sebaik',
+  'hidup', 'nyata', 'diri', 'sendiri', 'sama', 'lain', 'baru', 'lama', 'atas', 'bawah', 'tengah', 'antara',
+  'melalui', 'secara', 'terus', 'menerus', 'hari', 'harian', 'sehari', 'keseharian'
+]);
+
+const OUT_OF_SCOPE_TOPIC_RE = /\b(presidency|president|presiden|pilpres|pemilu|partai politik|kampanye politik|menteri|kabinet|gubernur|walikota|dpr|mpr|geopolitics|geopolitik|rights?\s+issue|hmetd|saham|ihsg|stock\s+market|stock\s+price|ipo|dividen|dividend|obligasi|reksadana|crypto|cryptocurrency|kripto|bitcoin|ethereum|forex|valas|trading\s+saham|cuaca|weather|ramalan\s+cuaca|sepak\s+bola|football|soccer|resep\s+masakan|cooking\s+recipe|selebriti|celebrity|gosip)\b/i;
+
 function tokenize(s) {
-  return String(s).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 3);
+  return String(s)
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length > 3 && !STOPWORDS.has(w));
 }
 
 // ---------- leak guard: reply must not contain text from a stricter store than the asker may read ----------
@@ -242,13 +281,97 @@ function checkSpecialRules(askerRing, question, lang) {
     }
   }
 
+  // 6. Clearly out-of-scope topics (politics/presidency, capital market rights issue/stocks/crypto, trivia)
+  if (OUT_OF_SCOPE_TOPIC_RE.test(q)) {
+    return { matched: true, text: OUT_OF_SCOPE[lang], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope' };
+  }
+
   return { matched: false };
+}
+
+function isRestrictedToStricterRing(askerRing, question) {
+  const qLower = String(question || '').toLowerCase();
+  if (SENSITIVE.some((w) => qLower.includes(w))) return true;
+  if (askerRing > 0) {
+    const allHits = retrieve(0, question);
+    if (allHits.some((h) => h.ring < askerRing)) return true;
+    if (studio && studio.memory) {
+      const terms = tokenize(question);
+      for (const m of studio.memory.stricterTexts(askerRing)) {
+        const mt = new Set(tokenize(m.text));
+        if (terms.some((t) => mt.has(t))) return true;
+      }
+    }
+  }
+  return false;
 }
 
 // ---------- audit log (no question text, no answer text) ----------
 function audit(entry) {
   db.appendAudit(entry);
 }
+
+// ---------- public Ring 3 book & legacy knowledge (published works & 40+ yrs public canon) ----------
+const PUBLIC_BOOK_RING3_DOCS = [
+  {
+    ring: 3,
+    id: 'doc_r3_book_organizing_id',
+    title: 'Spill Buku: Organizing for Business Excellence — Menyelaraskan Strategi & Eksekusi Tim',
+    lang: 'id',
+    text: 'Salam hangat, Sahabatku. Dalam buku "Organizing for Business Excellence" yang saya tulis bersama rekan-rekan, pesan utamanya sederhana namun mendasar: strategi yang hebat di atas kertas tidak akan pernah menjadi keunggulan nyata bila arsitektur organisasi dan kebiasaan kerja tim sehari-hari berjalan sendiri-sendiri. Ada tiga prinsip praktis yang kami bagikan di dalam buku tersebut: (1) Kejelasan Peran & Akuntabilitas — setiap insan di dalam perusahaan perlu memahami bagaimana kontribusi hariannya terhubung langsung dengan tujuan besar organisasi; (2) Keselarasan Struktur, Proses, dan Budaya — struktur bukan sekadar kotak jabatan di bagan organisasi, melainkan alur kolaborasi lintas fungsi agar tim tidak terjebak dalam silo; serta (3) Kepemimpinan yang Mendengarkan — transformasi bisnis berhasil ketika para pemimpin mau turun mendengarkan rekan-rekan yang paling dekat dengan persoalan di lapangan. Silakan tanyakan bagian mana dari penyelarasan strategi atau tim Anda yang ingin kita bedah bersama.'
+  },
+  {
+    ring: 3,
+    id: 'doc_r3_book_organizing_en',
+    title: 'Book Glimpse: Organizing for Business Excellence — Aligning Strategy & Team Execution',
+    lang: 'en',
+    text: 'Warm greetings, my friend. In my published book "Organizing for Business Excellence", our central thesis is both simple and foundational: even the most brilliant corporate strategy on paper will falter if organizational architecture and everyday team habits pull in different directions. In the book, I share three practical pillars for leaders: (1) Role Clarity & Shared Accountability — ensuring every colleague sees clearly how their daily work connects to the enterprise\'s overarching purpose; (2) Aligning Structure, Process, and Culture — treating organizational design not as static boxes on a chart, but as living cross-functional collaboration that prevents silos; and (3) Leadership Grounded in Listening — recognizing that lasting excellence happens when leaders listen closely to the people nearest the front-line reality. Which aspect of your team or strategy alignment would you like us to explore together?'
+  },
+  {
+    ring: 3,
+    id: 'doc_r3_book_bq_id',
+    title: 'Spill Buku: Brain Quotient (BQ) — Neurosains Kognitif & Keputusan Eksekutif',
+    lang: 'id',
+    text: 'Terima kasih telah menanyakan buku "Brain Quotient: Pahami Kemampuan Otak Anda" (ditulis bersama Heru Wiryanto, diterbitkan oleh Gramedia). Sedikit spill dari buku ini: selama puluhan tahun mendampingi para pemimpin puncak, saya mengamati bahwa kualitas keputusan seorang eksekutif di bawah tekanan tinggi sangat ditentukan oleh cara ia memahami dan mengelola kapasitas otaknya. Melalui pendekatan neurosains kognitif terapan, buku Brain Quotient membedah bagaimana otak manusia memproses informasi strategis, mengapa kelelahan mental (cognitive fatigue) serta emosi sesaat sering memicu titik buta (blind spots), dan bagaimana pemimpin dapat menyeimbangkan ketajaman analitis dengan empati serta ketenangan batin. Ketika seorang pemimpin mengenali pola kerja otaknya dan timnya, ia tidak mudah reaktif saat krisis—melainkan mampu mengambil jeda hening sejenak untuk melahirkan keputusan yang jernih, manusiawi, dan tepat sasaran.'
+  },
+  {
+    ring: 3,
+    id: 'doc_r3_book_bq_en',
+    title: 'Book Glimpse: Brain Quotient (BQ) — Cognitive Neuroscience & Executive Decision-Making',
+    lang: 'en',
+    text: 'Thank you for asking about my book "Brain Quotient: Understand Your Brain\'s Capacity" (co-authored with Heru Wiryanto and published by Gramedia). Here is a glimpse into the book: over decades of mentoring senior executives, I observed that the quality of a leader\'s judgment under acute pressure depends profoundly on how well they understand and steward their own brain capacity. Drawing upon applied cognitive neuroscience, Brain Quotient explores how the executive brain processes complex strategic information, why mental exhaustion and emotional triggers create cognitive blind spots, and how leaders can harmonize analytical rigor with human empathy and inner calm. When a leader understands both their own cognitive patterns and those of their team, they stop reacting impulsively in moments of turbulence and instead cultivate the clarity of mind needed for sound, wise decisions.'
+  },
+  {
+    ring: 3,
+    id: 'doc_r3_book_succession_id',
+    title: 'Warisan Pemikiran: Suksesi Bisnis Keluarga & Menjembatani Lintas Generasi',
+    lang: 'id',
+    text: 'Dalam pengalaman lebih dari 40 tahun mendampingi 28 grup usaha dan keluarga pendiri di Nusantara, suksesi lintas generasi jarang gagal karena soal teknis bisnis, melainkan karena lukanya perasaan akibat kurangnya ruang saling mendengarkan antara generasi pendiri (founder) dan generasi penerus (next-gen). Ketika generasi muda langsung membawa sistem baru secara mendadak, pendiri kerap merasa nilai-nilai perjuangan yang membangun perusahaan sedang dihapuskan. Kunci yang selalu saya sarankan ada tiga: (1) Sediakan ruang inisiatif otonom bagi generasi penerus untuk membuktikan karya tanpa merombak fondasi utama secara tiba-tiba; (2) Pisahkan meja makan keluarga yang hangat dari forum tata kelola perusahaan yang terjadwal; dan (3) Jaga semangat Tut Wuri Handayani—menghormati kearifan pendiri sembari memberi kepercayaan bertahap kepada penerus.'
+  },
+  {
+    ring: 3,
+    id: 'doc_r3_book_succession_en',
+    title: 'Leadership Legacy: Family Business Succession & Bridging Founder Wisdom with Next-Gen Vision',
+    lang: 'en',
+    text: 'Across more than 40 years of walking alongside 28 business groups and founding families, I have seen that generational succession rarely falters over technical business mechanics—it falters when founders and next-generation successors stop truly listening to one another. When the younger generation introduces new management systems abruptly, founders often feel that the core virtues and sacrifices that built the enterprise are being discarded. To bridge founder wisdom with next-generation vision without cultural friction, I always recommend three steps: (1) Create an autonomous sandbox where the next generation can innovate and prove themselves without disrupting the core foundation; (2) Separate warm family gatherings from structured enterprise governance forums; and (3) Practice the spirit of Tut Wuri Handayani—honoring the founder\'s lifelong wisdom while entrusting space for the next generation to grow.'
+  },
+  {
+    ring: 3,
+    id: 'doc_r3_book_twin_id',
+    title: 'Mengenal Karya Buku, Refleksi Nurani & Kembaran Digital (Digital Twin) Andrew Tani',
+    lang: 'id',
+    text: 'Selamat datang, Sahabatku. Kembaran Digital (Digital Twin) iCoachAndrew ini dirancang sebagai teman berpikir (thinking partner) yang merangkum lebih dari 40 tahun perjalanan saya sejak 1983 mendampingi para pemimpin, dua buku resmi saya—"Organizing for Business Excellence" dan "Brain Quotient" (Gramedia)—serta esai-esai refleksi ketenangan nurani dan karya lagu kepemimpinan. Di tengah kesibukan memimpin organisasi, sering kali seorang pemimpin membutuhkan ruang yang tenang, bersahabat, dan bebas penghakiman untuk menjernihkan pikiran sebelum mengambil langkah penting. Anda dapat berdiskusi langsung di sini mengenai penyelarasan strategi dan tim, neurosains kepemimpinan (Brain Quotient), suksesi bisnis keluarga, maupun ketenangan batin dalam menakhodai perubahan.'
+  },
+  {
+    ring: 3,
+    id: 'doc_r3_book_twin_en',
+    title: 'About Pak Andrew Tani’s Published Books, Legacy & Digital Twin',
+    lang: 'en',
+    text: 'Welcome, my friend. The iCoachAndrew Digital Twin is designed as your personal thinking partner, distilling over 40 years of my journey since 1983 advising enterprise leaders, my two official published books—"Organizing for Business Excellence" and "Brain Quotient" (Gramedia)—along with my reflective essays on peace of conscience and leadership songs. Amid the pressures of steering an organization, every leader needs a calm, fraternal, and discreet sanctuary to clarify their thoughts before making pivotal decisions. Here, you can converse directly about aligning strategy with daily team habits, applied neuroscience in leadership (Brain Quotient), family business succession, and maintaining inner clarity in times of change.'
+  }
+];
+
+const PUBLIC_BOOK_TOPIC_RE = /(brain|quotient|neuroscience|neurosains|otak|kognitif|cognitive|organizing|excellence|gramedia|wiryanto|suksesi|pendiri|penerus|keluarga|family|founder|generational|bridging|bridge|tut wuri|handayani|nurani|conscience|digital twin|kembaran digital|spill|glimpse|buku|published books)/i;
 
 // ---------- conversation engine ----------
 async function answer(askerRing, question, lang, opts = {}) {
@@ -257,8 +380,31 @@ async function answer(askerRing, question, lang, opts = {}) {
     return { text: special.text, sources: [], refused: special.refused, outcome: special.outcome, topic: special.topic, mode: 'rule_guard' };
   }
 
-  const hits = retrieve(askerRing, question);
-  if (hits.length === 0) return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'refused_politely', topic: 'unmatched_or_restricted', mode: 'unmatched' };
+  let hits = retrieve(askerRing, question);
+  if (askerRing <= 3 && PUBLIC_BOOK_TOPIC_RE.test(String(question || ''))) {
+    const terms = tokenize(question);
+    const seenIds = new Set(hits.map((h) => h.doc.id));
+    for (const d of PUBLIC_BOOK_RING3_DOCS) {
+      if (seenIds.has(d.id)) continue;
+      const dt = new Set(tokenize(d.title + ' ' + d.text));
+      let score = 0;
+      for (const t of terms) if (dt.has(t)) score++;
+      if (score > 0) hits.push({ doc: d, ring: 3, score });
+    }
+  }
+  if (hits.length > 1) {
+    hits = hits.slice().sort((a, b) => {
+      const aLangBoost = (a.doc && a.doc.lang === lang) ? 0.5 : 0;
+      const bLangBoost = (b.doc && b.doc.lang === lang) ? 0.5 : 0;
+      return (b.score + bLangBoost) - (a.score + aLangBoost) || a.ring - b.ring;
+    }).slice(0, 3);
+  }
+  if (hits.length === 0) {
+    if (isRestrictedToStricterRing(askerRing, question)) {
+      return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'refused_politely', topic: 'unmatched_or_restricted', mode: 'unmatched' };
+    }
+    return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
+  }
   const context = hits.map((h) => `[${h.doc.id}] ${h.doc.title}\n${h.doc.text}`).join('\n\n');
   let text = '';
   let genInfo = { mode: 'extractive' };
@@ -270,11 +416,11 @@ async function answer(askerRing, question, lang, opts = {}) {
     } else if (gen.reason === 'model_error' && !opts.debug) {
       throw new Error('model_error_' + (gen.status || 500));
     } else {
-      text = hits[0].doc.text.slice(0, 400);
+      text = hits[0].doc.text.slice(0, 950);
       if (gen.reason !== 'model_error') studio.ai.recordExtractive(askerRing, opts.source || 'chat');
     }
   } else {
-    text = hits[0].doc.text.slice(0, 400);
+    text = hits[0].doc.text.slice(0, 950);
   }
   const g = leakGuard(askerRing, text);
   if (!g.ok) {
@@ -1396,9 +1542,22 @@ userServer.on('error', (err) => {
   console.error('User server error:', err.message);
 });
 
+function ensurePublicBookKnowledge() {
+  const store = loadStore(3);
+  let changed = false;
+  for (const s of PUBLIC_BOOK_RING3_DOCS) {
+    if (!store.some((d) => d.id === s.id)) {
+      store.push({ id: s.id, title: s.title, text: s.text, lang: s.lang, ring: 3, approvedAt: new Date().toISOString() });
+      changed = true;
+    }
+  }
+  if (changed) saveStore(3, store);
+}
+
 function start() {
   ensureStores();
   if (process.env.NODE_ENV === 'test' || process.env.NODE_TEST_CONTEXT) return;
+  ensurePublicBookKnowledge();
   if (!userServer.listening) {
     userServer.listen(USER_PORT, () => console.log('user site on', USER_PORT));
   }
