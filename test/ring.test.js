@@ -309,10 +309,17 @@ test('Ring 0 Studio: Complete Visual Website Editor lifecycle (discard, restore,
   const rest = await admin('POST', '/admin/api/site/restore', { versionId: vOld.id });
   assert.strictEqual(rest.status, 200);
 
-  // Reset all overrides
+  // Set global font scale and font family, then verify reset-all preserves them permanently
+  await admin('POST', '/admin/api/site/typography', { fontScale: 'large', fontScope: 'both' });
+  await admin('POST', '/admin/api/site/fonts', { fonts: { consistentAll: 'Plus Jakarta Sans', serif: 'Plus Jakarta Sans', sans: 'Plus Jakarta Sans' } });
+
+  // Reset all overrides (must preserve global font scale, fontScope, fontScaleExplicit, and theme.fonts)
   const rst = await admin('POST', '/admin/api/site/reset-all');
   assert.strictEqual(rst.status, 200);
   assert.deepStrictEqual(rst.json.draft.elements, {});
+  assert.strictEqual(rst.json.draft.settings.fontScale, 'large', 'reset-all preserves saved fontScale');
+  assert.strictEqual(rst.json.draft.settings.fontScaleExplicit, true, 'reset-all preserves fontScaleExplicit');
+  assert.strictEqual(rst.json.draft.theme.fonts.consistentAll, 'Plus Jakarta Sans', 'reset-all preserves global font family');
 
   // Media update & delete
   const mList = await admin('GET', '/admin/api/media');
@@ -1079,6 +1086,17 @@ test('Admin Left Collapsible Sidebar, Dynamic Visual Editor (Consistent Font, Fu
         json: async () => ({ files: [] })
       };
     }
+    if ((u.searchParams.get('q') || '').includes("'root' in parents")) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          files: [
+            { id: '1MyDriveFolderA', name: 'Ring 3 - Buku Publik', mimeType: 'application/vnd.google-apps.folder' }
+          ]
+        })
+      };
+    }
     return { ok: false, status: 404, json: async () => ({ error: { message: 'Not found' } }) };
   });
 
@@ -1126,6 +1144,19 @@ test('Admin Left Collapsible Sidebar, Dynamic Visual Editor (Consistent Font, Fu
     assert.strictEqual(testOauth.status, 200);
     assert.strictEqual(testOauth.json.ok, true);
     assert.strictEqual(testOauth.json.folder.name, 'Folder OAuth Pak Andrew');
+
+    // Verify browsing when no rootFolderId or ringFolders are set automatically lists 'root' (My Drive)
+    await admin('POST', '/admin/api/works/gdrive/config', {
+      rootFolderId: '',
+      ringFolders: { 0: '', 1: '', 2: '', 3: '' }
+    });
+    const browseRoot = await admin('GET', '/admin/api/works/gdrive/browse');
+    assert.strictEqual(browseRoot.status, 200);
+    assert.strictEqual(browseRoot.json.ok, true);
+    assert.strictEqual(browseRoot.json.currentFolder.id, 'root');
+    assert.strictEqual(browseRoot.json.folders.length, 1);
+    assert.strictEqual(browseRoot.json.folders[0].id, '1MyDriveFolderA');
+    assert.strictEqual(browseRoot.json.folders[0].inferredRing, 3);
   } finally {
     app.studio.works.gdrive.setCustomFetch(null);
   }

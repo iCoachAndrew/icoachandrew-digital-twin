@@ -240,14 +240,52 @@ async function loadSiteState() {
   if (!r.ok) return;
   siteState = r.data;
   siteState.draft = siteState.draft || { elements: {}, layout: { order: [], hidden: [] }, blocks: [], theme: { colors: {}, fonts: {}, customCss: '' }, seo: {}, settings: {} };
+
+  const srvSettings = siteState.draft.settings || {};
+  const srvFonts = (siteState.draft.theme && siteState.draft.theme.fonts) || {};
+  let effectiveScale = srvSettings.fontScale || 'small';
+  let effectiveScope = srvSettings.fontScope || 'both';
+
+  try {
+    const localScale = localStorage.getItem('icoach_font_scale');
+    const localScope = localStorage.getItem('icoach_font_scope');
+    const localExplicit = localStorage.getItem('icoach_font_explicit') === '1';
+
+    if (srvSettings.fontScaleExplicit || (srvSettings.fontScale && srvSettings.fontScale !== 'small')) {
+      effectiveScale = srvSettings.fontScale || 'small';
+      effectiveScope = srvSettings.fontScope || 'both';
+      localStorage.setItem('icoach_font_scale', effectiveScale);
+      localStorage.setItem('icoach_font_scope', effectiveScope);
+      localStorage.setItem('icoach_font_explicit', '1');
+    } else if (localExplicit && localScale && ['small', 'medium', 'large', 'xlarge'].includes(localScale)) {
+      // Server state was reset/fresh; restore the user's permanently saved font scale & re-persist to server
+      effectiveScale = localScale;
+      effectiveScope = ['both', 'frontpage', 'admin'].includes(localScope) ? localScope : 'both';
+      siteState.draft.settings = { ...srvSettings, fontScale: effectiveScale, fontScope: effectiveScope, fontScaleExplicit: true };
+      api('POST', '/admin/api/site/typography', { fontScale: effectiveScale, fontScope: effectiveScope }).catch(() => {});
+    }
+
+    // Also keep global font family choice persistent across resets
+    if (srvFonts.consistentAll || srvFonts.serif || srvFonts.sans) {
+      localStorage.setItem('icoach_theme_fonts', JSON.stringify(srvFonts));
+    } else {
+      const cachedFontsRaw = localStorage.getItem('icoach_theme_fonts');
+      if (cachedFontsRaw) {
+        const cachedFonts = JSON.parse(cachedFontsRaw);
+        if (cachedFonts && (cachedFonts.consistentAll || cachedFonts.serif || cachedFonts.sans)) {
+          siteState.draft.theme = siteState.draft.theme || { colors: {}, fonts: {}, customCss: '' };
+          siteState.draft.theme.fonts = cachedFonts;
+          api('POST', '/admin/api/site/fonts', { fonts: cachedFonts }).catch(() => {});
+        }
+      }
+    }
+  } catch (_) {}
+
   updateDirtyIndicator();
   renderThemeDock();
   renderBlocksDock();
   renderVersionsDock();
-  syncLocalFontScaleUI(
-    (siteState.draft.settings && siteState.draft.settings.fontScale) || 'small',
-    (siteState.draft.settings && siteState.draft.settings.fontScope) || 'both'
-  );
+  syncLocalFontScaleUI(effectiveScale, effectiveScope, false);
   postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
 }
 
@@ -265,7 +303,7 @@ function toggleFontScalePopover() {
   pop.classList.toggle('hidden');
 }
 
-function syncLocalFontScaleUI(scale, scope) {
+function syncLocalFontScaleUI(scale, scope, markExplicit = false) {
   const validScale = ['small', 'medium', 'large', 'xlarge'].includes(scale) ? scale : 'small';
   const validScope = ['both', 'frontpage', 'admin'].includes(scope) ? scope : 'both';
 
@@ -276,6 +314,9 @@ function syncLocalFontScaleUI(scale, scope) {
   try {
     localStorage.setItem('icoach_font_scale', validScale);
     localStorage.setItem('icoach_font_scope', validScope);
+    if (markExplicit) {
+      localStorage.setItem('icoach_font_explicit', '1');
+    }
   } catch (_) {}
 
   const topLabel = document.getElementById('top-font-scale-label');
@@ -298,17 +339,26 @@ async function applyFontScaleAndScope(newScale, newScope) {
   const scope = newScope || curSettings.fontScope || localStorage.getItem('icoach_font_scope') || 'both';
 
   siteState.draft = siteState.draft || { elements: {}, layout: { order: [], hidden: [] }, blocks: [], theme: {}, seo: {}, settings: {} };
-  siteState.draft.settings = { ...(siteState.draft.settings || {}), fontScale: scale, fontScope: scope };
+  siteState.draft.settings = { ...(siteState.draft.settings || {}), fontScale: scale, fontScope: scope, fontScaleExplicit: true };
 
-  syncLocalFontScaleUI(scale, scope);
+  syncLocalFontScaleUI(scale, scope, true);
   postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
 
   const r = await api('POST', '/admin/api/site/typography', { fontScale: scale, fontScope: scope });
   if (r.ok && r.data.draft) {
     siteState.draft = r.data.draft;
     const scopeName = scope === 'both' ? 'Admin Studio & Front Page' : (scope === 'frontpage' ? 'Front Page Saja' : 'Admin Studio Saja');
-    toast(`Ukuran huruf "${FONT_SCALE_LABELS[scale]}" diterapkan untuk: ${scopeName}`);
+    toast(`Ukuran huruf "${FONT_SCALE_LABELS[scale]}" disimpan permanen untuk: ${scopeName}`);
   }
+}
+
+async function savePermanentFontScale() {
+  const curSettings = (siteState.draft && siteState.draft.settings) || {};
+  const scale = localStorage.getItem('icoach_font_scale') || curSettings.fontScale || 'small';
+  const scope = document.getElementById('top-font-scope-select')?.value || localStorage.getItem('icoach_font_scope') || curSettings.fontScope || 'both';
+  await applyFontScaleAndScope(scale, scope);
+  const pop = document.getElementById('font-scale-popover');
+  if (pop) pop.classList.add('hidden');
 }
 
 // Restore saved font scale immediately on script load
@@ -942,6 +992,9 @@ async function applyAndPublishGlobalFonts() {
   const consistentAll = document.getElementById('ve-font-consistent')?.value || '';
   const serif = document.getElementById('ve-font-serif')?.value || '';
   const sans = document.getElementById('ve-font-sans')?.value || '';
+  try {
+    localStorage.setItem('icoach_theme_fonts', JSON.stringify({ consistentAll, serif, sans }));
+  } catch (_) {}
   const r = await api('POST', '/admin/api/site/fonts', {
     fonts: { consistentAll, serif, sans }
   });
@@ -952,8 +1005,8 @@ async function applyAndPublishGlobalFonts() {
     renderThemeDock();
     postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
     toast(consistentAll
-      ? `Font konsisten "${consistentAll}" berhasil diterapkan & dipublikasikan ke seluruh halaman!`
-      : 'Kombinasi font halaman berhasil disimpan & dipublikasikan ke website Live!');
+      ? `Font konsisten "${consistentAll}" berhasil disimpan permanen & dipublikasikan ke seluruh halaman!`
+      : 'Kombinasi font halaman berhasil disimpan permanen & dipublikasikan ke website Live!');
   } else {
     toast('Gagal menyimpan pengaturan font halaman.', true);
   }
@@ -1728,9 +1781,13 @@ async function syncWorksFromGDrive() {
     btn.innerHTML = '<span class="material-symbols-outlined text-[17px]">cloud_sync</span>Sinkronkan dari Google Drive';
   }
   if (!r.ok) {
-    toast('Gagal sinkronisasi Google Drive: ' + (r.data.error || 'Pastikan kredensial & Folder ID sudah diatur.'), true);
-    const cfgPanel = document.getElementById('gdrive-config-panel');
-    if (cfgPanel && cfgPanel.classList.contains('hidden')) cfgPanel.classList.remove('hidden');
+    const errMsg = r.data.error || 'Pastikan kredensial & Folder ID sudah diatur.';
+    toast('Pilih folder Google Drive terlebih dahulu: ' + errMsg, true);
+    const browserPanel = document.getElementById('gdrive-browser-panel');
+    if (browserPanel && browserPanel.classList.contains('hidden')) {
+      browserPanel.classList.remove('hidden');
+    }
+    browseGDriveFolder('root');
     return;
   }
   worksData = r.data.works || worksData;
@@ -1752,6 +1809,24 @@ function toggleGDriveBrowser() {
   }
 }
 
+async function setGDriveFolderAsRoot(folderId, folderName = '') {
+  if (!folderId) return;
+  const rootInput = document.getElementById('gd-root-folder');
+  if (rootInput) rootInput.value = folderId;
+  await saveGDriveConfig();
+  toast(`Folder "${folderName || folderId}" ditetapkan sebagai Folder Induk Google Drive!`);
+  await browseGDriveFolder(folderId);
+}
+
+async function assignGDriveFolderToRing(folderId, ring, folderName = '') {
+  if (!folderId || ![0, 1, 2, 3].includes(Number(ring))) return;
+  const rNum = Number(ring);
+  const ringInput = document.getElementById('gd-folder-r' + rNum);
+  if (ringInput) ringInput.value = folderId;
+  await saveGDriveConfig();
+  toast(`Folder "${folderName || folderId}" berhasil dipetakan ke Ring ${rNum}! Klik "Sinkronkan dari Google Drive" untuk mengimpor isinya.`);
+}
+
 async function browseGDriveFolder(folderId = '') {
   const box = document.getElementById('gd-browser-content');
   const label = document.getElementById('gd-browser-folder-label');
@@ -1765,28 +1840,73 @@ async function browseGDriveFolder(folderId = '') {
   }
   const cur = r.data.currentFolder || {};
   if (label) {
-    label.textContent = `${cur.name || 'Google Drive'}${cur.id ? ' (' + cur.id + ')' : ''}${cur.ring !== null && cur.ring !== undefined ? ' • Target Default: Ring ' + cur.ring : ''}`;
+    label.textContent = `${cur.name || 'Google Drive'}${cur.id && cur.id !== 'root' ? ' (ID: ' + cur.id + ')' : ''}${cur.ring !== null && cur.ring !== undefined ? ' • Target Default: Ring ' + cur.ring : ''}`;
   }
   const folders = r.data.folders || [];
   const files = r.data.files || [];
 
   if (!folders.length && !files.length) {
-    box.innerHTML = '<div class="p-4 rounded-xl bg-surface border text-xs text-outline">Folder ini kosong atau belum ada file yang dibagikan ke Service Account.</div>';
+    const isOauth = gdriveState && gdriveState.authMode === 'oauth2';
+    box.innerHTML = `<div class="p-4 rounded-xl bg-surface border text-xs text-outline flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <span>${isOauth ? 'Folder ini belum memiliki sub-folder atau file dokumen.' : 'Folder ini kosong atau belum ada file yang dibagikan.'}</span>
+      <button onclick="browseGDriveFolder('root')" class="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold shrink-0 cursor-pointer">Buka Google Drive Utama (My Drive)</button>
+    </div>`;
     return;
   }
 
   let html = '';
-  if (folders.length) {
-    html += `<div class="space-y-1.5"><div class="text-[11px] font-mono uppercase text-outline font-bold">Sub-Folder (${folders.length})</div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">`;
-    html += folders.map((f) => `
-      <button onclick="browseGDriveFolder('${escJs(f.id)}')" class="text-left p-2.5 rounded-xl bg-surface hover:bg-surface-container border border-outline-variant/40 flex items-center justify-between gap-2 transition-all">
-        <div class="flex items-center gap-2 min-w-0">
-          <span class="material-symbols-outlined text-amber-600 text-[20px]">folder</span>
-          <span class="font-semibold text-primary truncate">${esc(f.name)}</span>
+
+  if (r.data.unconfiguredFolders || cur.id === 'root') {
+    html += `
+      <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <strong>📌 Cara Memilih Folder Sinkronisasi (1-Klik):</strong> Klik nama folder untuk melihat isinya, klik <strong>"Jadikan Induk"</strong> jika folder tersebut adalah folder utama karya Anda, atau klik <strong>R0 / R1 / R2 / R3</strong> untuk memetakan folder langsung ke Ring tertentu.
         </div>
-        <span class="text-[10px] font-mono px-2 py-0.5 rounded ring-badge-${f.inferredRing ?? 0} shrink-0">R${f.inferredRing ?? 0}</span>
-      </button>
-    `).join('');
+      </div>`;
+  } else if (cur.id && cur.id !== 'root') {
+    const isCurrentRoot = gdriveState && gdriveState.rootFolderId === cur.id;
+    html += `
+      <div class="p-2.5 rounded-xl bg-surface border border-outline-variant/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600 text-[18px]">folder_open</span>
+          <span class="font-bold text-primary">Sedang Membuka: ${esc(cur.name)}</span>
+          ${isCurrentRoot ? '<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-mono text-[10px] font-bold">FOLDER INDUK AKTIF</span>' : ''}
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button onclick="setGDriveFolderAsRoot('${escJs(cur.id)}', '${escJs(cur.name)}')" class="px-2.5 py-1 rounded bg-primary text-white text-[11px] font-semibold cursor-pointer">Jadikan Folder Induk</button>
+          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 0, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-0 text-[10px] font-mono font-bold cursor-pointer">Set R0</button>
+          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 1, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-1 text-[10px] font-mono font-bold cursor-pointer">Set R1</button>
+          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 2, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-2 text-[10px] font-mono font-bold cursor-pointer">Set R2</button>
+          <button onclick="assignGDriveFolderToRing('${escJs(cur.id)}', 3, '${escJs(cur.name)}')" class="px-2 py-1 rounded ring-badge-3 text-[10px] font-mono font-bold cursor-pointer">Set R3</button>
+        </div>
+      </div>`;
+  }
+
+  if (folders.length) {
+    html += `<div class="space-y-1.5"><div class="text-[11px] font-mono uppercase text-outline font-bold">Daftar Folder (${folders.length})</div><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">`;
+    html += folders.map((f) => {
+      const isRoot = gdriveState && gdriveState.rootFolderId === f.id;
+      const mappedRings = [0, 1, 2, 3].filter((rk) => gdriveState && gdriveState.ringFolders && gdriveState.ringFolders[rk] === f.id);
+      return `
+      <div class="p-2.5 rounded-xl bg-surface hover:bg-surface-container border ${isRoot || mappedRings.length ? 'border-emerald-500 bg-emerald-50/30' : 'border-outline-variant/40'} flex flex-col justify-between gap-2 transition-all">
+        <button onclick="browseGDriveFolder('${escJs(f.id)}')" class="text-left flex items-center justify-between gap-2 w-full cursor-pointer">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="material-symbols-outlined text-amber-600 text-[20px]">folder</span>
+            <span class="font-semibold text-primary truncate" title="${esc(f.name)}">${esc(f.name)}</span>
+          </div>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded ring-badge-${f.inferredRing ?? 0} shrink-0">R${f.inferredRing ?? 0}</span>
+        </button>
+        <div class="flex flex-wrap items-center justify-between gap-1 pt-1.5 border-t border-outline-variant/25 text-[10px]">
+          <button onclick="setGDriveFolderAsRoot('${escJs(f.id)}', '${escJs(f.name)}')" class="px-2 py-0.5 rounded ${isRoot ? 'bg-emerald-700 text-white' : 'bg-white border border-outline-variant text-primary hover:bg-primary hover:text-white'} font-semibold cursor-pointer">${isRoot ? '✓ Folder Induk' : 'Jadikan Induk'}</button>
+          <div class="flex items-center gap-1">
+            ${[0, 1, 2, 3].map((rk) => {
+              const active = mappedRings.includes(rk);
+              return `<button onclick="assignGDriveFolderToRing('${escJs(f.id)}', ${rk}, '${escJs(f.name)}')" title="Tetapkan sebagai Folder Ring ${rk}" class="px-1.5 py-0.5 rounded font-mono font-bold cursor-pointer ${active ? 'ring-2 ring-primary ring-badge-' + rk : 'bg-white border border-outline-variant/60 text-on-surface-variant hover:border-primary'}">R${rk}</button>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
     html += `</div></div>`;
   }
 
@@ -1801,9 +1921,11 @@ async function browseGDriveFolder(folderId = '') {
           </div>
           <div class="text-[10px] font-mono text-on-surface-variant truncate">${esc(f.mimeType)} • ID: ${esc(f.id)}</div>
         </div>
-        <div class="flex items-center gap-1.5 shrink-0">
-          <button onclick="previewGDriveFileText('${escJs(f.id)}', '${escJs(f.name)}')" class="px-2.5 py-1 rounded border border-outline-variant bg-white hover:bg-surface-container text-primary text-[11px] font-semibold">Baca Teks</button>
-          <button onclick="importSingleGDriveFile('${escJs(f.id)}', ${cur.ring ?? 0}, '${escJs(cur.name || '')}')" class="px-2.5 py-1 rounded bg-primary text-white text-[11px] font-semibold">Impor ke R${cur.ring ?? 0}</button>
+        <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+          <button onclick="previewGDriveFileText('${escJs(f.id)}', '${escJs(f.name)}')" class="px-2.5 py-1 rounded border border-outline-variant bg-white hover:bg-surface-container text-primary text-[11px] font-semibold cursor-pointer">Baca Teks</button>
+          ${[0, 1, 2, 3].map((rk) => `
+            <button onclick="importSingleGDriveFile('${escJs(f.id)}', ${rk}, '${escJs(cur.name || '')}')" class="px-2 py-1 rounded ${rk === (cur.ring ?? 0) ? 'bg-primary text-white' : 'border border-outline-variant bg-white hover:bg-surface-container text-primary'} text-[10px] font-mono font-bold cursor-pointer">+R${rk}</button>
+          `).join('')}
         </div>
       </div>
     `).join('');

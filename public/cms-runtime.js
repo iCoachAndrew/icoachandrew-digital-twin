@@ -195,8 +195,25 @@
       styleEl.id = 'cms-font-scale-style';
       document.head.appendChild(styleEl);
     }
-    const scope = (settings && settings.fontScope) || 'both';
-    const scale = (scope === 'both' || scope === 'frontpage') ? ((settings && settings.fontScale) || 'small') : 'small';
+    let rawScale = settings && settings.fontScale;
+    let rawScope = settings && settings.fontScope;
+    const isExplicitOnServer = Boolean(settings && (settings.fontScaleExplicit || (rawScale && rawScale !== 'small')));
+    if (isExplicitOnServer) {
+      try {
+        localStorage.setItem('icoach_font_scale', rawScale || 'small');
+        localStorage.setItem('icoach_font_scope', rawScope || 'both');
+        localStorage.setItem('icoach_font_explicit', '1');
+      } catch (_) {}
+    } else {
+      try {
+        if (localStorage.getItem('icoach_font_explicit') === '1') {
+          rawScale = localStorage.getItem('icoach_font_scale') || rawScale || 'small';
+          rawScope = localStorage.getItem('icoach_font_scope') || rawScope || 'both';
+        }
+      } catch (_) {}
+    }
+    const scope = rawScope || 'both';
+    const scale = (scope === 'both' || scope === 'frontpage') ? (rawScale || 'small') : 'small';
     document.documentElement.setAttribute('data-font-scale', scale);
     if (scale === 'small') {
       styleEl.textContent = '';
@@ -304,7 +321,20 @@
       rules.push(`.text-secondary { color: ${c.secondary} !important; }`);
       rules.push(`.bg-secondary { background-color: ${c.secondary} !important; }`);
     }
-    const f = theme.fonts || {};
+    let f = (theme && theme.fonts) || {};
+    if (f.consistentAll || f.serif || f.sans) {
+      try {
+        localStorage.setItem('icoach_theme_fonts', JSON.stringify(f));
+      } catch (_) {}
+    } else {
+      try {
+        const cachedFonts = localStorage.getItem('icoach_theme_fonts');
+        if (cachedFonts) {
+          const parsed = JSON.parse(cachedFonts);
+          if (parsed && typeof parsed === 'object') f = parsed;
+        }
+      } catch (_) {}
+    }
     if (f.consistentAll) {
       ensureGoogleFont(f.consistentAll);
       rules.push(`body, h1, h2, h3, h4, h5, h6, p, a, button, input, textarea, select, li, blockquote, .font-serif, .font-sans, .font-serif-heading, .font-display-lg, .font-headline-xl, .font-headline-lg, .font-headline-md, .font-headline-sm, .font-title-md, .font-body-lg, .font-body-md, .font-body-sm, .font-label-md, .font-label-sm { font-family: "${f.consistentAll}", -apple-system, BlinkMacSystemFont, sans-serif !important; }`);
@@ -934,6 +964,8 @@
 
   // ---------- Boot ----------
   async function boot() {
+    applyTypographyScale(null);
+    applyTheme({});
     hookLanguageSwitch();
     if (isStudio) initStudioBridge();
     try {

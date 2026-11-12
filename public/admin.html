@@ -186,11 +186,41 @@
     html[data-font-scale="xlarge"] .text-headline-md, html[data-font-scale="xlarge"] .text-2xl { font-size: 34px !important; line-height: 1.35 !important; }
 
     /* ==========================================================================
-       COLLAPSIBLE LEFT SIDEBAR & MULTI-DEVICE EXECUTIVE RATIO ADAPTATION
+       COLLAPSIBLE LEFT SIDEBAR (INDEPENDENT SCROLL) & MULTI-DEVICE ADAPTATION
        ========================================================================== */
-    html, body { max-width: 100%; overflow-x: hidden; }
+    body { max-width: 100%; overflow-x: clip; }
     #admin-left-sidebar {
+      position: fixed;
+      top: 6.75rem;
+      bottom: 0;
+      left: 0;
+      z-index: 40;
+      height: calc(100dvh - 6.75rem);
       transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1), transform 200ms ease;
+    }
+    #admin-main-content {
+      transition: margin-left 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .sidebar-scroll {
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(233, 193, 118, 0.55) rgba(13, 43, 85, 0.4);
+    }
+    .sidebar-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+    .sidebar-scroll::-webkit-scrollbar-track {
+      background: rgba(13, 43, 85, 0.35);
+      border-radius: 9999px;
+    }
+    .sidebar-scroll::-webkit-scrollbar-thumb {
+      background: rgba(233, 193, 118, 0.6);
+      border-radius: 9999px;
+    }
+    .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 222, 165, 0.85);
     }
     #admin-left-sidebar .nav-btn.active {
       background: #0d2b55 !important;
@@ -201,8 +231,14 @@
       #admin-left-sidebar[data-sidebar-state="expanded"] {
         width: 15.5rem;
       }
+      #admin-left-sidebar[data-sidebar-state="expanded"] ~ #admin-main-content {
+        margin-left: 15.5rem;
+      }
       #admin-left-sidebar[data-sidebar-state="collapsed"] {
         width: 4.25rem;
+      }
+      #admin-left-sidebar[data-sidebar-state="collapsed"] ~ #admin-main-content {
+        margin-left: 4.25rem;
       }
       #admin-left-sidebar[data-sidebar-state="collapsed"] .sidebar-label {
         display: none !important;
@@ -215,10 +251,6 @@
     }
     @media (max-width: 1023px) {
       #admin-left-sidebar {
-        position: fixed;
-        top: 6.5rem;
-        bottom: 0;
-        left: 0;
         z-index: 45;
         width: 16.5rem;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
@@ -334,15 +366,18 @@
                 </button>
               </div>
             </div>
-            <div class="space-y-1.5 pt-1 border-t border-outline-variant/30">
+            <div class="space-y-2 pt-1 border-t border-outline-variant/30">
               <label class="block text-[11px] font-mono uppercase text-on-surface-variant font-bold" for="top-font-scope-select">2. Berlaku Untuk (Cakupan):</label>
               <select id="top-font-scope-select" onchange="applyFontScaleAndScope(null, this.value)" class="w-full border border-outline-variant rounded-lg p-2 bg-white text-primary font-semibold text-xs">
                 <option value="both">Admin Studio &amp; Front Page Sekaligus</option>
                 <option value="frontpage">Front Page (Website Publik) Saja</option>
                 <option value="admin">Admin Studio Saja</option>
               </select>
-              <p class="text-[10px] text-on-surface-variant leading-snug">
-                Perubahan langsung disimpan ke server dan diterapkan seketika sesuai cakupan yang dipilih.
+              <button onclick="savePermanentFontScale()" type="button" class="w-full py-2 px-3 rounded-lg bg-primary text-white font-semibold text-xs hover:bg-primary-container flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+                <span class="material-symbols-outlined text-[15px] text-tertiary-fixed">save</span>Simpan Permanen Ukuran Huruf
+              </button>
+              <p id="font-scale-saved-badge" class="text-[10px] text-emerald-800 font-semibold leading-snug flex items-center gap-1">
+                <span class="material-symbols-outlined text-[13px]">check_circle</span>Tersimpan permanen sampai Anda mengubahnya kembali.
               </p>
             </div>
           </div>
@@ -406,56 +441,54 @@
       <!-- ======================================================== -->
       <!-- COLLAPSIBLE / EXPANDABLE LEFT NAVIGATION SIDEBAR          -->
       <!-- ======================================================== -->
-      <aside id="admin-left-sidebar" data-sidebar-state="expanded" class="bg-primary text-on-primary border-r border-on-tertiary-container/30 flex flex-col justify-between shrink-0 select-none">
-        <div class="sticky top-28 flex flex-col justify-between h-[calc(100dvh-7rem)] overflow-y-auto thin-scroll p-2.5 space-y-4">
-          <div class="space-y-2">
-            <!-- Sidebar Header & Collapse Toggle -->
-            <div class="flex items-center justify-between px-2 py-1.5 border-b border-primary-container">
-              <span class="sidebar-label text-[10px] font-mono uppercase tracking-widest text-tertiary-fixed-dim font-bold">Menu Modul Admin</span>
-              <button onclick="toggleAdminSidebar()" type="button" class="p-1 rounded hover:bg-primary-container text-tertiary-fixed-dim hover:text-white transition-colors cursor-pointer" title="Ciutkan / Lebarkan Menu Samping">
-                <span id="sidebar-inner-toggle-icon" class="material-symbols-outlined text-[18px]">chevron_left</span>
-              </button>
-            </div>
-
-            <!-- Vertical Navigation Tabs -->
-            <nav class="flex flex-col gap-1.5" id="adminTabsNav" aria-label="Navigasi Modul Admin">
-              <button onclick="switchStudioTab('governance')" data-tab="governance" title="Ring 0 Archive &amp; Audit" class="nav-btn active w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">shield_lock</span>
-                <span class="sidebar-label truncate">Ring 0 Archive &amp; Audit</span>
-              </button>
-              <button onclick="switchStudioTab('overview')" data-tab="overview" title="Dasbor Status" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">dashboard</span>
-                <span class="sidebar-label truncate">Dasbor Status</span>
-              </button>
-              <button onclick="switchStudioTab('visual-editor')" data-tab="visual-editor" title="Visual Website Editor" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">web</span>
-                <span class="sidebar-label truncate">Visual Website Editor</span>
-              </button>
-              <button onclick="switchStudioTab('media')" data-tab="media" title="Foto &amp; Media" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">photo_library</span>
-                <span class="sidebar-label truncate">Foto &amp; Media</span>
-              </button>
-              <button onclick="switchStudioTab('works')" data-tab="works" title="Karya R0–R3 &amp; Google Drive" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">auto_stories</span>
-                <span class="sidebar-label truncate">Karya R0–R3 &amp; Drive</span>
-              </button>
-              <button onclick="switchStudioTab('memory')" data-tab="memory" title="Memori Persona" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">psychology</span>
-                <span class="sidebar-label truncate">Memori Persona</span>
-              </button>
-              <button onclick="switchStudioTab('ai')" data-tab="ai" title="Claude AI Vault" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">bolt</span>
-                <span class="sidebar-label truncate">Claude AI Vault</span>
-              </button>
-              <button onclick="switchStudioTab('commerce')" data-tab="commerce" title="Pricing &amp; Keanggotaan" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">payments</span>
-                <span class="sidebar-label truncate">Pricing</span>
-              </button>
-            </nav>
+      <aside id="admin-left-sidebar" data-sidebar-state="expanded" class="bg-primary text-on-primary border-r border-on-tertiary-container/30 flex flex-col justify-between shrink-0 select-none overflow-hidden">
+        <div class="flex flex-col justify-between h-full min-h-0 p-2.5 gap-2">
+          <!-- Sidebar Header & Collapse Toggle (Pinned Top) -->
+          <div class="flex items-center justify-between px-2 py-1.5 border-b border-primary-container shrink-0">
+            <span class="sidebar-label text-[10px] font-mono uppercase tracking-widest text-tertiary-fixed-dim font-bold">Menu Modul Admin</span>
+            <button onclick="toggleAdminSidebar()" type="button" class="p-1 rounded hover:bg-primary-container text-tertiary-fixed-dim hover:text-white transition-colors cursor-pointer" title="Ciutkan / Lebarkan Menu Samping">
+              <span id="sidebar-inner-toggle-icon" class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
           </div>
 
-          <!-- Sidebar Footer Collapse / Expand Button -->
-          <div class="pt-3 border-t border-primary-container">
+          <!-- Vertical Navigation Tabs (Dedicated Independent Scroll Container) -->
+          <nav class="flex flex-col gap-1.5 flex-1 min-h-0 sidebar-scroll pr-1 py-1" id="adminTabsNav" aria-label="Navigasi Modul Admin">
+            <button onclick="switchStudioTab('governance')" data-tab="governance" title="Ring 0 Archive &amp; Audit" class="nav-btn active w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">shield_lock</span>
+              <span class="sidebar-label truncate">Ring 0 Archive &amp; Audit</span>
+            </button>
+            <button onclick="switchStudioTab('overview')" data-tab="overview" title="Dasbor Status" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">dashboard</span>
+              <span class="sidebar-label truncate">Dasbor Status</span>
+            </button>
+            <button onclick="switchStudioTab('visual-editor')" data-tab="visual-editor" title="Visual Website Editor" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">web</span>
+              <span class="sidebar-label truncate">Visual Website Editor</span>
+            </button>
+            <button onclick="switchStudioTab('media')" data-tab="media" title="Foto &amp; Media" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">photo_library</span>
+              <span class="sidebar-label truncate">Foto &amp; Media</span>
+            </button>
+            <button onclick="switchStudioTab('works')" data-tab="works" title="Karya R0–R3 &amp; Google Drive" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">auto_stories</span>
+              <span class="sidebar-label truncate">Karya R0–R3 &amp; Drive</span>
+            </button>
+            <button onclick="switchStudioTab('memory')" data-tab="memory" title="Memori Persona" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">psychology</span>
+              <span class="sidebar-label truncate">Memori Persona</span>
+            </button>
+            <button onclick="switchStudioTab('ai')" data-tab="ai" title="Claude AI Vault" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">bolt</span>
+              <span class="sidebar-label truncate">Claude AI Vault</span>
+            </button>
+            <button onclick="switchStudioTab('commerce')" data-tab="commerce" title="Pricing &amp; Keanggotaan" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">payments</span>
+              <span class="sidebar-label truncate">Pricing</span>
+            </button>
+          </nav>
+
+          <!-- Sidebar Footer Collapse / Expand Button (Pinned Bottom) -->
+          <div class="pt-2 border-t border-primary-container shrink-0">
             <button onclick="toggleAdminSidebar()" type="button" class="w-full px-3 py-2 rounded-lg bg-primary-container/70 hover:bg-primary-container text-tertiary-fixed-dim hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer" title="Ciutkan / Lebarkan Sidebar">
               <span class="material-symbols-outlined text-[17px]">swap_horiz</span>
               <span class="sidebar-label" id="sidebar-footer-toggle-text">Ciutkan Sidebar</span>
@@ -465,7 +498,7 @@
       </aside>
 
       <!-- Main Right Content Area -->
-      <div class="flex flex-col flex-1 min-w-0 w-full">
+      <div id="admin-main-content" class="flex flex-col flex-1 min-w-0 w-full">
 
       <!-- TOP SOVEREIGN BANNER (EXACT MATCH: ring_0_sovereign_admin_archive) -->
       <div class="w-full bg-surface-container-low px-gutter py-space-xl border-b border-surface-container-high">
@@ -1426,53 +1459,51 @@
           </div>
         </div>
 
-        <!-- Collapsible Tutorial Step-by-Step For Dummies: Google Drive Setup -->
+        <!-- Collapsible Tutorial Step-by-Step For Dummies: Google Drive Setup & Sync -->
         <details class="group bg-amber-50/70 rounded-2xl border border-on-tertiary-container/40 overflow-hidden shadow-sm">
           <summary class="cursor-pointer list-none px-5 py-3.5 flex items-center justify-between gap-3 font-serif font-bold text-primary hover:bg-amber-100/50 transition-colors">
             <span class="flex items-center gap-2 text-sm">
               <span class="material-symbols-outlined text-on-tertiary-container">menu_book</span>
-              📘 Panduan Mudah (Step-by-Step for Dummies): Cara Menghubungkan Google Drive ke iCoachAndrew (Klik untuk Buka/Tutup)
+              📘 Panduan Mudah: Cara Mengatur Folder &amp; File Google Drive (Live API) serta Cara Kerja Sinkronisasi (Klik untuk Buka/Tutup)
             </span>
             <span class="text-xs font-mono text-on-tertiary-container group-open:rotate-180 transition-transform">▼</span>
           </summary>
           <div class="px-5 pb-5 pt-2 border-t border-on-tertiary-container/20 text-xs text-on-surface space-y-4 leading-relaxed">
             <div class="p-3 rounded-xl bg-white border border-outline-variant/40">
-              <strong class="text-primary block mb-1">💡 Konsep Singkat (Mengapa Sangat Mudah?):</strong>
-              Anda tidak perlu mengunggah buku/naskah satu per satu ke website. Cukup simpan dokumen Google Docs, Word (<code>.docx</code>), atau Teks (<code>.txt</code>/<code>.md</code>) di dalam folder Google Drive Anda. Sistem iCoachAndrew menggunakan <strong>"Akun Robot Pembaca" (Service Account)</strong> untuk membaca isi folder tersebut secara aman dan memasukkannya ke Ring 0, Ring 1, Ring 2, atau Ring 3.
+              <strong class="text-primary block mb-1">💡 Konsep Singkat (Bagaimana Cara Kerjanya?):</strong>
+              Setelah status berwarna hijau <strong>GOOGLE DRIVE: TERHUBUNG (OAUTH 2.0)</strong>, Anda cukup memilih 1 <strong>Folder Induk</strong> di Google Drive Anda (mis. folder bernama <code>iCoachAndrew Works</code>) atau memetakan folder untuk masing-masing <strong>Ring 0, Ring 1, Ring 2, dan Ring 3</strong>. Setiap kali Anda menaruh/mengedit dokumen Google Docs, Word (<code>.docx</code>), atau Teks (<code>.txt</code>/<code>.md</code>) di folder tersebut lalu klik <strong>"Sinkronkan dari Google Drive"</strong> (atau mengaktifkan Auto-Sync 15/30/60 menit), sistem otomatis mengekstrak isinya ke Repositori Karya &amp; Memori AI Ring yang sesuai.
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 1 (Di Google Cloud)</div>
-                <div class="font-bold text-primary">Unduh File Kunci <code>.json</code></div>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Cara 1 (Paling Praktis — Tanpa Copy Link)</div>
+                <div class="font-bold text-primary">Pilih Langsung dari Penjelajah Drive</div>
                 <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Buka <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" class="text-primary underline font-semibold">console.cloud.google.com</a> dan buat Project baru (mis. <code>iCoachAndrew</code>).</li>
-                  <li>Ketik <strong>"Google Drive API"</strong> di kotak pencarian atas &rarr; klik <strong>Enable (Aktifkan)</strong>.</li>
-                  <li>Buka menu <strong>IAM &amp; Admin &rarr; Service Accounts</strong> &rarr; klik <strong>+ Create Service Account</strong> (beri nama bebas, mis. <code>drive-reader</code>) &rarr; klik <strong>Done</strong>.</li>
-                  <li>Klik email Service Account yang baru dibuat &rarr; tab <strong>Keys</strong> &rarr; <strong>Add Key &rarr; Create new key &rarr; pilih JSON</strong> &rarr; file <code>.json</code> akan terunduh ke komputer Anda.</li>
+                  <li>Klik tombol <strong>"Jelajahi Folder Drive"</strong> di atas.</li>
+                  <li>Daftar seluruh folder dari akun Google Drive Anda (<em>My Drive</em>) akan langsung tampil di layar.</li>
+                  <li>Pada folder karya yang diinginkan, klik tombol <strong>"Jadikan Folder Induk"</strong> (jika di dalamnya ada sub-folder <code>Ring 0</code>..<code>Ring 3</code>) atau klik <strong>"Set R0 / R1 / R2 / R3"</strong> untuk memetakan folder ke Ring tertentu.</li>
+                  <li>Klik tombol hijau <strong>"Sinkronkan dari Google Drive"</strong>!</li>
                 </ol>
               </div>
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 2 (Di Halaman Ini)</div>
-                <div class="font-bold text-primary">Upload 1-Klik File <code>.json</code></div>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Cara 2 (Struktur Folder Otomatis)</div>
+                <div class="font-bold text-primary">1 Folder Induk + 4 Sub-Folder Ring</div>
                 <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Klik tombol <strong>"Pengaturan Drive API"</strong> di atas.</li>
-                  <li>Klik kotak <strong>"Upload File .JSON Service Account (1-Klik)"</strong> dan pilih file <code>.json</code> yang baru Anda unduh (tidak perlu buka Notepad!).</li>
-                  <li>Sistem otomatis menyimpan kunci secara terenkripsi dan menampilkan <strong>Alamat Email Robot</strong> (contoh: <code>drive-reader@...iam.gserviceaccount.com</code>).</li>
-                  <li>Klik tombol <strong>"Salin Email Robot"</strong>.</li>
+                  <li>Di Google Drive Anda, buat 1 folder utama (mis. <code>Arsip iCoachAndrew</code>).</li>
+                  <li>Di dalamnya, buat 4 sub-folder bernama: <code>Ring 0</code> (Pribadi), <code>Ring 1</code> (Inner Circle), <code>Ring 2</code> (Member), dan <code>Ring 3</code> (Publik).</li>
+                  <li>Tempel link folder utama tadi ke kolom <strong>Folder Induk Google Drive</strong> di <em>Pengaturan Drive API</em> (atau klik <strong>Jadikan Folder Induk</strong> di Penjelajah Drive).</li>
+                  <li>Sistem otomatis mengenali nama sub-folder dan memasukkan seluruh file ke Ring masing-masing!</li>
                 </ol>
               </div>
               <div class="p-3.5 rounded-xl bg-white border border-outline-variant/40 space-y-1.5">
-                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 3 (Di Google Drive Anda)</div>
-                <div class="font-bold text-primary">Share Folder &amp; Sinkronkan!</div>
-                <ol class="list-decimal list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li>Buka folder karya Andrew Tani di Google Drive Anda.</li>
-                  <li>Klik kanan folder tersebut &rarr; <strong>Bagikan (Share)</strong> &rarr; tempel (Paste) <strong>Email Robot</strong> tadi sebagai <strong>Pelihat (Viewer)</strong> &rarr; klik <strong>Bagikan</strong>.</li>
-                  <li>Salin link URL folder Google Drive Anda dari browser, tempelkan ke kolom <strong>Folder Induk Utama</strong> di bawah, lalu klik <strong>"Deteksi Sub-Folder Otomatis"</strong> atau <strong>"Sinkronkan dari Google Drive"</strong>!</li>
-                </ol>
+                <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Aturan Sinkronisasi &amp; Keamanan</div>
+                <div class="font-bold text-primary">Bagaimana Sinkronisasi Bekerja?</div>
+                <ul class="list-disc list-inside space-y-1 text-on-surface-variant text-[11px]">
+                  <li><strong>Format Didukung:</strong> Google Docs, Google Slides, Google Sheets, Microsoft Word (<code>.docx</code>), Markdown (<code>.md</code>), dan Teks (<code>.txt</code>).</li>
+                  <li><strong>Tag Nama File:</strong> Anda juga bisa memberi awalan <code>[Ring 3] Judul Buku.docx</code> atau <code>[R0] Catatan.docx</code> untuk menentukan Ring otomatis.</li>
+                  <li><strong>Update Cerdas (Tanpa Duplikat):</strong> File yang diedit di Google Drive akan memperbarui karya yang sama berdasarkan ID file Drive.</li>
+                  <li><strong>Karantina Otomatis (Stricter Wins):</strong> Jika file Ring 1–3 memuat kata sensitif keluarga/kesehatan/kekayaan pribadi, sistem otomatis menguncinya ke <strong>Ring 0</strong>.</li>
+                </ul>
               </div>
-            </div>
-            <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-[11px]">
-              <strong>Tips Otomatisasi Ring 0–3:</strong> Di dalam folder utama Google Drive Anda, buatlah 4 sub-folder bernama <code>Ring 0</code>, <code>Ring 1</code>, <code>Ring 2</code>, dan <code>Ring 3</code>. Setiap kali Anda menaruh file Google Docs/Word/Txt ke dalam sub-folder tersebut dan menekan tombol <strong>Sinkronkan dari Google Drive</strong>, sistem otomatis menempatkannya ke Ring yang tepat!
             </div>
           </div>
         </details>
@@ -1650,9 +1681,12 @@
                 <p id="gd-browser-folder-label" class="text-[11px] font-mono text-on-surface-variant">Memuat folder...</p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <button onclick="browseGDriveFolder('')" class="px-3 py-1.5 rounded-lg border text-xs font-semibold text-primary hover:bg-surface-container">Folder Utama</button>
-              <button onclick="toggleGDriveBrowser()" class="px-3 py-1.5 rounded-lg border text-xs text-outline hover:text-primary">✕ Tutup</button>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="browseGDriveFolder('root')" class="px-3 py-1.5 rounded-lg border border-primary/30 bg-primary/5 text-xs font-semibold text-primary hover:bg-primary hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
+                <span class="material-symbols-outlined text-[15px]">cloud</span>Buka My Drive (Semua Folder)
+              </button>
+              <button onclick="browseGDriveFolder('')" class="px-3 py-1.5 rounded-lg border text-xs font-semibold text-primary hover:bg-surface-container cursor-pointer">Folder Terpetakan</button>
+              <button onclick="toggleGDriveBrowser()" class="px-3 py-1.5 rounded-lg border text-xs text-outline hover:text-primary cursor-pointer">✕ Tutup</button>
             </div>
           </div>
           <div id="gd-browser-content" class="space-y-3 text-xs"></div>
