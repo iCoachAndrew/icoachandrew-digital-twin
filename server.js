@@ -440,9 +440,38 @@ async function answer(askerRing, question, lang, opts = {}) {
 
 // ---------- sessions: ring comes from the server, never from the browser ----------
 const sessions = new Map(); // token -> { id, ring, exp, codeName?, memberId?, passphraseHash?, unlimited?, leadSubmitted? }
+const revokedAdminTokens = new Set(); // revoked stateless admin tokens on explicit logout
 const guestQuotas = new Map(); // guestKey -> { used, unlimited, leadSubmitted, displayName, email, phone, memberId, updatedAt }
 const USER_COOKIE = 'icoach_session';
 const ADMIN_COOKIE = 'icoach_admin';
+const ADMIN_SESSION_TTL_SEC = Number(process.env.ADMIN_SESSION_TTL_SEC || (30 * 24 * 60 * 60)); // 30 days (1 month)
+const ADMIN_SESSION_TTL_MS = ADMIN_SESSION_TTL_SEC * 1000;
+
+function signAdminSessionToken(expMs, nonce) {
+  const pass = String(process.env.ADMIN_PASSPHRASE || '');
+  if (!pass) return '';
+  const secretKey = pass + ':' + String(process.env.ICOACH_SECRET_KEY || 'icoach-admin-session-v1');
+  return crypto.createHmac('sha256', secretKey).update(`adm1.${expMs}.${nonce}`).digest('hex');
+}
+
+function verifyStatelessAdminToken(token) {
+  if (!token || typeof token !== 'string' || !token.startsWith('adm1.')) return null;
+  if (revokedAdminTokens.has(token)) return null;
+  const parts = token.split('.');
+  if (parts.length !== 4) return null;
+  const expMs = Number(parts[1]);
+  const nonce = parts[2];
+  const sigHex = parts[3];
+  if (!Number.isFinite(expMs) || expMs < Date.now() || !/^[a-f0-9]{16,64}$/.test(nonce) || !/^[a-f0-9]{64}$/.test(sigHex)) {
+    return null;
+  }
+  const expectedHex = signAdminSessionToken(expMs, nonce);
+  if (!expectedHex || expectedHex.length !== sigHex.length) return null;
+  const a = Buffer.from(sigHex, 'hex');
+  const b = Buffer.from(expectedHex, 'hex');
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  return { id: 's_' + nonce.slice(0, 8), ring: 0, exp: expMs };
+}
 
 function getOrInitGuestQuota(guestKey) {
   if (!guestKey) return null;
@@ -455,9 +484,10 @@ function getOrInitGuestQuota(guestKey) {
   }
   let q = guestQuotas.get(key);
   if (!q) {
-    q = { used: 0, unlimited: false, leadSubmitted: false, displayName: null, email: null, phone: null, memberId: null, updatedAt: now };
+    q = { used: 0, unlimited: false, leadSubmitted: false, displayName: null, email: null, phone: null, memberId: null, messages: [], updatedAt: now };
     guestQuotas.set(key, q);
   } else {
+    if (!Array.isArray(q.messages)) q.messages = [];
     q.updatedAt = now;
   }
   return q;
@@ -468,10 +498,19 @@ function newSession(ring, meta = {}) {
   if (sessions.size > 1000) {
     for (const [k, v] of sessions.entries()) if (!v || v.exp < now) sessions.delete(k);
   }
-  const t = crypto.randomBytes(32).toString('hex');
-  const sid = 's_' + crypto.randomBytes(4).toString('hex');
-  const ttlMs = meta.ttlMs || (30 * 60 * 1000);
-  sessions.set(t, { id: sid, ring, exp: now + ttlMs, ...meta });
+  const defaultTtl = ring === 0 ? ADMIN_SESSION_TTL_MS : (30 * 60 * 1000);
+  const ttlMs = meta.ttlMs || defaultTtl;
+  const exp = now + ttlMs;
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const sid = 's_' + nonce.slice(0, 8);
+  let t;
+  if (ring === 0 && process.env.ADMIN_PASSPHRASE) {
+    const sig = signAdminSessionToken(exp, nonce);
+    t = sig ? `adm1.${exp}.${nonce}.${sig}` : crypto.randomBytes(32).toString('hex');
+  } else {
+    t = crypto.randomBytes(32).toString('hex');
+  }
+  sessions.set(t, { id: sid, ring, exp, ...meta });
   return t;
 }
 
@@ -483,8 +522,18 @@ function getCookieToken(req, cookieName) {
 function sessionRing(req, cookieName) {
   const t = getCookieToken(req, cookieName);
   if (!t) return null;
-  const s = sessions.get(t);
+  let s = sessions.get(t);
+  if (!s && cookieName === ADMIN_COOKIE) {
+    const verified = verifyStatelessAdminToken(t);
+    if (verified) {
+      s = verified;
+      sessions.set(t, s);
+    }
+  }
   if (!s || s.exp < Date.now()) return null;
+  if (s.ring === 0) {
+    s.exp = Math.max(s.exp, Date.now() + ADMIN_SESSION_TTL_MS);
+  }
   return s.ring;
 }
 
@@ -763,12 +812,15 @@ async function handleAdmin(req, res) {
       attempts.delete('admin_login_ip:' + ip);
       const t = newSession(0);
       audit({ event: 'admin_login', ring: 0 });
-      return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=${t}; ${cookieAttributes(req, 1800)}` }, req);
+      return send(res, 200, { ok: true, sessionTtlDays: Math.round(ADMIN_SESSION_TTL_SEC / 86400) }, { 'set-cookie': `${ADMIN_COOKIE}=${t}; ${cookieAttributes(req, ADMIN_SESSION_TTL_SEC)}` }, req);
     }
 
     if (req.method === 'POST' && pathname === '/admin/logout') {
       const t = getCookieToken(req, ADMIN_COOKIE);
-      if (t) sessions.delete(t);
+      if (t) {
+        sessions.delete(t);
+        revokedAdminTokens.add(t);
+      }
       return send(res, 200, { ok: true }, { 'set-cookie': `${ADMIN_COOKIE}=; ${cookieAttributes(req, 0)}` }, req);
     }
 
@@ -1082,6 +1134,7 @@ const userServer = http.createServer(async (req, res) => {
       const sess = resolveUserSession(req);
       const guestId = urlObj.searchParams.get('guestId') || getCookieToken(req, USER_COOKIE) || null;
       const gq = guestId ? getOrInitGuestQuota(guestId) : null;
+      const chatHistory = (gq && Array.isArray(gq.messages)) ? gq.messages.slice(-40) : [];
       if (sess.ring === 2 && sess.memberId) {
         const member = loadMembers().find((m) => m.id === sess.memberId);
         const isUnlimited = Boolean(member && (member.unlimited || member.leadSubmitted));
@@ -1095,7 +1148,8 @@ const userServer = http.createServer(async (req, res) => {
           leadSubmitted: isUnlimited,
           usage: { used: member ? member.used : 0, limit: isUnlimited ? null : (member ? member.cap : DEFAULT_MONTHLY_CAP), unlimited: isUnlimited },
           freeUsage: { used: member ? member.used : 0, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false },
-          conversations: member ? (member.conversations || []).slice(-10) : []
+          conversations: member ? (member.conversations || []).slice(-10) : [],
+          chatHistory
         });
       }
       if (sess.ring === 1 && sess.codeName) {
@@ -1106,7 +1160,8 @@ const userServer = http.createServer(async (req, res) => {
           channel: sess.channel || null,
           unlimited: true,
           leadSubmitted: true,
-          freeUsage: { used: 0, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false }
+          freeUsage: { used: 0, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false },
+          chatHistory
         });
       }
       const isPublicUnlimited = Boolean(sess.unlimited || (gq && gq.unlimited));
@@ -1120,6 +1175,7 @@ const userServer = http.createServer(async (req, res) => {
         displayName: sess.displayName || (gq && gq.displayName) || null,
         email: sess.email || (gq && gq.email) || null,
         phone: sess.phone || (gq && gq.phone) || null,
+        chatHistory,
         freeUsage: {
           used: publicUsed,
           limit: isPublicUnlimited ? null : PUBLIC_FREE_CHAT_LIMIT,
@@ -1412,12 +1468,25 @@ const userServer = http.createServer(async (req, res) => {
       return send(res, 200, { ok: true, entitlement: member.entitlement }, {}, req);
     }
 
+    // Clear active browser session chat history (when user explicitly starts a New Conversation)
+    if (req.method === 'POST' && pathname === '/api/chat/clear') {
+      const b = await body(req, 4000);
+      const guestKey = String(b.guestId || getCookieToken(req, USER_COOKIE) || '').trim();
+      if (guestKey) {
+        const gq = getOrInitGuestQuota(guestKey);
+        if (gq) gq.messages = [];
+      }
+      return send(res, 200, { ok: true, chatHistory: [] }, {}, req);
+    }
+
     // Chat endpoint
     if (req.method === 'POST' && pathname === '/api/chat') {
       const b = await body(req, 20000);
       const lang = langOf(b.lang);
       const q = String(b.message || '').slice(0, 2000);
       if (!q.trim()) return send(res, 400, { error: 'empty' });
+      const guestKey = String(b.guestId || getCookieToken(req, USER_COOKIE) || '').trim();
+      const chatSource = b.source === 'chamber' ? 'chamber' : 'frontpage';
 
       // The ring is decided on the server from the session; any ring sent by the browser is ignored.
       const sess = resolveUserSession(req);
@@ -1447,7 +1516,6 @@ const userServer = http.createServer(async (req, res) => {
           freeUsage = { used: member.used, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false };
         }
       } else if (ring === 3) {
-        const guestKey = String(b.guestId || getCookieToken(req, USER_COOKIE) || '').trim();
         if (guestKey) {
           const gq = getOrInitGuestQuota(guestKey);
           const isUnlimited = Boolean(sess.unlimited || (gq && gq.unlimited));
@@ -1493,6 +1561,18 @@ const userServer = http.createServer(async (req, res) => {
       }
 
       const r = await answer(ring, q, lang);
+      if (guestKey) {
+        const gq = getOrInitGuestQuota(guestKey);
+        if (gq) {
+          if (!Array.isArray(gq.messages)) gq.messages = [];
+          const nowIso = new Date().toISOString();
+          gq.messages.push({ role: 'user', text: q, source: chatSource, at: nowIso });
+          gq.messages.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso });
+          if (gq.messages.length > 40) {
+            gq.messages = gq.messages.slice(-40);
+          }
+        }
+      }
       audit({
         event: 'chat',
         site: 'user',

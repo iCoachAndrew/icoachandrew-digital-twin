@@ -1137,6 +1137,17 @@ test('Admin Left Collapsible Sidebar, Dynamic Visual Editor (Consistent Font, Fu
     assert.strictEqual(exRes.json.ok, true);
     assert.strictEqual(exRes.json.gdrive.configured, true);
     assert.strictEqual(exRes.json.gdrive.hasOauthRefreshToken, true);
+    assert.ok(exRes.json.gdrive.sealedConfigBundle && exRes.json.gdrive.sealedConfigBundle.startsWith('gdb1.'), 'Portable encrypted OAuth bundle generated for 30+ day cross-deploy persistence');
+
+    // Simulate a deploy reset and verify POST /admin/api/works/gdrive/restore-bundle restores OAuth 2.0 session
+    const savedBundle = exRes.json.gdrive.sealedConfigBundle;
+    app.studio.works.gdrive.saveConfig({ enabled: false, authMode: 'service_account', oauthClientId: '', sealedOauthClientSecret: null, sealedOauthRefreshToken: null });
+    assert.strictEqual(app.studio.works.gdrive.publicConfigView().configured, false);
+    const restoreRes = await admin('POST', '/admin/api/works/gdrive/restore-bundle', { sealedConfigBundle: savedBundle });
+    assert.strictEqual(restoreRes.status, 200);
+    assert.strictEqual(restoreRes.json.ok, true);
+    assert.strictEqual(restoreRes.json.gdrive.configured, true);
+    assert.strictEqual(restoreRes.json.gdrive.hasOauthRefreshToken, true);
 
     // Force token refresh & test Google Drive connection using OAuth 2.0 refresh token
     app.studio.works.gdrive.clearTokenCache();
@@ -1337,6 +1348,34 @@ test('Google Drive Explorer: Unassigned/Irrelevant, Fuzzy Search, Bulk Assign (.
     assert.ok(homeHtml.includes('function animateTypewriterText('), 'Progressive typing reveal animation exists');
     assert.ok(homeHtml.includes('function handleChatInputFocus()'), 'Mobile keyboard focus viewport lock handler exists');
     assert.ok(homeHtml.includes('function syncVisualViewportHeight()'), 'VisualViewport height sync handler exists');
+    assert.ok(homeHtml.includes('icoachandrew_chat_history_v1'), 'Persistent browser chat history storage key exists');
+    assert.ok(homeHtml.includes('function restoreChatHistoryUI('), 'Chat history restoration on refresh exists');
+    assert.ok(homeHtml.includes('id="cookie-consent-banner"'), 'Cookie consent banner exists');
+    assert.ok(homeHtml.includes('id="cookie-tnc-modal"'), 'Cookies & Website Terms and Conditions (TnC) modal exists');
+    assert.ok(homeHtml.includes('BAGIAN I • ALINEA KEBIJAKAN COOKIES'), 'Detailed Cookie Policy clauses exist');
+    assert.ok(homeHtml.includes('BAGIAN II • PERJANJIAN &amp; KETENTUAN PENGGUNAAN SITUS WEB (WEB TnC)'), 'Website Terms & Conditions (TnC) agreement clauses exist');
+
+    // 8. Server-side session chatHistory persistence across browser refresh & /api/chat/clear reset
+    const persistGuestId = 'guest_refresh_persist_test_99';
+    const chatTurnRes = await user('POST', '/api/chat', {
+      message: 'Bagaimana prinsip Organizing for Business Excellence menyelaraskan strategi dan budaya kerja?',
+      lang: 'id',
+      guestId: persistGuestId,
+      source: 'frontpage'
+    });
+    assert.strictEqual(chatTurnRes.status, 200);
+    const sessPersistRes = await user('GET', `/api/session?guestId=${encodeURIComponent(persistGuestId)}`);
+    assert.strictEqual(sessPersistRes.status, 200);
+    assert.ok(Array.isArray(sessPersistRes.json.chatHistory), 'GET /api/session returns chatHistory array for guest session');
+    assert.strictEqual(sessPersistRes.json.chatHistory.length, 2, 'User question + Digital Twin reply recorded in session chatHistory');
+    assert.strictEqual(sessPersistRes.json.chatHistory[0].role, 'user');
+    assert.strictEqual(sessPersistRes.json.chatHistory[1].role, 'twin');
+
+    const clearChatRes = await user('POST', '/api/chat/clear', { guestId: persistGuestId });
+    assert.strictEqual(clearChatRes.status, 200);
+    assert.strictEqual(clearChatRes.json.ok, true);
+    const sessAfterClear = await user('GET', `/api/session?guestId=${encodeURIComponent(persistGuestId)}`);
+    assert.strictEqual(sessAfterClear.json.chatHistory.length, 0, 'POST /api/chat/clear resets session chatHistory');
   } finally {
     app.studio.works.gdrive.setCustomFetch(null);
   }

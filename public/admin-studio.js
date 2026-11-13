@@ -1394,6 +1394,23 @@ function pickMediaForInspector(url, alt) {
 
 // ==================== TAB 4: WORKS REPOSITORY RING 0–3 + GOOGLE DRIVE API ====================
 let gdriveState = { configured: false, authMode: 'service_account', ringFolders: { 0: '', 1: '', 2: '', 3: '' } };
+const GDRIVE_VAULT_LS_KEY = 'icoachandrew_gdrive_vault_v1';
+const GDRIVE_CLIENT_ID_LS_KEY = 'icoachandrew_gdrive_client_id_v1';
+
+async function tryAutoRestoreGDriveVault() {
+  try {
+    if (typeof localStorage === 'undefined') return false;
+    const savedBundle = localStorage.getItem(GDRIVE_VAULT_LS_KEY);
+    if (!savedBundle || !savedBundle.startsWith('gdb1.')) return false;
+    const res = await api('POST', '/admin/api/works/gdrive/restore-bundle', { sealedConfigBundle: savedBundle });
+    if (res.ok && res.data && res.data.ok && res.data.gdrive && res.data.gdrive.configured) {
+      gdriveState = res.data.gdrive;
+      renderGDriveConfigState();
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
 
 async function loadWorks() {
   const r = await api('GET', '/admin/api/works');
@@ -1401,6 +1418,9 @@ async function loadWorks() {
   worksData = r.data.works || [];
   if (r.data.gdrive) {
     gdriveState = r.data.gdrive;
+    if (!gdriveState.configured) {
+      await tryAutoRestoreGDriveVault();
+    }
     renderGDriveConfigState();
   }
   renderWorksGrid();
@@ -1408,6 +1428,16 @@ async function loadWorks() {
 
 function renderGDriveConfigState() {
   const g = gdriveState || {};
+  try {
+    if (typeof localStorage !== 'undefined') {
+      if (g.configured && g.sealedConfigBundle) {
+        localStorage.setItem(GDRIVE_VAULT_LS_KEY, g.sealedConfigBundle);
+      }
+      if (g.oauthClientId && !g.oauthClientId.startsWith('(via')) {
+        localStorage.setItem(GDRIVE_CLIENT_ID_LS_KEY, g.oauthClientId);
+      }
+    }
+  } catch (_) {}
   const badge = document.getElementById('gdrive-status-badge');
   const sub = document.getElementById('gdrive-summary-sub');
   const emailPill = document.getElementById('gdrive-client-email-pill');
@@ -1417,7 +1447,7 @@ function renderGDriveConfigState() {
 
   if (badge) {
     if (g.configured) {
-      const modeLabel = g.authMode === 'oauth2' ? 'OAUTH 2.0' : (g.authMode === 'service_account' ? 'SERVICE ACCOUNT' : 'API KEY');
+      const modeLabel = g.authMode === 'oauth2' ? 'OAUTH 2.0 • SESI PERSISTEN 30+ HARI' : (g.authMode === 'service_account' ? 'SERVICE ACCOUNT' : 'API KEY');
       badge.textContent = `GOOGLE DRIVE: TERHUBUNG (${modeLabel})`;
       badge.className = 'px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300';
     } else {
@@ -1429,7 +1459,7 @@ function renderGDriveConfigState() {
   const oauthBadge = document.getElementById('gd-oauth-status-badge');
   if (oauthBadge) {
     if (g.hasOauthRefreshToken && g.hasOauthClientId && g.hasOauthClientSecret) {
-      oauthBadge.textContent = 'TERHUBUNG (OAUTH 2.0 AKTIF)';
+      oauthBadge.textContent = 'TERHUBUNG (AUTO-REFRESH 30+ HARI & TAHAN DEPLOY)';
       oauthBadge.className = 'font-mono text-[10px] px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300';
     } else if (g.hasOauthClientId && g.hasOauthClientSecret) {
       oauthBadge.textContent = 'SIAP LOGIN GOOGLE (KLIK HUBUNGKAN)';
@@ -1445,8 +1475,15 @@ function renderGDriveConfigState() {
     redirectInput.value = g.oauthRedirectUri || (window.location.origin + '/admin/api/works/gdrive/oauth-callback');
   }
   const clientIdInput = document.getElementById('gd-oauth-client-id');
-  if (clientIdInput && g.oauthClientId) {
-    clientIdInput.value = g.oauthClientId;
+  if (clientIdInput) {
+    if (g.oauthClientId) {
+      clientIdInput.value = g.oauthClientId;
+    } else if (!clientIdInput.value) {
+      try {
+        const cachedCid = typeof localStorage !== 'undefined' && localStorage.getItem(GDRIVE_CLIENT_ID_LS_KEY);
+        if (cachedCid) clientIdInput.value = cachedCid;
+      } catch (_) {}
+    }
   }
 
   if (sub) {
@@ -2055,7 +2092,7 @@ async function bulkAssignGDriveItems(ring) {
   toast(`Selesai! ${r.data.processedFiles || items.length} dokumen berhasil dipetakan ke ${label} & disimpan sebagai .md.`);
 }
 
-async function browseGDriveFolder(folderId = '') {
+async function browseGDriveFolder(folderId = '', isRetry = false) {
   gdCurrentFolderId = folderId;
   const box = document.getElementById('gd-browser-content');
   const label = document.getElementById('gd-browser-folder-label');
@@ -2064,7 +2101,17 @@ async function browseGDriveFolder(folderId = '') {
   const url = '/admin/api/works/gdrive/browse' + (folderId ? ('?folderId=' + encodeURIComponent(folderId)) : '');
   const r = await api('GET', url);
   if (!r.ok || !r.data.ok) {
-    box.innerHTML = `<div class="p-4 rounded-xl bg-red-50 text-secondary border border-red-200 text-xs">${esc(r.data.error || 'Belum ada folder Google Drive yang dikonfigurasi.')}</div>`;
+    if (!isRetry && (await tryAutoRestoreGDriveVault())) {
+      return browseGDriveFolder(folderId, true);
+    }
+    const errText = r.data.error || 'Belum ada folder Google Drive yang dikonfigurasi.';
+    box.innerHTML = `<div class="p-4 rounded-xl bg-red-50 text-secondary border border-red-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="font-bold">${esc(errText)}</div>
+        <div class="text-[11px] text-on-surface-variant mt-0.5">Setelah Anda menghubungkan OAuth 2.0 sekali lagi pada versi terbaru ini, sesi OAuth &amp; Refresh Token akan disimpan permanen (bertahan 30+ hari &amp; otomatis dipulihkan setiap kali selesai deploy GitHub).</div>
+      </div>
+      <button onclick="document.getElementById('gdrive-config-panel')?.classList.remove('hidden');document.getElementById('gdrive-config-panel')?.scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-lg bg-primary text-white text-xs font-semibold shrink-0 cursor-pointer">⚙️ Buka Pengaturan OAuth 2.0</button>
+    </div>`;
     return;
   }
   gdCurrentBrowseData = {
