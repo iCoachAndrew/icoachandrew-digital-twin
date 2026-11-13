@@ -72,6 +72,13 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #A41034;
     }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
     /* Collapse "Siapa Andrew Tani" & rest of landing page until user taps to reveal */
     body:not(.bio-revealed) [data-bio-section="1"] {
       display: none;
@@ -344,20 +351,20 @@
           <!-- ========================================================================= -->
           <!-- EMPTY STATE CENTERED GREETING (CLAUDE / CHATGPT STYLE BEFORE 1ST MESSAGE) -->
           <!-- ========================================================================= -->
-          <div id="chat-empty-hero" class="flex flex-col items-center text-center space-y-3 my-auto pt-4 sm:pt-8">
+          <div id="chat-empty-hero" class="flex flex-col items-center text-center space-y-2.5 my-auto pt-2 sm:pt-4">
             <div class="relative inline-flex items-center justify-center">
-              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-xl shadow-md overflow-hidden border-2 border-white ring-1 ring-hbs-crimson/30">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-lg shadow-sm overflow-hidden border-2 border-white ring-1 ring-hbs-crimson/30">
                 <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="Andrew Tani" class="w-full h-full object-cover object-top" onerror="this.style.display='none'; this.parentElement.textContent='AT';"/>
               </div>
-              <span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#FAF9F6]" title="Online"></span>
+              <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#FAF9F6]" title="Online"></span>
             </div>
 
-            <h1 id="chat-title" class="font-serif text-2xl sm:text-3xl lg:text-4xl font-medium text-hbs-charcoal tracking-tight max-w-xl leading-snug">
-              Selamat datang, Sahabatku. Apa yang ingin kita diskusikan?
+            <h1 id="chat-title" class="font-serif text-xl sm:text-2xl lg:text-3xl font-medium text-hbs-charcoal tracking-tight leading-snug">
+              Apa yang ingin kita diskusikan?
             </h1>
 
-            <p id="chat-subtitle" class="text-hbs-muted text-xs sm:text-sm max-w-md leading-relaxed">
-              Digital Twin Pak Andrew Tani • Senior Management Advisor &amp; Co-author <em>Organizing for Business Excellence</em> &amp; <em>Brain Quotient</em>
+            <p id="chat-subtitle" class="hidden">
+              Digital Twin Pak Andrew Tani
             </p>
           </div>
 
@@ -368,9 +375,9 @@
           </div>
 
           <!-- ========================================================================= -->
-          <!-- BOTTOM COMPOSER + COMPACT CHIPS + COLLAPSIBLE MORE ACCESS TRIGGER         -->
+          <!-- BOTTOM COMPOSER + SINGLE-LINE COMPACT CHIPS                               -->
           <!-- ========================================================================= -->
-          <div class="w-full mt-auto space-y-3">
+          <div class="w-full mt-auto space-y-2.5">
 
             <!-- INLINE LEAD CAPTURE GATE (SHOWN AFTER 10x FREE Q&A TO UNLOCK UNLIMITED!) -->
             <div id="lead-capture-gate" class="hidden bg-white border-2 border-hbs-crimson rounded-2xl p-4 sm:p-5 shadow-lg transition-all">
@@ -429,40 +436,32 @@
               </div>
             </form>
 
-            <!-- Compact 1-Tap Starter Suggestion Pills (ChatGPT / Claude Style, auto-hides once chatting) -->
-            <div id="chat-starter-chips" class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-1">
-              <button type="button" onclick="submitSuggestedPrompt(1)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
-                <span id="prompt-chip-1">📖 Buku Organizing for Business Excellence</span>
+            <!-- Strictly 1-Line Starter Suggestion Pills (Never wraps into 2 rows on any screen size) -->
+            <div id="chat-starter-chips" class="flex flex-nowrap items-center justify-start sm:justify-center gap-1.5 overflow-x-auto no-scrollbar whitespace-nowrap py-0.5">
+              <button type="button" onclick="submitSuggestedPrompt(1)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-1">📖 Buku Orbex</span>
               </button>
-              <button type="button" onclick="submitSuggestedPrompt(2)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
-                <span id="prompt-chip-2">🧠 Buku Brain Quotient &amp; Neurosains</span>
+              <button type="button" onclick="submitSuggestedPrompt(2)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-2">🧠 Brain Quotient</span>
               </button>
-              <button type="button" onclick="submitSuggestedPrompt(3)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
-                <span id="prompt-chip-3">🤝 Suksesi Bisnis Keluarga</span>
+              <button type="button" onclick="submitSuggestedPrompt(3)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-3">🤝 Suksesi Bisnis</span>
               </button>
-              <button type="button" onclick="submitSuggestedPrompt(4)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
-                <span id="prompt-chip-4">✨ Profil &amp; Karya Pak Andrew</span>
+              <button type="button" onclick="submitSuggestedPrompt(4)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+                <span id="prompt-chip-4">✨ Karya &amp; Legacy</span>
               </button>
             </div>
 
-            <!-- Subtle Bottom Bar: Quota Note + Collapsible "Siapa Andrew Tani & Akses Lebih Lanjut" Trigger -->
-            <div class="pt-1 flex flex-col items-center gap-2 text-center">
-              <div class="text-[10.5px] text-hbs-muted flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5">
-                <span id="chat-privacy-note" class="hidden sm:inline">Dialog privat &amp; terjaga</span>
-                <span class="hidden sm:inline text-gray-300">•</span>
-                <span id="chat-quota-footnote" class="font-mono text-[10.5px] text-hbs-muted">
-                  10x tanya jawab gratis • Isi kontak untuk lanjut unlimited
-                </span>
-              </div>
-
-              <!-- Collapsible Trigger for "Siapa Andrew Tani", Books & Further Access (Default: Collapsed) -->
-              <button type="button" id="who-is-andrew-trigger" onclick="toggleWhoIsAndrew()" aria-expanded="false" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white border border-gray-200 hover:border-hbs-crimson text-hbs-charcoal hover:text-hbs-crimson text-xs font-medium shadow-2xs transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[15px] text-hbs-crimson">person_book</span>
-                <span id="who-trigger-btn-text">Siapa Andrew Tani, Buku &amp; Akses Lebih Lanjut</span>
-                <span id="who-trigger-icon" class="material-symbols-outlined text-[16px] transition-transform duration-300">expand_more</span>
-                <span id="who-trigger-badge" class="hidden">PROFIL</span>
-                <span id="who-trigger-title" class="hidden">Siapa Andrew Tani</span>
-                <span id="who-trigger-desc" class="hidden">Profil Pak Andrew Tani</span>
+            <!-- Hidden bottom elements (info & Who is Andrew button are already in the top header bar) -->
+            <div class="hidden" aria-hidden="true">
+              <span id="chat-privacy-note">Dialog privat &amp; terjaga</span>
+              <span id="chat-quota-footnote">10x tanya jawab gratis</span>
+              <button type="button" id="who-is-andrew-trigger" onclick="toggleWhoIsAndrew()" aria-expanded="false">
+                <span id="who-trigger-btn-text">Siapa Andrew Tani</span>
+                <span id="who-trigger-icon">expand_more</span>
+                <span id="who-trigger-badge">PROFIL</span>
+                <span id="who-trigger-title">Siapa Andrew Tani</span>
+                <span id="who-trigger-desc">Profil Pak Andrew Tani</span>
               </button>
             </div>
 
@@ -1379,12 +1378,12 @@
     "book3-authors": "Praktik Direksi 1983–Sekarang • 28 Grup Usaha",
     "book4-authors": "Esai Reflektif & Komposisi Musik Andrew Tani",
     "chat-badge": "INTERACTIVE CASE ROOM",
-    "chat-title": "Selamat datang, Sahabatku. Apa yang ingin kita diskusikan?",
-    "chat-subtitle": "Digital Twin Pak Andrew Tani • Senior Management Advisor & Author (Organizing for Business Excellence & Brain Quotient)",
-    "prompt-chip-1": "📖 Buku Organizing for Business Excellence",
-    "prompt-chip-2": "🧠 Buku Brain Quotient & Neurosains",
-    "prompt-chip-3": "🤝 Suksesi Bisnis Keluarga",
-    "prompt-chip-4": "✨ Profil & Karya Pak Andrew",
+    "chat-title": "Apa yang ingin kita diskusikan?",
+    "chat-subtitle": "Digital Twin Pak Andrew Tani",
+    "prompt-chip-1": "📖 Buku Orbex",
+    "prompt-chip-2": "🧠 Brain Quotient",
+    "prompt-chip-3": "🤝 Suksesi Bisnis",
+    "prompt-chip-4": "✨ Karya & Legacy",
     "chat-box-speaker": "Andrew Tani",
     "chat-box-speaker-sub": "Senior Management Advisor & Author • Digital Twin",
     "chat-box-status": "ONLINE",
@@ -1675,12 +1674,12 @@
     "book3-authors": "Board Advisory Practice 1983–Present • 28 Leading Groups",
     "book4-authors": "Reflective Essays & Musical Compositions by Andrew Tani",
     "chat-badge": "INTERACTIVE CASE ROOM",
-    "chat-title": "Welcome, my friend. Where should we begin?",
-    "chat-subtitle": "Pak Andrew Tani Digital Twin • Senior Management Advisor & Author (Organizing for Business Excellence & Brain Quotient)",
-    "prompt-chip-1": "📖 Book: Organizing for Business Excellence",
-    "prompt-chip-2": "🧠 Book: Brain Quotient & Neuroscience",
-    "prompt-chip-3": "🤝 Family Business Succession",
-    "prompt-chip-4": "✨ Pak Andrew’s Books & Legacy",
+    "chat-title": "Where should we begin?",
+    "chat-subtitle": "Pak Andrew Tani Digital Twin",
+    "prompt-chip-1": "📖 Orbex Book",
+    "prompt-chip-2": "🧠 Brain Quotient",
+    "prompt-chip-3": "🤝 Succession",
+    "prompt-chip-4": "✨ Books & Legacy",
     "chat-box-speaker": "Andrew Tani",
     "chat-box-speaker-sub": "Senior Management Advisor & Author • Digital Twin",
     "chat-box-status": "ONLINE",
