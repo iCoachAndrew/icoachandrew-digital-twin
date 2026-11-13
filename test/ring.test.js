@@ -1323,6 +1323,16 @@ test('Google Drive Explorer: Unassigned/Irrelevant, Fuzzy Search, Bulk Assign (.
     assert.match(promptPrev.json.system, /ANTI-HALLUCINATION PROTOCOL \(STRICT GROUNDED ONLY\)/i);
     assert.match(promptPrev.json.system, /Selalu kaitkan dengan disiplin Orbex/);
     assert.match(promptPrev.json.system, /Jangan pernah mengomentari spekulasi saham/);
+
+    // 7. Minimalist ChatGPT / Claude Chat Room UI & Collapsible Navigation/Profile Drawer
+    const homeHtmlRes = await fetch(U + '/');
+    assert.strictEqual(homeHtmlRes.status, 200);
+    const homeHtml = await homeHtmlRes.text();
+    assert.ok(homeHtml.includes('id="collapsible-nav-drawer"'), 'Collapsible navigation & profile drawer exists');
+    assert.ok(homeHtml.includes('id="chat-drawer-toggle-btn"'), 'Top-left drawer toggle button exists');
+    assert.ok(homeHtml.includes('id="chat-empty-hero"'), 'Minimalist centered greeting hero exists');
+    assert.ok(homeHtml.includes('id="chat-starter-chips"'), 'Compact starter prompt chips container exists');
+    assert.ok(homeHtml.includes('function toggleNavDrawer()'), 'Drawer toggle handler exists');
   } finally {
     app.studio.works.gdrive.setCustomFetch(null);
   }

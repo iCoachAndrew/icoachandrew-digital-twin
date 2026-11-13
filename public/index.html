@@ -78,9 +78,37 @@
     }
 
     /* ==========================================================================
+       CHATGPT / CLAUDE MINIMALIST CHAT ROOM STATES (9:16 MOBILE & DESKTOP)
+       - Empty State (Before 1st question): Clean centered greeting + pill input + compact chips
+       - Active Chat State (body.chat-started): Full-room conversation stream
+       - Collapsible Drawer: Default collapsed on both 9:16 Mobile & Desktop
+       ========================================================================== */
+    body:not(.chat-started) #frontpage-messages {
+      display: none;
+    }
+    body.chat-started #chat-empty-hero,
+    body.chat-started #chat-starter-chips {
+      display: none;
+    }
+    body.chat-started #ruang-diskusi-inner {
+      justify-content: space-between;
+    }
+    #collapsible-nav-drawer {
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body.nav-drawer-open #collapsible-nav-drawer {
+      transform: translateX(0);
+    }
+    body.nav-drawer-open #collapsible-nav-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ==========================================================================
        EXECUTIVE MULTI-DEVICE RATIO ADAPTATION
        - Foldable Cover Screen (Galaxy Z Fold Outer: 320px–360px, 22:9–23:9)
-       - Standard Executive Smartphones (iPhone / Android: 360px–400px)
+       - Standard Executive Smartphones (iPhone / Android 9:16: 360px–430px)
        - Samsung Galaxy S Ultra Series & Pro Max (384px–440px, tall 19.3:9–20:9)
        - Foldable Unfolded Inner Display (Z Fold / Find N / Pixel Fold: 640px–960px)
        ========================================================================== */
@@ -90,31 +118,17 @@
         font-size: 16px !important;
       }
       #frontpage-messages {
-        max-height: 44dvh;
+        max-height: calc(100dvh - 11.5rem);
       }
     }
     /* Tall Flagship Screens: Samsung Galaxy S22/S23/S24/S25 Ultra & iPhone Pro Max */
     @media (min-width: 380px) and (max-width: 460px) and (min-height: 780px) {
       #frontpage-messages {
-        max-height: 50dvh;
-        min-height: 260px;
+        max-height: calc(100dvh - 11rem);
       }
     }
     /* Narrow Foldable Cover Screens (Galaxy Z Fold Outer Screen <= 365px) */
     @media (max-width: 365px) {
-      header .max-w-7xl {
-        padding-left: 0.75rem !important;
-        padding-right: 0.75rem !important;
-        gap: 0.375rem !important;
-      }
-      #header-subtitle {
-        max-width: 135px !important;
-        font-size: 8px !important;
-      }
-      #header-who-btn, #header-login-btn {
-        padding: 0.35rem 0.5rem !important;
-        font-size: 9.5px !important;
-      }
       #ruang-diskusi h1 {
         font-size: 1.35rem !important;
         line-height: 1.25 !important;
@@ -122,327 +136,336 @@
     }
     /* Foldable Unfolded Inner Display (Galaxy Z Fold / Pixel Fold / Find N: 600px–960px) */
     @media (min-width: 600px) and (max-width: 960px) {
-      #frontpage-messages {
-        max-height: 52dvh;
-      }
       #karya-buku .grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
     }
   </style>
 </head>
-<body class="flex flex-col min-h-screen text-hbs-charcoal bg-white antialiased selection:bg-hbs-crimson selection:text-white">
+<body class="flex flex-col min-h-screen text-hbs-charcoal bg-[#FAF9F6] antialiased selection:bg-hbs-crimson selection:text-white">
 
-  <!-- ========================================== -->
-  <!-- TOP ACADEMIC UTILITY BAR (HBS STYLE)      -->
-  <!-- ========================================== -->
-  <div class="w-full bg-hbs-charcoal text-white text-xs border-b border-hbs-crimson py-2 px-4 sm:px-6 lg:px-12 flex flex-wrap items-center justify-between gap-2 sm:gap-4 select-none">
-    <div class="flex items-center gap-2 sm:gap-3 font-mono tracking-wider text-[10px] sm:text-[11px]">
-      <span class="inline-block w-2 h-2 rounded-full bg-hbs-crimson animate-pulse shrink-0"></span>
-      <span id="top-bar-left" class="truncate max-w-[210px] sm:max-w-none">EXECUTIVE ADVISORY &amp; STRATEGIC DIALOGUE</span>
-      <span class="text-hbs-muted hidden sm:inline">|</span>
-      <span class="text-gray-300 hidden sm:inline">JAKARTA • SINGAPORE</span>
-    </div>
-    <div class="flex items-center gap-3 sm:gap-4 text-[11px] sm:text-xs font-sans shrink-0">
-      <!-- Language Switcher ID / EN -->
-      <div class="flex items-center gap-1 border border-gray-700 rounded px-2 py-0.5 bg-black/30">
-        <button id="lang-id-btn" onclick="setLanguage('id')" class="font-bold text-white hover:text-hbs-crimson transition-colors">ID</button>
-        <span class="text-gray-500">/</span>
-        <button id="lang-en-btn" onclick="setLanguage('en')" class="text-gray-400 hover:text-white transition-colors">EN</button>
-      </div>
-      <a href="#ruang-diskusi" id="top-bar-discuss-link" class="hover:text-hbs-crimson transition-colors hidden sm:inline">Mulai Berbincang</a>
-      <span class="text-gray-600 hidden sm:inline">•</span>
-      <button id="top-bar-auth-btn" onclick="openModal('auth-signin-modal')" class="text-hbs-crimson hover:text-white font-semibold transition-colors">Akses Rekan</button>
-      <button id="top-bar-chamber-btn" onclick="openChamberView()" class="hidden text-amber-400 hover:text-white font-semibold transition-colors flex items-center gap-1">
-        <span id="top-bar-chamber-text">Ruang Penasihat</span>
-        <span class="material-symbols-outlined text-[14px]">meeting_room</span>
-      </button>
-    </div>
+  <!-- Hidden legacy top utility bar (preserved for i18n/CMS compatibility without visual clutter) -->
+  <div class="hidden" aria-hidden="true">
+    <span id="top-bar-left">EXECUTIVE ADVISORY &amp; STRATEGIC DIALOGUE</span>
+    <a href="#ruang-diskusi" id="top-bar-discuss-link">Mulai Berbincang</a>
+    <button id="top-bar-auth-btn" onclick="openModal('auth-signin-modal')">Akses Rekan</button>
+    <button id="top-bar-chamber-btn" onclick="openChamberView()"><span id="top-bar-chamber-text">Ruang Penasihat</span></button>
   </div>
 
-  <!-- ========================================== -->
-  <!-- MAIN HEADER & BRAND NAVIGATION             -->
-  <!-- ========================================== -->
-  <header class="w-full bg-white border-b border-hbs-stoneDark sticky top-0 z-40 shadow-xs backdrop-blur-md bg-white/95 overflow-x-clip">
-    <div class="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-12 py-2.5 sm:py-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 sm:gap-4 min-w-0">
-      
-      <!-- Brand Logo (responsive so subtitle never overlaps or forces horizontal scroll on Foldable/Canvas) -->
-      <div class="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
-        <a href="#" onclick="showFrontpageView(); return false;" class="flex flex-col group min-w-0">
-          <span class="font-serif text-lg sm:text-2xl lg:text-[26px] font-bold tracking-tight text-hbs-charcoal leading-none group-hover:text-hbs-crimson transition-colors whitespace-nowrap">
+  <!-- ========================================================================= -->
+  <!-- COLLAPSIBLE NAVIGATION, PROFILE & FURTHER ACCESS DRAWER                   -->
+  <!-- (Default: COLLAPSED on both 9:16 Handphone & Desktop until user opens it) -->
+  <!-- ========================================================================= -->
+  <div id="collapsible-nav-backdrop" onclick="closeNavDrawer()" class="fixed inset-0 bg-black/35 backdrop-blur-[1px] z-50 opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
+  <aside id="collapsible-nav-drawer" aria-label="Menu & Siapa Andrew Tani" class="fixed top-0 left-0 bottom-0 w-[300px] sm:w-[330px] max-w-[86vw] bg-white border-r border-gray-200 z-50 flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="font-serif text-lg font-bold tracking-tight text-hbs-charcoal truncate">
+          iCoachAndrew<span class="text-hbs-crimson">.</span>
+        </span>
+      </div>
+      <button type="button" onclick="closeNavDrawer()" class="w-8 h-8 rounded-lg hover:bg-gray-100 text-hbs-muted hover:text-hbs-charcoal flex items-center justify-center transition-colors cursor-pointer" title="Tutup Menu">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <!-- Drawer Scrollable Body -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-5">
+      <!-- New Chat Button (ChatGPT / Claude Style) -->
+      <button type="button" onclick="resetFrontpageChat(); closeNavDrawer();" class="w-full py-2.5 px-3.5 rounded-xl bg-hbs-stone hover:bg-hbs-crimsonLight/60 border border-gray-200 hover:border-hbs-crimson/40 text-hbs-charcoal font-medium text-xs flex items-center justify-between transition-all cursor-pointer">
+        <span class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[17px] text-hbs-crimson">edit_square</span>
+          <span id="drawer-new-chat-text">Percakapan Baru</span>
+        </span>
+        <span class="font-mono text-[10px] text-hbs-muted">+ Chat</span>
+      </button>
+
+      <!-- Collapsible Card: Siapa Andrew Tani (Default Collapsed Details Inside Drawer) -->
+      <div class="rounded-xl border border-gray-200 bg-[#FAF9F6] p-3.5 space-y-3">
+        <div class="flex items-center gap-3">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="Pak Andrew Tani" class="w-11 h-11 rounded-full object-cover object-top border border-hbs-crimson shrink-0"/>
+          <div class="min-w-0">
+            <div class="font-serif font-bold text-sm text-hbs-charcoal truncate">Pak Andrew Tani</div>
+            <div class="text-[10px] font-mono text-hbs-crimson uppercase tracking-wider truncate">Senior Management Advisor</div>
+            <div class="text-[11px] text-hbs-muted truncate">40+ Thn • 28 Grup • 2 Buku Resmi</div>
+          </div>
+        </div>
+
+        <details class="group text-xs text-hbs-muted">
+          <summary class="cursor-pointer font-semibold text-hbs-charcoal hover:text-hbs-crimson flex items-center justify-between py-1 list-none select-none">
+            <span id="drawer-bio-summary-label">Ringkasan Singkat Profil</span>
+            <span class="material-symbols-outlined text-[16px] transition-transform group-open:rotate-180">expand_more</span>
+          </summary>
+          <p id="drawer-bio-summary-body" class="pt-1.5 text-[11.5px] leading-relaxed text-hbs-muted border-t border-gray-200/80 mt-1">
+            Co-author buku <em>Organizing for Business Excellence</em> &amp; <em>Brain Quotient</em>. Mendampingi dewan direksi, komisaris, dan pendiri usaha sejak 1983.
+          </p>
+        </details>
+
+        <button type="button" onclick="revealWhoIsAndrew('beranda'); closeNavDrawer();" class="w-full py-2 px-3 rounded-lg bg-hbs-crimson hover:bg-hbs-crimsonDark text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+          <span class="material-symbols-outlined text-[15px]">person_book</span>
+          <span id="drawer-open-bio-btn">Buka Halaman Siapa Andrew Tani</span>
+        </button>
+      </div>
+
+      <!-- Collapsible Navigation & Further Access Links -->
+      <div class="space-y-1">
+        <div id="drawer-nav-heading" class="px-2 pb-1 text-[10px] font-mono uppercase tracking-wider text-hbs-muted">
+          Akses Lebih Lanjut
+        </div>
+        <nav class="flex flex-col gap-1 text-xs font-medium">
+          <a href="#ruang-diskusi" onclick="focusChatEngine(); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-crimson bg-hbs-crimsonLight/60 font-semibold flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px]">forum</span>
+            <span id="nav-chat">Ruang Bincang Eksekutif</span>
+          </a>
+          <a href="#beranda" id="nav-who-andrew" onclick="revealWhoIsAndrew('beranda'); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">person_book</span>
+            <span id="nav-who-andrew-text">Siapa Andrew Tani</span>
+          </a>
+          <a href="#karya-buku" id="nav-books" onclick="revealWhoIsAndrew('karya-buku'); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">menu_book</span>
+            <span>Khazanah &amp; Buku Rujukan</span>
+          </a>
+          <a href="#lingkaran-pendampingan" id="nav-circles" onclick="revealWhoIsAndrew('lingkaran-pendampingan'); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">workspace_premium</span>
+            <span>Pilihan Akses &amp; Keanggotaan</span>
+          </a>
+          <button type="button" onclick="shareChatUrl()" id="chat-share-btn" class="w-full text-left px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors cursor-pointer">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">share</span>
+            <span id="chat-share-text">Bagikan Link Chat</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Drawer Footer: Sign-In / Executive Member Access -->
+    <div class="p-4 border-t border-gray-100 bg-gray-50/70 space-y-2">
+      <div id="header-guest-controls" class="flex flex-col gap-2">
+        <button id="header-login-btn" onclick="openModal('auth-signin-modal'); closeNavDrawer();" class="w-full py-2.5 px-3 text-xs font-semibold text-hbs-charcoal bg-white border border-gray-300 rounded-xl hover:border-hbs-crimson hover:text-hbs-crimson transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]">key</span>
+          <span>Masuk Rekan / Kode Undangan</span>
+        </button>
+        <a href="#ruang-diskusi" id="header-cta-btn" onclick="focusChatEngine(); closeNavDrawer(); return false;" class="hidden">
+          <span id="header-cta-text">Mulai Diskusi</span>
+        </a>
+      </div>
+
+      <div id="header-auth-controls" class="hidden flex-col gap-2">
+        <span id="header-status-badge" class="inline-block px-2.5 py-1 bg-hbs-crimsonLight text-hbs-crimson font-mono text-[10px] font-bold rounded text-center border border-hbs-crimson/20">
+          ANGGOTA EKSEKUTIF
+        </span>
+        <button id="header-chamber-btn" onclick="openChamberView(); closeNavDrawer();" class="w-full py-2 px-3 text-xs font-semibold text-white bg-hbs-charcoal rounded-xl hover:bg-black transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+          <span id="header-chamber-text">Ruang Penasihat</span>
+          <span class="material-symbols-outlined text-[15px]">meeting_room</span>
+        </button>
+        <button id="header-logout-btn" onclick="logoutSession(); closeNavDrawer();" class="w-full py-1.5 text-xs font-semibold text-hbs-muted hover:text-hbs-crimson transition-all cursor-pointer">
+          Keluar
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- MINIMALIST SINGLE TOP BAR (CLAUDE / CHATGPT STYLE FOR 9:16 & DESKTOP)     -->
+  <!-- ========================================================================= -->
+  <header class="w-full h-14 bg-[#FAF9F6]/90 backdrop-blur-md border-b border-gray-200/70 sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto h-full px-3 sm:px-6 flex items-center justify-between gap-2">
+      <!-- Left: Hamburger Menu (Opens Collapsible Drawer) + Brand -->
+      <div class="flex items-center gap-2 min-w-0">
+        <button type="button" id="chat-drawer-toggle-btn" onclick="toggleNavDrawer()" class="w-9 h-9 rounded-xl hover:bg-gray-200/60 text-hbs-charcoal flex items-center justify-center transition-colors shrink-0 cursor-pointer" title="Buka Menu, Siapa Andrew Tani & Akses Lebih Lanjut">
+          <span class="material-symbols-outlined text-[21px]">menu</span>
+        </button>
+        <a href="#" onclick="showFrontpageView(); return false;" class="flex items-baseline gap-2 min-w-0 group">
+          <span class="font-serif text-lg sm:text-xl font-bold tracking-tight text-hbs-charcoal group-hover:text-hbs-crimson transition-colors whitespace-nowrap">
             iCoachAndrew<span class="text-hbs-crimson">.</span>
           </span>
-          <span id="header-subtitle" class="text-[8.5px] sm:text-[10px] font-mono uppercase tracking-wider text-hbs-muted mt-1 truncate max-w-[165px] sm:max-w-[230px] lg:max-w-none">
+          <span id="header-subtitle" class="hidden md:inline-block text-[10px] font-mono uppercase tracking-wider text-hbs-muted whitespace-nowrap truncate">
             Executive Mentorship &amp; Thought Leadership
           </span>
         </a>
       </div>
 
-      <!-- Navigation Links (single-line whitespace-nowrap on xl+) -->
-      <nav class="hidden xl:flex items-center gap-5 2xl:gap-7 text-xs 2xl:text-sm font-medium shrink-0">
-        <a href="#ruang-diskusi" onclick="focusChatEngine(); return false;" class="text-hbs-crimson font-semibold hover:text-hbs-crimsonDark transition-colors flex items-center gap-1.5 whitespace-nowrap">
-          <span class="material-symbols-outlined text-[16px]">forum</span>
-          <span id="nav-chat">Ruang Bincang Eksekutif</span>
-        </a>
-        <a href="#beranda" id="nav-who-andrew" onclick="revealWhoIsAndrew('beranda'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors flex items-center gap-1 whitespace-nowrap">
-          <span class="material-symbols-outlined text-[16px] text-hbs-crimson">person_book</span>
-          <span id="nav-who-andrew-text">Siapa Andrew Tani</span>
-        </a>
-        <a href="#karya-buku" id="nav-books" onclick="revealWhoIsAndrew('karya-buku'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors whitespace-nowrap">Khazanah &amp; Buku</a>
-        <a href="#lingkaran-pendampingan" id="nav-circles" onclick="revealWhoIsAndrew('lingkaran-pendampingan'); return false;" class="text-hbs-charcoal hover:text-hbs-crimson transition-colors whitespace-nowrap">Pilihan Akses</a>
-      </nav>
-
-      <!-- Action Buttons -->
+      <!-- Right: Minimalist Status Pill, Language Toggle, & Collapsible Info Trigger -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <!-- Guest controls (default) -->
-        <div id="header-guest-controls" class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <button type="button" id="header-who-btn" onclick="revealWhoIsAndrew('beranda')" class="xl:hidden px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-crimson bg-hbs-crimsonLight border border-hbs-crimson/30 rounded hover:bg-hbs-crimson hover:text-white transition-all flex items-center gap-1 whitespace-nowrap">
-            <span class="material-symbols-outlined text-[14px] sm:text-[15px]">person_book</span>
-            <span id="header-who-btn-text">Siapa Andrew Tani</span>
-          </button>
-          <button id="header-login-btn" onclick="openModal('auth-signin-modal')" class="px-2 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-hbs-charcoal border border-hbs-stoneDark rounded hover:border-hbs-crimson hover:text-hbs-crimson transition-all whitespace-nowrap">
-            Masuk Rekan
-          </button>
-          <a href="#ruang-diskusi" id="header-cta-btn" onclick="focusChatEngine(); return false;" class="hidden xl:flex px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-white bg-hbs-crimson rounded hover:bg-hbs-crimsonDark transition-all shadow-xs items-center gap-1.5 whitespace-nowrap">
-            <span id="header-cta-text">Mulai Diskusi</span>
-            <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </a>
+        <!-- Free Q&A Quota Pill (Compact) -->
+        <div id="free-qa-badge" class="px-2.5 py-1 rounded-full bg-white border border-gray-200 text-[10px] sm:text-[11px] font-mono font-medium text-hbs-charcoal flex items-center gap-1 shadow-2xs">
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span class="material-symbols-outlined text-[13px] text-hbs-crimson hidden sm:inline" id="free-qa-icon">chat_bubble</span>
+          <span id="free-qa-text">10/10 Gratis</span>
         </div>
 
-        <!-- Auth controls (shown when logged in) -->
-        <div id="header-auth-controls" class="hidden items-center gap-1.5 sm:gap-3 shrink-0">
-          <span id="header-status-badge" class="hidden sm:inline-block px-3 py-1 bg-hbs-crimsonLight text-hbs-crimson font-mono text-xs font-bold rounded border border-hbs-crimson/20">
-            ANGGOTA EKSEKUTIF
-          </span>
-          <button id="header-chamber-btn" onclick="openChamberView()" class="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-white bg-hbs-charcoal rounded hover:bg-black transition-all flex items-center gap-1 sm:gap-1.5 shadow-xs whitespace-nowrap">
-            <span id="header-chamber-text">Ruang Penasihat</span>
-            <span class="material-symbols-outlined text-[14px] sm:text-[16px]">meeting_room</span>
-          </button>
-          <button id="header-logout-btn" onclick="logoutSession()" class="px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-hbs-muted hover:text-hbs-crimson transition-all whitespace-nowrap">
-            Keluar
-          </button>
+        <!-- Language Switcher ID / EN -->
+        <div class="flex items-center gap-0.5 border border-gray-200 rounded-full px-2 py-1 bg-white text-[11px] font-sans shadow-2xs">
+          <button id="lang-id-btn" onclick="setLanguage('id')" class="font-bold text-hbs-charcoal hover:text-hbs-crimson transition-colors px-0.5 cursor-pointer">ID</button>
+          <span class="text-gray-300">/</span>
+          <button id="lang-en-btn" onclick="setLanguage('en')" class="text-gray-400 hover:text-hbs-charcoal transition-colors px-0.5 cursor-pointer">EN</button>
         </div>
+
+        <!-- Collapsible Profile & Further Access Trigger Pill -->
+        <button type="button" id="header-who-btn" onclick="toggleNavDrawer()" class="px-2.5 py-1.5 rounded-full border border-gray-200 bg-white hover:border-hbs-crimson text-hbs-charcoal hover:text-hbs-crimson text-[11px] font-medium flex items-center gap-1 transition-all shadow-2xs cursor-pointer" title="Siapa Andrew Tani & Akses Lebih Lanjut">
+          <span class="material-symbols-outlined text-[15px] text-hbs-crimson">person_book</span>
+          <span id="header-who-btn-text" class="hidden sm:inline whitespace-nowrap">Siapa Andrew</span>
+        </button>
       </div>
-
     </div>
   </header>
 
-  <main class="flex-1 w-full">
+  <main class="flex-1 w-full flex flex-col">
 
     <!-- =================================================================== -->
-    <!-- VIEW 1: FRONTPAGE (DIRECT CHAT-FIRST LAYOUT + SIAPA ANDREW TANI)    -->
+    <!-- VIEW 1: FRONTPAGE (CLAUDE / CHATGPT CLEAN CHAT ROOM LAYOUT)         -->
     <!-- =================================================================== -->
-    <div id="frontpage-view" class="flex flex-col w-full">
+    <div id="frontpage-view" class="flex-1 flex flex-col w-full">
 
       <!-- ========================================== -->
-      <!-- SECTION 1: DIRECT CHAT ENGINE (FIRST!)     -->
+      <!-- SECTION 1: DIRECT CHAT ROOM (CLAUDE/GPT)   -->
       <!-- ========================================== -->
-      <section id="ruang-diskusi" class="w-full bg-white py-5 sm:py-8 border-b border-hbs-stoneDark">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 space-y-4 sm:space-y-5">
-          
-          <!-- Compact Header & Value Proposition -->
-          <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-hbs-stoneDark pb-3.5">
-            <div class="space-y-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <span id="chat-badge" class="font-mono text-[11px] uppercase tracking-widest text-hbs-crimson font-bold">INTERACTIVE CASE ROOM • AKSES LANGSUNG</span>
-                <span class="hidden sm:inline text-hbs-stoneDark">•</span>
-                <span id="chat-free-pill" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-hbs-crimsonLight text-hbs-crimson font-mono text-[10px] font-bold">
-                  10x Tanya Jawab Gratis → Lanjut Unlimited
-                </span>
-              </div>
-              <h1 id="chat-title" class="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-hbs-charcoal leading-tight">Berbincang Langsung Bersama Andrew Tani</h1>
-              <p id="chat-subtitle" class="text-hbs-muted text-xs sm:text-sm leading-relaxed max-w-3xl">
-                Ketuk salah satu topik di bawah (1x klik langsung tanya) atau ketik langsung dilema kepemimpinan, suksesi, maupun tata kelola organisasi Anda.
-              </p>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <button type="button" onclick="shareChatUrl()" id="chat-share-btn" class="px-3 py-1.5 rounded border border-hbs-stoneDark bg-hbs-stone hover:border-hbs-crimson hover:bg-white text-hbs-charcoal text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer" title="Bagikan tautan Chat Engine ini">
-                <span class="material-symbols-outlined text-[15px] text-hbs-crimson">share</span>
-                <span id="chat-share-text">Bagikan Link</span>
-              </button>
-              <button type="button" onclick="revealWhoIsAndrew('beranda')" id="chat-top-who-btn" class="px-3 py-1.5 rounded border border-hbs-crimson/30 bg-hbs-crimsonLight hover:bg-hbs-crimson text-hbs-crimson hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
-                <span class="material-symbols-outlined text-[15px]">person_book</span>
-                <span id="chat-top-who-text">Siapa Andrew Tani?</span>
-              </button>
-            </div>
+      <section id="ruang-diskusi" class="w-full flex-1 flex flex-col bg-[#FAF9F6]">
+        <div id="ruang-diskusi-inner" class="flex-1 w-full max-w-3xl mx-auto px-3.5 sm:px-6 py-4 sm:py-8 flex flex-col justify-center gap-4 sm:gap-6 min-h-[calc(100dvh-3.5rem)]">
+
+          <!-- Hidden legacy elements kept for DOM/i18n compatibility -->
+          <div class="hidden" aria-hidden="true">
+            <span id="chat-badge">INTERACTIVE CASE ROOM</span>
+            <span id="chat-free-pill">10x Tanya Jawab Gratis</span>
+            <button type="button" id="chat-top-who-btn" onclick="revealWhoIsAndrew('beranda')"><span id="chat-top-who-text">Siapa Andrew Tani?</span></button>
+            <span id="quick-prompt-label">Mulai Cepat:</span>
+            <span id="chat-box-speaker">Andrew Tani</span>
+            <span id="chat-speaker-who-link">Siapa Andrew Tani?</span>
+            <span id="chat-box-speaker-sub">Senior Management Advisor &amp; Author • Digital Twin</span>
+            <span id="chat-box-status">ONLINE</span>
+            <span id="chat-welcome-header">ANDREW TANI</span>
+            <span id="chat-welcome-sub">10x Tanya Jawab Gratis</span>
+            <p id="chat-welcome-body">Selamat datang, Sahabatku.</p>
+            <span id="chat-welcome-foot">Organizing for Business Excellence &amp; Brain Quotient</span>
+            <span id="chat-welcome-who-link">Kenali Siapa Andrew Tani</span>
           </div>
 
-          <!-- 1-Tap Quick Start Prompt Chips (<= 2 Taps from Shared URL!) -->
-          <div class="space-y-1.5">
-            <div class="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-hbs-muted">
-              <span class="material-symbols-outlined text-[14px] text-hbs-crimson">bolt</span>
-              <span id="quick-prompt-label">Mulai Cepat (1x Ketuk Langsung Tanya):</span>
+          <!-- ========================================================================= -->
+          <!-- EMPTY STATE CENTERED GREETING (CLAUDE / CHATGPT STYLE BEFORE 1ST MESSAGE) -->
+          <!-- ========================================================================= -->
+          <div id="chat-empty-hero" class="flex flex-col items-center text-center space-y-3 my-auto pt-4 sm:pt-8">
+            <div class="relative inline-flex items-center justify-center">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-xl shadow-md overflow-hidden border-2 border-white ring-1 ring-hbs-crimson/30">
+                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="Andrew Tani" class="w-full h-full object-cover object-top" onerror="this.style.display='none'; this.parentElement.textContent='AT';"/>
+              </div>
+              <span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#FAF9F6]" title="Online"></span>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <button type="button" onclick="submitSuggestedPrompt(1)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-1">“Buku Organizing for Business Excellence: Strategi &amp; Eksekusi Tim”</span>
-              </button>
-              <button type="button" onclick="submitSuggestedPrompt(2)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-2">“Buku Brain Quotient: Neurosains &amp; Keputusan Eksekutif”</span>
-              </button>
-              <button type="button" onclick="submitSuggestedPrompt(3)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-3">“Suksesi Bisnis Keluarga &amp; Disiplin Mendengarkan”</span>
-              </button>
-              <button type="button" onclick="submitSuggestedPrompt(4)" class="cursor-pointer text-xs font-sans px-3.5 py-1.5 rounded-full border border-hbs-stoneDark bg-hbs-stone text-hbs-charcoal hover:border-hbs-crimson hover:bg-hbs-crimsonLight hover:text-hbs-crimson transition-all shadow-2xs">
-                <span id="prompt-chip-4">“Mengenal Buku, Pemikiran &amp; Digital Twin Pak Andrew”</span>
-              </button>
-            </div>
+
+            <h1 id="chat-title" class="font-serif text-2xl sm:text-3xl lg:text-4xl font-medium text-hbs-charcoal tracking-tight max-w-xl leading-snug">
+              Selamat datang, Sahabatku. Apa yang ingin kita diskusikan?
+            </h1>
+
+            <p id="chat-subtitle" class="text-hbs-muted text-xs sm:text-sm max-w-md leading-relaxed">
+              Digital Twin Pak Andrew Tani • Senior Management Advisor &amp; Co-author <em>Organizing for Business Excellence</em> &amp; <em>Brain Quotient</em>
+            </p>
           </div>
 
-          <!-- Main Chat Box Container -->
-          <div class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-xl shadow-md overflow-hidden flex flex-col">
-            
-            <!-- Chat Header Bar -->
-            <div class="bg-white px-4 sm:px-6 py-3.5 border-b border-hbs-stoneDark flex flex-wrap items-center justify-between gap-3">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-lg shadow-xs shrink-0 overflow-hidden border border-hbs-crimson">
-                  <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="AT" class="w-full h-full object-cover object-top" onerror="this.style.display='none'; this.parentElement.textContent='AT';"/>
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span id="chat-box-speaker" class="font-serif font-bold text-hbs-charcoal leading-tight">Andrew Tani</span>
-                    <button type="button" onclick="revealWhoIsAndrew('beranda')" class="text-[10px] font-mono text-hbs-crimson hover:underline font-semibold flex items-center gap-0.5 cursor-pointer">
-                      <span id="chat-speaker-who-link">(Siapa Beliau?)</span>
-                    </button>
-                  </div>
-                  <div id="chat-box-speaker-sub" class="text-[11px] font-mono text-hbs-muted uppercase">Senior Management Advisor &amp; Author • Digital Twin</div>
-                </div>
-              </div>
+          <!-- ========================================================================= -->
+          <!-- ACTIVE CONVERSATION STREAM (APPEARS ONCE USER SENDS FIRST MESSAGE)        -->
+          <!-- ========================================================================= -->
+          <div id="frontpage-messages" class="custom-scrollbar flex-1 w-full space-y-5 overflow-y-auto py-2 px-1">
+          </div>
 
-              <!-- Quota Counter & Status -->
-              <div class="flex items-center gap-2.5 shrink-0">
-                <div id="free-qa-badge" class="px-2.5 py-1 rounded-full bg-hbs-stone border border-hbs-stoneDark text-[11px] font-mono font-semibold text-hbs-charcoal flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[14px] text-hbs-crimson" id="free-qa-icon">chat_bubble</span>
-                  <span id="free-qa-text">Gratis: 0 / 10 Tanya Jawab</span>
-                </div>
-                <div class="flex items-center gap-1.5">
-                  <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <span id="chat-box-status" class="text-xs font-mono font-bold text-gray-700">ONLINE</span>
-                </div>
-              </div>
-            </div>
+          <!-- ========================================================================= -->
+          <!-- BOTTOM COMPOSER + COMPACT CHIPS + COLLAPSIBLE MORE ACCESS TRIGGER         -->
+          <!-- ========================================================================= -->
+          <div class="w-full mt-auto space-y-3">
 
-            <!-- Message History Stream -->
-            <div id="frontpage-messages" class="custom-scrollbar p-4 sm:p-6 space-y-5 max-h-[420px] sm:max-h-[460px] overflow-y-auto bg-white/70">
-              <!-- Opening Welcome Note -->
-              <div class="flex items-start gap-3 sm:gap-4">
-                <div class="w-9 h-9 rounded-full bg-hbs-charcoal text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">
-                  AT
-                </div>
-                <div class="bg-white border border-hbs-stoneDark rounded-lg p-4 sm:p-5 shadow-xs max-w-3xl space-y-2.5">
-                  <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-hbs-muted pb-1 border-b border-hbs-stoneDark">
-                    <span class="text-hbs-crimson font-bold" id="chat-welcome-header">ANDREW TANI • SAPAAN PEMBUKA</span>
-                    <span id="chat-welcome-sub">10x Tanya Jawab Gratis • Lanjut Unlimited</span>
-                  </div>
-                  <p id="chat-welcome-body" class="font-serif text-base text-hbs-charcoal leading-relaxed">
-                    Selamat datang, Sahabatku. Anda dapat langsung berdiskusi bersama saya secara gratis tanpa perlu login. Silakan ketuk salah satu topik di atas atau tulis langsung persoalan kepemimpinan, keselarasan tim, maupun suksesi organisasi yang sedang Anda pikirkan hari ini.
-                  </p>
-                  <div class="text-[11px] text-hbs-muted italic flex flex-wrap items-center justify-between gap-2 pt-1">
-                    <span id="chat-welcome-foot">Didasarkan pada karya buku <em>Organizing for Business Excellence</em>, <em>Brain Quotient</em>, dan 40+ tahun praktik dewan.</span>
-                    <button type="button" onclick="revealWhoIsAndrew('beranda')" class="not-italic font-sans font-semibold text-hbs-crimson hover:underline inline-flex items-center gap-0.5 cursor-pointer">
-                      <span id="chat-welcome-who-link">Mengenal Siapa Andrew Tani →</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- ========================================================================= -->
             <!-- INLINE LEAD CAPTURE GATE (SHOWN AFTER 10x FREE Q&A TO UNLOCK UNLIMITED!) -->
-            <!-- ========================================================================= -->
-            <div id="lead-capture-gate" class="hidden bg-hbs-crimsonLight/90 border-t-2 border-hbs-crimson p-5 sm:p-6 transition-all">
-              <div class="max-w-2xl mx-auto bg-white border border-hbs-crimson/30 rounded-xl p-5 sm:p-6 shadow-lg space-y-4">
-                <div class="flex items-start justify-between gap-3">
-                  <div class="space-y-1">
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-hbs-crimson text-white font-mono text-[10px] font-bold uppercase tracking-wider">
-                      <span class="material-symbols-outlined text-[13px]">lock_open</span>
-                      <span id="lead-gate-badge">LANJUTKAN TANYA JAWAB GRATIS UNLIMITED</span>
-                    </div>
-                    <h3 id="lead-gate-title" class="font-serif text-xl sm:text-2xl font-bold text-hbs-charcoal">
-                      Anda Telah Menyelesaikan 10x Tanya Jawab Gratis
-                    </h3>
-                    <p id="lead-gate-desc" class="text-xs sm:text-sm text-hbs-muted leading-relaxed">
-                      Untuk melanjutkan tanya jawab gratis tanpa batas (<strong>unlimited</strong>) bersama Digital Twin Pak Andrew Tani, silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda agar tim kami dapat menghubungi Anda lebih lanjut:
-                    </p>
+            <div id="lead-capture-gate" class="hidden bg-white border-2 border-hbs-crimson rounded-2xl p-4 sm:p-5 shadow-lg transition-all">
+              <div class="space-y-3">
+                <div class="space-y-1">
+                  <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-hbs-crimsonLight text-hbs-crimson font-mono text-[10px] font-bold uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[13px]">lock_open</span>
+                    <span id="lead-gate-badge">LANJUTKAN TANYA JAWAB GRATIS UNLIMITED</span>
                   </div>
+                  <h3 id="lead-gate-title" class="font-serif text-lg sm:text-xl font-bold text-hbs-charcoal">
+                    Anda Telah Menyelesaikan 10x Tanya Jawab Gratis
+                  </h3>
+                  <p id="lead-gate-desc" class="text-xs text-hbs-muted leading-relaxed">
+                    Untuk melanjutkan tanya jawab gratis tanpa batas (<strong>unlimited</strong>) bersama Digital Twin Pak Andrew Tani, silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda:
+                  </p>
                 </div>
 
                 <form id="lead-capture-form" onsubmit="event.preventDefault(); submitLeadGate();" class="space-y-3">
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div>
-                      <label for="lead-name-input" id="lead-label-name" class="block text-[11px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Nama Lengkap *</label>
-                      <input type="text" id="lead-name-input" required class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="Nama Anda"/>
+                      <label for="lead-name-input" id="lead-label-name" class="block text-[10px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Nama Lengkap *</label>
+                      <input type="text" id="lead-name-input" required class="w-full bg-hbs-stone border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="Nama Anda"/>
                     </div>
                     <div>
-                      <label for="lead-email-input" id="lead-label-email" class="block text-[11px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Alamat Email *</label>
-                      <input type="email" id="lead-email-input" required class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="nama@email.com"/>
+                      <label for="lead-email-input" id="lead-label-email" class="block text-[10px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Alamat Email *</label>
+                      <input type="email" id="lead-email-input" required class="w-full bg-hbs-stone border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="nama@email.com"/>
                     </div>
                     <div>
-                      <label for="lead-phone-input" id="lead-label-phone" class="block text-[11px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Nomor Telepon / WA Pribadi *</label>
-                      <input type="tel" id="lead-phone-input" required class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="0812xxxxxxxx"/>
+                      <label for="lead-phone-input" id="lead-label-phone" class="block text-[10px] font-mono uppercase text-hbs-charcoal font-bold mb-1">Nomor Telepon / WA *</label>
+                      <input type="tel" id="lead-phone-input" required class="w-full bg-hbs-stone border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none" placeholder="0812xxxxxxxx"/>
                     </div>
                   </div>
-                  <div id="lead-gate-error" class="hidden p-2.5 bg-red-50 text-hbs-crimson text-xs rounded border border-red-200"></div>
-                  <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                  <div id="lead-gate-error" class="hidden p-2 bg-red-50 text-hbs-crimson text-xs rounded-lg border border-red-200"></div>
+                  <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
                     <span id="lead-gate-privacy" class="text-[11px] text-hbs-muted flex items-center gap-1">
                       <span class="material-symbols-outlined text-[14px] text-hbs-crimson">verified_user</span>
-                      <span>Data Anda dijaga kerahasiaannya khusus untuk silaturahmi &amp; tindak lanjut Sekretariat Andrew Tani.</span>
+                      <span>Data dijaga kerahasiaannya untuk tindak lanjut resmi.</span>
                     </span>
-                    <button type="submit" id="lead-submit-btn" class="px-5 py-2.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-semibold text-xs sm:text-sm rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer">
-                      <span id="lead-submit-btn-text">Simpan &amp; Lanjut Tanya Jawab Gratis Unlimited</span>
-                      <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    <button type="submit" id="lead-submit-btn" class="px-4 py-2 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-semibold text-xs rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                      <span id="lead-submit-btn-text">Lanjut Gratis Unlimited</span>
+                      <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
                     </button>
                   </div>
                 </form>
               </div>
             </div>
 
-            <!-- Input Composer Form -->
-            <form id="frontpage-chat-form" onsubmit="event.preventDefault(); handleChatSubmit('frontpage');" class="bg-white p-3.5 sm:p-4 border-t border-hbs-stoneDark flex flex-col gap-2.5">
-              <div class="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <textarea id="frontpage-chat-input" rows="2" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleChatSubmit('frontpage');}" class="w-full bg-hbs-stone border border-hbs-stoneDark rounded-lg p-3 text-sm focus:border-hbs-crimson focus:bg-white focus:outline-none transition-all resize-none text-hbs-charcoal leading-relaxed font-sans" placeholder="Ketik langsung pertanyaan Anda untuk Pak Andrew di sini (tekan Enter atau klik Kirim)..."></textarea>
-                <button type="submit" id="frontpage-send-btn" class="shrink-0 sm:self-stretch px-5 py-2.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-semibold text-xs sm:text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer">
-                  <span id="chat-send-btn">Kirim Pesan</span>
-                  <span class="material-symbols-outlined text-[18px]">send</span>
+            <!-- ChatGPT / Claude Rounded Pill Input Composer -->
+            <form id="frontpage-chat-form" onsubmit="event.preventDefault(); handleChatSubmit('frontpage');" class="w-full">
+              <div class="bg-white border border-gray-200/90 hover:border-gray-300 focus-within:border-hbs-crimson/60 focus-within:ring-4 focus-within:ring-hbs-crimson/5 rounded-3xl px-4 py-2.5 sm:py-3 shadow-sm flex items-end gap-2.5 transition-all">
+                <textarea id="frontpage-chat-input" rows="1" oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight, 120)+'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleChatSubmit('frontpage');}" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm sm:text-base text-hbs-charcoal placeholder-gray-400 resize-none leading-relaxed py-1 max-h-[120px]" placeholder="Tanyakan apa saja kepada Pak Andrew..."></textarea>
+                <button type="submit" id="frontpage-send-btn" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-hbs-crimson hover:bg-hbs-crimsonDark text-white flex items-center justify-center shrink-0 transition-all shadow-xs cursor-pointer" title="Kirim Pesan">
+                  <span id="chat-send-btn" class="sr-only">Kirim</span>
+                  <span class="material-symbols-outlined text-[19px]">arrow_upward</span>
                 </button>
-              </div>
-              <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-hbs-muted">
-                <span class="flex items-center gap-1.5">
-                  <span class="material-symbols-outlined text-[14px] text-hbs-crimson">shield</span>
-                  <span id="chat-privacy-note">Dialog Anda privat, terjaga, dan tidak disimpan ke data publik.</span>
-                </span>
-                <span id="chat-quota-footnote" class="font-mono text-[11px] text-hbs-charcoal">
-                  10x tanya jawab gratis langsung • Isi kontak untuk lanjut gratis unlimited
-                </span>
               </div>
             </form>
 
-          </div>
+            <!-- Compact 1-Tap Starter Suggestion Pills (ChatGPT / Claude Style, auto-hides once chatting) -->
+            <div id="chat-starter-chips" class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-1">
+              <button type="button" onclick="submitSuggestedPrompt(1)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
+                <span id="prompt-chip-1">📖 Buku Organizing for Business Excellence</span>
+              </button>
+              <button type="button" onclick="submitSuggestedPrompt(2)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
+                <span id="prompt-chip-2">🧠 Buku Brain Quotient &amp; Neurosains</span>
+              </button>
+              <button type="button" onclick="submitSuggestedPrompt(3)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
+                <span id="prompt-chip-3">🤝 Suksesi Bisnis Keluarga</span>
+              </button>
+              <button type="button" onclick="submitSuggestedPrompt(4)" class="cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs truncate max-w-[48%] sm:max-w-none">
+                <span id="prompt-chip-4">✨ Profil &amp; Karya Pak Andrew</span>
+              </button>
+            </div>
 
-          <!-- ========================================================================= -->
-          <!-- TAP TO DISCOVER "SIAPA ANDREW TANI" (REVEALS INTRO, BOOKS & TRACK RECORD) -->
-          <!-- ========================================================================= -->
-          <div class="pt-2">
-            <button type="button" id="who-is-andrew-trigger" onclick="toggleWhoIsAndrew()" aria-expanded="false" class="w-full group bg-hbs-stone hover:bg-hbs-crimsonLight/50 border-2 border-hbs-stoneDark hover:border-hbs-crimson rounded-xl p-4 sm:p-5 shadow-xs transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-left cursor-pointer">
-              <div class="flex items-center gap-3.5 sm:gap-4">
-                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="Pak Andrew Tani" class="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover object-top border-2 border-hbs-crimson shrink-0"/>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <span id="who-trigger-badge" class="text-[10px] font-mono uppercase tracking-widest text-hbs-crimson font-bold">PROFIL PENASIHAT SENIOR &amp; KHAZANAH KARYA</span>
-                  </div>
-                  <h2 id="who-trigger-title" class="font-serif text-lg sm:text-xl font-bold text-hbs-charcoal group-hover:text-hbs-crimson transition-colors">
-                    Ketuk untuk Mengenal “Siapa Andrew Tani”
-                  </h2>
-                  <p id="who-trigger-desc" class="text-xs text-hbs-muted mt-0.5 leading-relaxed">
-                    Pelajari latar belakang Pak Andrew Tani, dengarkan rekaman suara beliau, serta telaah buku resmi <em>Organizing for Business Excellence</em>, <em>Brain Quotient</em>, dan 40+ tahun pendampingan 28 grup konglomerasi.
-                  </p>
-                </div>
+            <!-- Subtle Bottom Bar: Quota Note + Collapsible "Siapa Andrew Tani & Akses Lebih Lanjut" Trigger -->
+            <div class="pt-1 flex flex-col items-center gap-2 text-center">
+              <div class="text-[10.5px] text-hbs-muted flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5">
+                <span id="chat-privacy-note" class="hidden sm:inline">Dialog privat &amp; terjaga</span>
+                <span class="hidden sm:inline text-gray-300">•</span>
+                <span id="chat-quota-footnote" class="font-mono text-[10.5px] text-hbs-muted">
+                  10x tanya jawab gratis • Isi kontak untuk lanjut unlimited
+                </span>
               </div>
-              <div class="shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-hbs-crimson text-white group-hover:bg-hbs-crimsonDark text-xs font-semibold uppercase tracking-wider transition-all self-end sm:self-center shadow-xs">
-                <span id="who-trigger-btn-text">Siapa Andrew Tani</span>
-                <span id="who-trigger-icon" class="material-symbols-outlined text-[18px] transition-transform duration-300">expand_more</span>
-              </div>
-            </button>
+
+              <!-- Collapsible Trigger for "Siapa Andrew Tani", Books & Further Access (Default: Collapsed) -->
+              <button type="button" id="who-is-andrew-trigger" onclick="toggleWhoIsAndrew()" aria-expanded="false" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/80 hover:bg-white border border-gray-200 hover:border-hbs-crimson text-hbs-charcoal hover:text-hbs-crimson text-xs font-medium shadow-2xs transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-[15px] text-hbs-crimson">person_book</span>
+                <span id="who-trigger-btn-text">Siapa Andrew Tani, Buku &amp; Akses Lebih Lanjut</span>
+                <span id="who-trigger-icon" class="material-symbols-outlined text-[16px] transition-transform duration-300">expand_more</span>
+                <span id="who-trigger-badge" class="hidden">PROFIL</span>
+                <span id="who-trigger-title" class="hidden">Siapa Andrew Tani</span>
+                <span id="who-trigger-desc" class="hidden">Profil Pak Andrew Tani</span>
+              </button>
+            </div>
+
           </div>
 
         </div>
@@ -1356,17 +1379,17 @@
     "book3-authors": "Praktik Direksi 1983–Sekarang • 28 Grup Usaha",
     "book4-authors": "Esai Reflektif & Komposisi Musik Andrew Tani",
     "chat-badge": "INTERACTIVE CASE ROOM",
-    "chat-title": "Berbincang Langsung Bersama Andrew Tani",
-    "chat-subtitle": "Sampaikan dilema kepemimpinan, dinamika suksesi tim, atau pertanyaan tata kelola organisasi Anda. Digital Twin Pak Andrew menjawab dengan marwah, pengalaman nyata, dan gaya bertutur khas beliau.",
-    "prompt-chip-1": "“Buku Organizing for Business Excellence: Strategi & Eksekusi Tim”",
-    "prompt-chip-2": "“Buku Brain Quotient: Neurosains & Keputusan Eksekutif”",
-    "prompt-chip-3": "“Suksesi Bisnis Keluarga & Disiplin Mendengarkan”",
-    "prompt-chip-4": "“Mengenal Buku, Pemikiran & Digital Twin Pak Andrew”",
+    "chat-title": "Selamat datang, Sahabatku. Apa yang ingin kita diskusikan?",
+    "chat-subtitle": "Digital Twin Pak Andrew Tani • Senior Management Advisor & Author (Organizing for Business Excellence & Brain Quotient)",
+    "prompt-chip-1": "📖 Buku Organizing for Business Excellence",
+    "prompt-chip-2": "🧠 Buku Brain Quotient & Neurosains",
+    "prompt-chip-3": "🤝 Suksesi Bisnis Keluarga",
+    "prompt-chip-4": "✨ Profil & Karya Pak Andrew",
     "chat-box-speaker": "Andrew Tani",
     "chat-box-speaker-sub": "Senior Management Advisor & Author • Digital Twin",
     "chat-box-status": "ONLINE",
-    "chat-privacy-note": "Dialog Anda privat, terjaga, dan tidak disimpan ke data publik.",
-    "chat-send-btn": "Kirim Pesan",
+    "chat-privacy-note": "Dialog privat & terjaga",
+    "chat-send-btn": "Kirim",
     "tiers-badge": "MEMBERSHIP & ENGAGEMENT",
     "tiers-title": "Pilihan Akses Diskusi Bersama Andrew Tani",
     "tiers-subtitle": "Dua tingkat akses transparan dan bersahabat yang dirancang untuk kebutuhan para eksekutif.",
@@ -1385,7 +1408,7 @@
     "notice-label": "Pemberitahuan Resmi:",
     "notice-body": "Ruang ini ditenagai oleh Digital Twin Andrew Tani berdasarkan karya dan 40+ tahun pengalaman beliau. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.",
     "nav-who-andrew-text": "Siapa Andrew Tani",
-    "header-who-btn-text": "Siapa Andrew Tani",
+    "header-who-btn-text": "Siapa Andrew",
     "chat-free-pill": "10x Tanya Jawab Gratis",
     "chat-share-text": "Bagikan Link Chat",
     "chat-top-who-text": "Siapa Andrew Tani?",
@@ -1404,15 +1427,19 @@
     "lead-label-phone": "Nomor Telepon Pribadi / WhatsApp",
     "lead-gate-privacy": "Data pribadi Anda dijaga kerahasiaannya & hanya digunakan untuk tindak lanjut resmi.",
     "lead-submit-btn-text": "Kirim & Lanjut Tanya Jawab Gratis Unlimited",
-    "chat-quota-footnote": "Melayani 10x tanya jawab gratis • Isi Nama, Email & Nomor Telepon untuk lanjut gratis unlimited",
+    "chat-quota-footnote": "10x tanya jawab gratis • Isi kontak untuk lanjut unlimited",
     "who-trigger-badge": "KETUK UNTUK MENGENAL LEBIH DEKAT",
     "who-trigger-title": "Siapa Andrew Tani?",
     "who-trigger-desc": "Ketuk di sini untuk mengenal profil lengkap Pak Andrew Tani, mendengarkan memo suara beliau, menelaah buku-buku terbitan resmi (Organizing for Business Excellence & Brain Quotient), serta rekam jejak 40+ tahun mendampingi 28 grup usaha.",
-    "who-trigger-btn-text": "Kenali Siapa Andrew Tani",
+    "who-trigger-btn-text": "Siapa Andrew Tani, Buku & Akses Lebih Lanjut",
+    "drawer-new-chat-text": "Percakapan Baru",
+    "drawer-bio-summary-label": "Ringkasan Singkat Profil",
+    "drawer-open-bio-btn": "Buka Halaman Siapa Andrew Tani",
+    "drawer-nav-heading": "Akses Lebih Lanjut",
     "tier1-bullet-1": "10x tanya jawab gratis langsung (≤ 3 ketukan dari link)",
     "tier1-bullet-2": "Lanjut tanya jawab gratis unlimited setelah mengisi Nama, Email & Nomor Telepon",
     "tier1-bullet-3": "Dihubungi lebih lanjut untuk pendampingan relevan",
-    "frontpage-chat-input": { "placeholder": "Tulis langsung pertanyaan Anda di sini (Tekan Enter atau klik Kirim)..." },
+    "frontpage-chat-input": { "placeholder": "Tanyakan apa saja kepada Pak Andrew..." },
     "lead-name-input": { "placeholder": "Nama lengkap Anda" },
     "lead-email-input": { "placeholder": "nama@email.com" },
     "lead-phone-input": { "placeholder": "0812xxxx / +62812xxxx" }
@@ -1648,17 +1675,17 @@
     "book3-authors": "Board Advisory Practice 1983–Present • 28 Leading Groups",
     "book4-authors": "Reflective Essays & Musical Compositions by Andrew Tani",
     "chat-badge": "INTERACTIVE CASE ROOM",
-    "chat-title": "Engage in Direct Dialogue with Andrew Tani",
-    "chat-subtitle": "Present your leadership dilemmas, succession dynamics, or organizational alignment challenges. Pak Andrew’s Digital Twin responds with dignity, grounded experience, and his distinctive editorial voice.",
-    "prompt-chip-1": "“Book: Organizing for Business Excellence — Strategy & Team”",
-    "prompt-chip-2": "“Book: Brain Quotient — Neuroscience & Executive Decisions”",
-    "prompt-chip-3": "“Family Business Succession & The Discipline of Listening”",
-    "prompt-chip-4": "“About Pak Andrew’s Books, Legacy & Digital Twin”",
+    "chat-title": "Welcome, my friend. Where should we begin?",
+    "chat-subtitle": "Pak Andrew Tani Digital Twin • Senior Management Advisor & Author (Organizing for Business Excellence & Brain Quotient)",
+    "prompt-chip-1": "📖 Book: Organizing for Business Excellence",
+    "prompt-chip-2": "🧠 Book: Brain Quotient & Neuroscience",
+    "prompt-chip-3": "🤝 Family Business Succession",
+    "prompt-chip-4": "✨ Pak Andrew’s Books & Legacy",
     "chat-box-speaker": "Andrew Tani",
     "chat-box-speaker-sub": "Senior Management Advisor & Author • Digital Twin",
     "chat-box-status": "ONLINE",
-    "chat-privacy-note": "Your conversation is private, secure, and never fed into public training datasets.",
-    "chat-send-btn": "Send Message",
+    "chat-privacy-note": "Private & safeguarded dialogue",
+    "chat-send-btn": "Send",
     "tiers-badge": "MEMBERSHIP & ENGAGEMENT",
     "tiers-title": "Access & Consultation Tiers with Andrew Tani",
     "tiers-subtitle": "Two transparent, dignified access options tailored to executive discernment.",
@@ -1677,7 +1704,7 @@
     "notice-label": "Official Notice:",
     "notice-body": "This space is powered by Andrew Tani’s Digital Twin, drawing upon his published works and 40+ years of board advisory experience. It serves as a thinking partner, not a substitute for formal legal or financial counsel.",
     "nav-who-andrew-text": "Who is Andrew Tani",
-    "header-who-btn-text": "Who is Andrew Tani",
+    "header-who-btn-text": "Who is Andrew",
     "chat-free-pill": "10 Free Q&A Exchanges",
     "chat-share-text": "Share Chat Link",
     "chat-top-who-text": "Who is Andrew Tani?",
@@ -1696,15 +1723,19 @@
     "lead-label-phone": "Personal Phone / WhatsApp Number",
     "lead-gate-privacy": "Your personal details are kept strictly confidential and used solely for official follow-up.",
     "lead-submit-btn-text": "Submit & Continue Unlimited Free Q&A",
-    "chat-quota-footnote": "10 free Q&A exchanges • Submit Name, Email & Phone to unlock unlimited free Q&A",
+    "chat-quota-footnote": "10 free Q&A exchanges • Submit contact to unlock unlimited",
     "who-trigger-badge": "TAP TO DISCOVER",
     "who-trigger-title": "Who is Andrew Tani?",
     "who-trigger-desc": "Tap here to explore Pak Andrew Tani's full profile, listen to his voice memo, browse his official published books (Organizing for Business Excellence & Brain Quotient), and view his 40+ year track record advising 28 business groups.",
-    "who-trigger-btn-text": "Discover Who is Andrew Tani",
+    "who-trigger-btn-text": "Who is Andrew Tani, Books & Further Access",
+    "drawer-new-chat-text": "New Conversation",
+    "drawer-bio-summary-label": "Quick Profile Summary",
+    "drawer-open-bio-btn": "Open Full Profile & Voice Memo",
+    "drawer-nav-heading": "Further Access",
     "tier1-bullet-1": "10 instant free Q&A exchanges (≤ 3 taps from shared link)",
     "tier1-bullet-2": "Unlimited free Q&A after submitting Name, Email & Personal Phone",
     "tier1-bullet-3": "Personal follow-up for relevant executive advisory",
-    "frontpage-chat-input": { "placeholder": "Type your question directly here (Press Enter or click Send)..." },
+    "frontpage-chat-input": { "placeholder": "Ask Pak Andrew anything..." },
     "lead-name-input": { "placeholder": "Your full name" },
     "lead-email-input": { "placeholder": "name@company.com" },
     "lead-phone-input": { "placeholder": "+62 812 xxxx xxxx" }
@@ -1812,6 +1843,30 @@
       return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    function toggleNavDrawer() {
+      document.body.classList.toggle('nav-drawer-open');
+    }
+
+    function openNavDrawer() {
+      document.body.classList.add('nav-drawer-open');
+    }
+
+    function closeNavDrawer() {
+      document.body.classList.remove('nav-drawer-open');
+    }
+
+    function resetFrontpageChat() {
+      document.querySelectorAll('#frontpage-messages [data-chat-turn="1"]').forEach((n) => n.remove());
+      document.body.classList.remove('chat-started');
+      const fpIn = document.getElementById('frontpage-chat-input');
+      if (fpIn) {
+        fpIn.value = '';
+        fpIn.style.height = 'auto';
+        setTimeout(() => fpIn.focus(), 100);
+      }
+      showFrontpageView();
+    }
+
     function showFrontpageView() {
       const fp = document.getElementById('frontpage-view');
       const cb = document.getElementById('chamber-view');
@@ -1845,9 +1900,9 @@
       if (trigger) trigger.setAttribute('aria-expanded', revealed ? 'true' : 'false');
       if (btnText) {
         if (revealed) {
-          btnText.textContent = isEn ? 'Hide Profile Section' : 'Sembunyikan Profil';
+          btnText.textContent = isEn ? 'Hide Profile & Books' : 'Sembunyikan Profil & Buku';
         } else {
-          btnText.textContent = isEn ? 'Discover Who is Andrew Tani' : 'Kenali Siapa Andrew Tani';
+          btnText.textContent = isEn ? 'Who is Andrew Tani, Books & Further Access' : 'Siapa Andrew Tani, Buku & Akses Lebih Lanjut';
         }
       }
       if (btnIcon) {
@@ -1924,27 +1979,30 @@
 
       if (unlimited) {
         if (badgeEl) {
-          badgeEl.className = 'px-2.5 py-1 rounded bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-mono text-[11px] flex items-center gap-1.5';
+          badgeEl.className = 'px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 font-mono text-[10px] sm:text-[11px] font-semibold flex items-center gap-1';
         }
         if (iconEl) iconEl.textContent = 'all_inclusive';
         if (textEl) {
-          textEl.textContent = isEn ? 'UNLIMITED FREE Q&A ACTIVE' : 'TANYA JAWAB GRATIS UNLIMITED AKTIF';
+          textEl.textContent = isEn ? 'Unlimited' : 'Unlimited';
         }
         if (pillEl) {
           pillEl.textContent = isEn ? 'Unlimited Free Q&A Active' : 'Tanya Jawab Gratis Unlimited Aktif';
         }
         if (footnoteEl) {
           footnoteEl.textContent = isEn
-            ? 'Thank you — Unlimited Free Q&A is unlocked for your session.'
-            : 'Terima kasih — Akses Tanya Jawab Gratis Unlimited telah aktif untuk Anda.';
+            ? 'Unlimited Free Q&A Active'
+            : 'Akses Tanya Jawab Gratis Unlimited Aktif';
         }
         if (gateEl) gateEl.classList.add('hidden');
       } else {
+        if (badgeEl) {
+          badgeEl.className = 'px-2.5 py-1 rounded-full bg-white border border-gray-200 text-[10px] sm:text-[11px] font-mono font-medium text-hbs-charcoal flex items-center gap-1 shadow-2xs';
+        }
         if (iconEl) iconEl.textContent = remaining === 0 ? 'lock_open' : 'verified';
         if (textEl) {
           textEl.textContent = isEn
-            ? `FREE Q&A: ${remaining}/${limit} REMAINING`
-            : `KUOTA GRATIS: ${remaining}/${limit} TERSISA`;
+            ? `${remaining}/${limit} Free`
+            : `${remaining}/${limit} Gratis`;
         }
         if (pillEl) {
           pillEl.textContent = isEn
@@ -1953,8 +2011,8 @@
         }
         if (footnoteEl) {
           footnoteEl.textContent = isEn
-            ? `10 free Q&A exchanges (${used}/${limit} used) • Submit Name, Email & Phone to continue unlimited`
-            : `Melayani 10x tanya jawab gratis (${used}/${limit} terpakai) • Isi Nama, Email & Nomor Telepon untuk lanjut gratis unlimited`;
+            ? `${remaining}/${limit} free Q&A left • Submit contact for unlimited`
+            : `Sisa ${remaining}/${limit} tanya jawab gratis • Isi kontak untuk lanjut unlimited`;
         }
         if (gateEl) {
           if (used >= limit || freeQuotaState.requireLead) {
@@ -2129,11 +2187,11 @@
       const enBtn = document.getElementById('lang-en-btn');
       if (idBtn && enBtn) {
         if (currentLang === 'id') {
-          idBtn.className = 'font-bold text-white hover:text-hbs-crimson transition-colors';
-          enBtn.className = 'text-gray-400 hover:text-white transition-colors';
+          idBtn.className = 'font-bold text-hbs-charcoal hover:text-hbs-crimson transition-colors px-0.5 cursor-pointer';
+          enBtn.className = 'text-gray-400 hover:text-hbs-charcoal transition-colors px-0.5 cursor-pointer';
         } else {
-          enBtn.className = 'font-bold text-white hover:text-hbs-crimson transition-colors';
-          idBtn.className = 'text-gray-400 hover:text-white transition-colors';
+          enBtn.className = 'font-bold text-hbs-charcoal hover:text-hbs-crimson transition-colors px-0.5 cursor-pointer';
+          idBtn.className = 'text-gray-400 hover:text-hbs-charcoal transition-colors px-0.5 cursor-pointer';
         }
       }
 
@@ -2268,38 +2326,28 @@
     function appendFrontpageTurn(role, text) {
       const container = document.getElementById('frontpage-messages');
       if (!container) return;
+      document.body.classList.add('chat-started');
       const isEn = currentLang === 'en';
 
       if (role === 'user') {
         const userBubble = document.createElement('div');
-        userBubble.className = 'flex items-start gap-4 justify-end';
+        userBubble.className = 'flex items-start justify-end';
         userBubble.setAttribute('data-chat-turn', '1');
         userBubble.innerHTML = `
-          <div class="bg-hbs-crimson text-white rounded-lg p-4 shadow-xs max-w-2xl">
-            <div class="text-[11px] font-mono text-red-200 mb-1">${isEn ? 'YOUR QUESTION' : 'PERTANYAAN ANDA'}</div>
-            <p class="text-sm leading-relaxed">${escapeHtml(text)}</p>
-          </div>
-          <div class="w-9 h-9 rounded-full bg-hbs-stoneDark text-hbs-charcoal flex items-center justify-center font-mono font-bold text-xs shrink-0 mt-1">
-            YOU
+          <div class="bg-[#F0EFEA] text-hbs-charcoal rounded-2xl rounded-tr-sm px-4 py-3 max-w-[85%] sm:max-w-xl shadow-2xs">
+            <p class="text-sm sm:text-[15px] leading-relaxed">${escapeHtml(text)}</p>
           </div>
         `;
         container.appendChild(userBubble);
       } else {
         const replyBubble = document.createElement('div');
-        replyBubble.className = 'flex items-start gap-4';
+        replyBubble.className = 'flex items-start gap-3 sm:gap-3.5';
         replyBubble.setAttribute('data-chat-turn', '1');
         replyBubble.innerHTML = `
-          <div class="w-9 h-9 rounded-full bg-hbs-charcoal text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">AT</div>
-          <div class="bg-white border border-hbs-stoneDark rounded-lg p-5 shadow-xs max-w-3xl space-y-2">
-            <div class="flex items-center justify-between text-xs font-mono text-hbs-muted pb-1 border-b border-hbs-stoneDark">
-              <span class="text-hbs-crimson font-bold">ANDREW TANI • SENIOR MANAGEMENT ADVISOR</span>
-              <span>${isEn ? 'Case Reflection' : 'Refleksi Kasus'}</span>
-            </div>
-            <p class="font-serif text-base text-hbs-charcoal leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
-            <div class="text-[11px] text-hbs-muted pt-2 border-t border-hbs-stoneDark flex items-center justify-between">
-              <span>${isEn ? 'Grounded in Andrew Tani Published Works & Advisory' : 'Disarikan dari Karya & Praktik Andrew Tani'}</span>
-              <span class="font-mono">Andrew Tani &amp; Co.</span>
-            </div>
+          <div class="w-8 h-8 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-xs shrink-0 mt-0.5 shadow-2xs">AT</div>
+          <div class="flex-1 min-w-0 space-y-1.5">
+            <div class="text-[11px] font-mono text-hbs-crimson font-semibold">Andrew Tani</div>
+            <p class="font-serif text-[15px] sm:text-base text-hbs-charcoal leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
           </div>
         `;
         container.appendChild(replyBubble);
@@ -2367,6 +2415,7 @@
       }
 
       input.value = '';
+      if (input.style) input.style.height = 'auto';
 
       if (source === 'chamber') appendChamberTurn('user', message);
       else appendFrontpageTurn('user', message);
@@ -2376,13 +2425,13 @@
       // Loading bubble in active container
       const activeContainer = document.getElementById(source === 'chamber' ? 'chamber-messages' : 'frontpage-messages');
       const loadingBubble = document.createElement('div');
-      loadingBubble.className = 'flex items-start gap-4';
+      loadingBubble.className = 'flex items-start gap-3';
       loadingBubble.id = 'loading-bubble-' + source;
       loadingBubble.innerHTML = `
-        <div class="w-9 h-9 rounded-full bg-hbs-charcoal text-white flex items-center justify-center font-serif font-bold text-sm shrink-0 mt-1">AT</div>
-        <div class="bg-white border border-hbs-stoneDark rounded-lg p-4 text-xs font-mono text-hbs-muted flex items-center gap-2">
-          <span class="material-symbols-outlined text-[16px] animate-spin">sync</span>
-          <span>${currentLang === 'en' ? 'Andrew Tani is reflecting on your case...' : 'Andrew Tani sedang merenungkan jawaban Anda...'}</span>
+        <div class="w-8 h-8 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-xs shrink-0 mt-0.5">AT</div>
+        <div class="py-2 text-xs font-mono text-hbs-muted flex items-center gap-2">
+          <span class="material-symbols-outlined text-[15px] animate-spin text-hbs-crimson">progress_activity</span>
+          <span>${currentLang === 'en' ? 'Andrew Tani is reflecting...' : 'Andrew Tani sedang merenung...'}</span>
         </div>
       `;
       if (activeContainer) {
@@ -2605,9 +2654,10 @@
         await fetch('/api/auth/logout', { method: 'POST' });
       } catch (_) {}
       document.querySelectorAll('#frontpage-messages [data-chat-turn="1"], #chamber-messages [data-chat-turn="1"]').forEach((n) => n.remove());
+      document.body.classList.remove('chat-started');
       const fpIn = document.getElementById('frontpage-chat-input');
       const chIn = document.getElementById('chamber-chat-input');
-      if (fpIn) fpIn.value = '';
+      if (fpIn) { fpIn.value = ''; fpIn.style.height = 'auto'; }
       if (chIn) chIn.value = '';
       await syncSession();
       showFrontpageView();
