@@ -79,9 +79,55 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
-    /* Collapse "Siapa Andrew Tani" & rest of landing page until user taps to reveal */
+    /* Collapse "Siapa Andrew Tani" & rest of landing page (including notice & footer) until user taps to reveal */
     body:not(.bio-revealed) [data-bio-section="1"] {
-      display: none;
+      display: none !important;
+    }
+
+    /* Lock Chat Room to exact visual viewport height when Full Profile is collapsed
+       so mobile keyboard NEVER pushes the page up to reveal profile or footer underneath */
+    body:not(.bio-revealed) {
+      height: var(--app-vvh, 100dvh);
+      max-height: var(--app-vvh, 100dvh);
+      overflow: hidden;
+    }
+    body:not(.bio-revealed) main,
+    body:not(.bio-revealed) #frontpage-view,
+    body:not(.bio-revealed) #ruang-diskusi {
+      flex: 1 1 0%;
+      min-height: 0;
+      overflow: hidden;
+    }
+    body:not(.bio-revealed) #ruang-diskusi-inner {
+      height: 100%;
+      min-height: 0 !important;
+      overflow: hidden;
+    }
+
+    /* WhatsApp / ChatGPT Dynamic Thinking & Typing Indicator Dots */
+    @keyframes waTypingBounce {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.35;
+      }
+      30% {
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+    }
+    .wa-typing-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background-color: #A41034;
+      display: inline-block;
+      animation: waTypingBounce 1.25s infinite ease-in-out;
+    }
+    .wa-typing-dot:nth-child(2) {
+      animation-delay: 0.18s;
+    }
+    .wa-typing-dot:nth-child(3) {
+      animation-delay: 0.36s;
     }
 
     /* ==========================================================================
@@ -114,31 +160,24 @@
 
     /* ==========================================================================
        EXECUTIVE MULTI-DEVICE RATIO ADAPTATION
-       - Foldable Cover Screen (Galaxy Z Fold Outer: 320px–360px, 22:9–23:9)
-       - Standard Executive Smartphones (iPhone / Android 9:16: 360px–430px)
-       - Samsung Galaxy S Ultra Series & Pro Max (384px–440px, tall 19.3:9–20:9)
-       - Foldable Unfolded Inner Display (Z Fold / Find N / Pixel Fold: 640px–960px)
        ========================================================================== */
     @media (max-width: 640px) {
       /* Prevent iOS Safari & Samsung Internet auto-zoom on input focus */
       input[type="text"], input[type="email"], input[type="tel"], input[type="password"], textarea, select {
         font-size: 16px !important;
       }
-      #frontpage-messages {
-        max-height: calc(100dvh - 11.5rem);
-      }
-    }
-    /* Tall Flagship Screens: Samsung Galaxy S22/S23/S24/S25 Ultra & iPhone Pro Max */
-    @media (min-width: 380px) and (max-width: 460px) and (min-height: 780px) {
-      #frontpage-messages {
-        max-height: calc(100dvh - 11rem);
-      }
     }
     /* Narrow Foldable Cover Screens (Galaxy Z Fold Outer Screen <= 365px) */
     @media (max-width: 365px) {
       #ruang-diskusi h1 {
-        font-size: 1.35rem !important;
+        font-size: 1.25rem !important;
         line-height: 1.25 !important;
+      }
+    }
+    /* Tall Ultra Flagships (Samsung Galaxy S24/S25 Ultra, Sony 21:9, 19.5:9 Executive Phones) */
+    @media (max-width: 480px) and (min-height: 780px) {
+      body:not(.bio-revealed) #ruang-diskusi {
+        height: calc(var(--app-vvh, 100dvh) - 48px) !important;
       }
     }
     /* Foldable Unfolded Inner Display (Galaxy Z Fold / Pixel Fold / Find N: 600px–960px) */
@@ -428,7 +467,7 @@
             <!-- ChatGPT / Claude Rounded Pill Input Composer -->
             <form id="frontpage-chat-form" onsubmit="event.preventDefault(); handleChatSubmit('frontpage');" class="w-full">
               <div class="bg-white border border-gray-200/90 hover:border-gray-300 focus-within:border-hbs-crimson/60 focus-within:ring-4 focus-within:ring-hbs-crimson/5 rounded-3xl px-4 py-2.5 sm:py-3 shadow-sm flex items-end gap-2.5 transition-all">
-                <textarea id="frontpage-chat-input" rows="1" oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight, 120)+'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleChatSubmit('frontpage');}" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm sm:text-base text-hbs-charcoal placeholder-gray-400 resize-none leading-relaxed py-1 max-h-[120px]" placeholder="Tanyakan apa saja kepada Pak Andrew..."></textarea>
+                <textarea id="frontpage-chat-input" rows="1" onfocus="handleChatInputFocus()" oninput="this.style.height='auto'; this.style.height=Math.min(this.scrollHeight, 120)+'px';" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); handleChatSubmit('frontpage');}" class="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-sm sm:text-base text-hbs-charcoal placeholder-gray-400 resize-none leading-relaxed py-1 max-h-[120px]" placeholder="Tanyakan apa saja kepada Pak Andrew..."></textarea>
                 <button type="submit" id="frontpage-send-btn" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-hbs-crimson hover:bg-hbs-crimsonDark text-white flex items-center justify-center shrink-0 transition-all shadow-xs cursor-pointer" title="Kirim Pesan">
                   <span id="chat-send-btn" class="sr-only">Kirim</span>
                   <span class="material-symbols-outlined text-[19px]">arrow_upward</span>
@@ -948,9 +987,9 @@
 
   <!-- ========================================== -->
   <!-- NOTICE BANNER: DIGITAL TWIN PROVENANCE     -->
-  <!-- (Moved cleanly to bottom right before footer) -->
+  <!-- (Collapsed in Chat Room mode; shown only when Full Profile is opened) -->
   <!-- ========================================== -->
-  <div class="w-full bg-hbs-stone border-t border-hbs-stoneDark py-5 px-4 sm:px-6 lg:px-12 text-xs text-hbs-muted text-center">
+  <div data-bio-section="1" class="w-full bg-hbs-stone border-t border-hbs-stoneDark py-5 px-4 sm:px-6 lg:px-12 text-xs text-hbs-muted text-center">
     <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-2 leading-relaxed">
       <span class="material-symbols-outlined text-hbs-crimson text-[18px] shrink-0">verified</span>
       <span>
@@ -962,8 +1001,9 @@
 
   <!-- ========================================== -->
   <!-- HBS-INSPIRED ACADEMIC FOOTER               -->
+  <!-- (Collapsed in Chat Room mode; shown only when Full Profile is opened) -->
   <!-- ========================================== -->
-  <footer class="w-full bg-hbs-charcoal text-white py-12 border-t-4 border-hbs-crimson text-sm mt-auto">
+  <footer data-bio-section="1" class="w-full bg-hbs-charcoal text-white py-12 border-t-4 border-hbs-crimson text-sm mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8">
       
       <div class="md:col-span-6 space-y-4">
@@ -1927,10 +1967,54 @@
       if (revealed) {
         document.body.classList.remove('bio-revealed');
         updateWhoTriggerUI();
-        const chatSec = document.getElementById('ruang-diskusi');
-        if (chatSec) chatSec.scrollIntoView({ behavior: 'smooth' });
+        syncVisualViewportHeight();
+        window.scrollTo({ top: 0, behavior: 'auto' });
       } else {
         revealWhoIsAndrew('beranda');
+      }
+    }
+
+    function syncVisualViewportHeight() {
+      try {
+        const vv = window.visualViewport;
+        const h = vv && vv.height ? Math.round(vv.height) : window.innerHeight;
+        if (h > 120) {
+          document.documentElement.style.setProperty('--app-vvh', h + 'px');
+        }
+        if (!document.body.classList.contains('bio-revealed')) {
+          if (window.scrollY !== 0) {
+            window.scrollTo(0, 0);
+          }
+          const fpMsgs = document.getElementById('frontpage-messages');
+          if (fpMsgs && document.body.classList.contains('chat-started')) {
+            fpMsgs.scrollTop = fpMsgs.scrollHeight;
+          }
+        }
+      } catch (_) {}
+    }
+
+    function handleChatInputFocus() {
+      if (document.body.classList.contains('bio-revealed')) {
+        document.body.classList.remove('bio-revealed');
+        updateWhoTriggerUI();
+      }
+      syncVisualViewportHeight();
+      window.scrollTo(0, 0);
+      setTimeout(() => {
+        syncVisualViewportHeight();
+        window.scrollTo(0, 0);
+      }, 80);
+      setTimeout(() => {
+        syncVisualViewportHeight();
+        window.scrollTo(0, 0);
+      }, 260);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', syncVisualViewportHeight);
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', syncVisualViewportHeight);
+        window.visualViewport.addEventListener('scroll', syncVisualViewportHeight);
       }
     }
 
@@ -2322,7 +2406,30 @@
       }
     }
 
-    function appendFrontpageTurn(role, text) {
+    function animateTypewriterText(el, fullText, scrollContainer) {
+      if (!el) return;
+      const text = String(fullText || '');
+      el.setAttribute('data-full-text', text);
+      const tokens = text.match(/\S+\s*/g) || [text];
+      if (tokens.length <= 2) {
+        el.textContent = text;
+        if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        return;
+      }
+      el.textContent = '';
+      let idx = 0;
+      const step = Math.max(1, Math.ceil(tokens.length / 32));
+      const timer = setInterval(() => {
+        idx = Math.min(tokens.length, idx + step);
+        el.textContent = tokens.slice(0, idx).join('');
+        if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        if (idx >= tokens.length) {
+          clearInterval(timer);
+        }
+      }, 28);
+    }
+
+    function appendFrontpageTurn(role, text, opts) {
       const container = document.getElementById('frontpage-messages');
       if (!container) return;
       document.body.classList.add('chat-started');
@@ -2346,15 +2453,19 @@
           <div class="w-8 h-8 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-xs shrink-0 mt-0.5 shadow-2xs">AT</div>
           <div class="flex-1 min-w-0 space-y-1.5">
             <div class="text-[11px] font-mono text-hbs-crimson font-semibold">Andrew Tani</div>
-            <p class="font-serif text-[15px] sm:text-base text-hbs-charcoal leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+            <p class="font-serif text-[15px] sm:text-base text-hbs-charcoal leading-relaxed whitespace-pre-wrap" data-reply-text="1">${escapeHtml(text)}</p>
           </div>
         `;
         container.appendChild(replyBubble);
+        if (opts && opts.animateTyping) {
+          const pEl = replyBubble.querySelector('[data-reply-text="1"]');
+          animateTypewriterText(pEl, text, container);
+        }
       }
       container.scrollTop = container.scrollHeight;
     }
 
-    function appendChamberTurn(role, text) {
+    function appendChamberTurn(role, text, opts) {
       const container = document.getElementById('chamber-messages');
       if (!container) return;
       const isEn = currentLang === 'en';
@@ -2384,7 +2495,7 @@
               <span class="text-hbs-crimson font-bold">ANDREW TANI • RUANG PENASIHAT TERTUTUP</span>
               <span>${isEn ? 'Confidential Counsel' : 'Nasihat Strategis Tertutup'}</span>
             </div>
-            <p class="font-serif text-base text-hbs-charcoal leading-relaxed whitespace-pre-wrap">${escapeHtml(text)}</p>
+            <p class="font-serif text-base text-hbs-charcoal leading-relaxed whitespace-pre-wrap" data-reply-text="1">${escapeHtml(text)}</p>
             <div class="text-[11px] text-hbs-muted pt-2 border-t border-hbs-stoneDark flex items-center justify-between">
               <span>${isEn ? 'Ring 1/Ring 2 Executive Session' : 'Sesi Eksekutif Ring 1/Ring 2'}</span>
               <span class="font-mono">Andrew Tani &amp; Co.</span>
@@ -2392,6 +2503,10 @@
           </div>
         `;
         container.appendChild(replyBubble);
+        if (opts && opts.animateTyping) {
+          const pEl = replyBubble.querySelector('[data-reply-text="1"]');
+          animateTypewriterText(pEl, text, container);
+        }
       }
       container.scrollTop = container.scrollHeight;
     }
@@ -2403,6 +2518,13 @@
       const btn = document.getElementById(btnId);
       const message = (input ? input.value : '').trim();
       if (!message) return;
+
+      if (source !== 'chamber' && document.body.classList.contains('bio-revealed')) {
+        document.body.classList.remove('bio-revealed');
+        updateWhoTriggerUI();
+        syncVisualViewportHeight();
+        window.scrollTo(0, 0);
+      }
 
       const isPublicFrontpage = source !== 'chamber' && sessionState.ring === 3;
       const isUnlimited = Boolean(freeQuotaState.unlimited) || Boolean(freeQuotaState.leadSubmitted);
@@ -2421,16 +2543,22 @@
 
       if (btn) btn.disabled = true;
 
-      // Loading bubble in active container
+      // WhatsApp / ChatGPT style dynamic "Thinking & Typing" bubble (both before AI and with AI)
       const activeContainer = document.getElementById(source === 'chamber' ? 'chamber-messages' : 'frontpage-messages');
       const loadingBubble = document.createElement('div');
-      loadingBubble.className = 'flex items-start gap-3';
+      loadingBubble.className = 'flex items-start gap-3 sm:gap-3.5';
       loadingBubble.id = 'loading-bubble-' + source;
+      loadingBubble.setAttribute('data-chat-turn', '1');
+      const statusSpanId = 'typing-status-' + source;
       loadingBubble.innerHTML = `
-        <div class="w-8 h-8 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-xs shrink-0 mt-0.5">AT</div>
-        <div class="py-2 text-xs font-mono text-hbs-muted flex items-center gap-2">
-          <span class="material-symbols-outlined text-[15px] animate-spin text-hbs-crimson">progress_activity</span>
-          <span>${currentLang === 'en' ? 'Andrew Tani is reflecting...' : 'Andrew Tani sedang merenung...'}</span>
+        <div class="w-8 h-8 rounded-full bg-hbs-crimson text-white flex items-center justify-center font-serif font-bold text-xs shrink-0 mt-0.5 shadow-2xs">AT</div>
+        <div class="bg-[#F0EFEA] border border-hbs-stoneDark/80 rounded-2xl rounded-tl-sm px-4 py-2.5 inline-flex items-center gap-2.5 shadow-2xs">
+          <span class="inline-flex items-center gap-1 py-1" aria-label="Typing">
+            <span class="wa-typing-dot"></span>
+            <span class="wa-typing-dot"></span>
+            <span class="wa-typing-dot"></span>
+          </span>
+          <span id="${statusSpanId}" class="text-[11px] font-mono text-hbs-muted">${currentLang === 'en' ? 'Thinking...' : 'Sedang merenungkan...'}</span>
         </div>
       `;
       if (activeContainer) {
@@ -2438,12 +2566,25 @@
         activeContainer.scrollTop = activeContainer.scrollHeight;
       }
 
+      const typingStageTimer = setTimeout(() => {
+        const statusEl = document.getElementById(statusSpanId);
+        if (statusEl) {
+          statusEl.textContent = currentLang === 'en' ? 'Andrew Tani is typing...' : 'Andrew Tani sedang mengetik...';
+        }
+      }, 550);
+
+      const minThinkingDelay = new Promise((resolve) => setTimeout(resolve, 1350));
+
       try {
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, lang: currentLang, guestId: getGuestId() })
-        });
+        const [res] = await Promise.all([
+          fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, lang: currentLang, guestId: getGuestId() })
+          }),
+          minThinkingDelay
+        ]);
+        clearTimeout(typingStageTimer);
         const data = await res.json();
         const lb = document.getElementById('loading-bubble-' + source);
         if (lb) lb.remove();
@@ -2468,20 +2609,22 @@
           const gateReply = data.reply || (currentLang === 'id'
             ? 'Sahabatku, Anda telah menyelesaikan 10x sesi tanya jawab gratis bersama saya. Untuk melanjutkan diskusi gratis tanpa batas (unlimited) dan agar tim kami dapat menghubungi Anda lebih lanjut, silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda pada formulir di bawah ini.'
             : 'My friend, you have completed your 10 free Q&A sessions with me. To continue with unlimited free Q&A and allow our team to follow up with you personally, please share your Name, Email, and Personal Phone Number in the form below.');
-          appendFrontpageTurn('twin', gateReply);
+          appendFrontpageTurn('twin', gateReply, { animateTyping: true });
           showLeadCaptureGate(true);
           return;
         }
         const reply = data.reply || (currentLang === 'id'
           ? 'Mohon maaf. Itu bersifat pribadi. Semoga Anda mengerti.'
           : 'I’m sorry. That is private. Hope you understand.');
-        if (source === 'chamber') appendChamberTurn('twin', reply);
-        else appendFrontpageTurn('twin', reply);
+        if (source === 'chamber') appendChamberTurn('twin', reply, { animateTyping: true });
+        else appendFrontpageTurn('twin', reply, { animateTyping: true });
 
         if (data.promptLead || (!freeQuotaState.unlimited && freeQuotaState.used >= (freeQuotaState.limit || 10))) {
           showLeadCaptureGate(true);
         }
       } catch (_) {
+        clearTimeout(typingStageTimer);
+        await minThinkingDelay;
         const lb = document.getElementById('loading-bubble-' + source);
         if (lb) lb.remove();
         // Offline / static fallback counter so 10x free Q&A gate also works in static previews
@@ -2497,8 +2640,8 @@
         const fallback = currentLang === 'id'
           ? 'Mohon maaf. Terjadi gangguan koneksi ke ruang diskusi. Silakan coba kembali sesaat lagi.'
           : 'I’m sorry. A connection error occurred with the advisory chamber. Please try again in a moment.';
-        if (source === 'chamber') appendChamberTurn('twin', fallback);
-        else appendFrontpageTurn('twin', fallback);
+        if (source === 'chamber') appendChamberTurn('twin', fallback, { animateTyping: true });
+        else appendFrontpageTurn('twin', fallback, { animateTyping: true });
         if (isPublicFrontpage && !freeQuotaState.unlimited && freeQuotaState.used >= (freeQuotaState.limit || 10)) {
           showLeadCaptureGate(true);
         }
@@ -2663,6 +2806,7 @@
     }
 
     // Initialize on load
+    syncVisualViewportHeight();
     loadLocalFreeQuotaBackup();
     const initialLang = (typeof localStorage !== 'undefined' && localStorage.getItem('icoachandrew_lang')) || 'id';
     setLanguage(initialLang);

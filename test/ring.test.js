@@ -1333,6 +1333,10 @@ test('Google Drive Explorer: Unassigned/Irrelevant, Fuzzy Search, Bulk Assign (.
     assert.ok(homeHtml.includes('id="chat-empty-hero"'), 'Minimalist centered greeting hero exists');
     assert.ok(homeHtml.includes('id="chat-starter-chips"'), 'Compact starter prompt chips container exists');
     assert.ok(homeHtml.includes('function toggleNavDrawer()'), 'Drawer toggle handler exists');
+    assert.ok(homeHtml.includes('wa-typing-dot'), 'WhatsApp-style dynamic thinking & typing indicator dots exist');
+    assert.ok(homeHtml.includes('function animateTypewriterText('), 'Progressive typing reveal animation exists');
+    assert.ok(homeHtml.includes('function handleChatInputFocus()'), 'Mobile keyboard focus viewport lock handler exists');
+    assert.ok(homeHtml.includes('function syncVisualViewportHeight()'), 'VisualViewport height sync handler exists');
   } finally {
     app.studio.works.gdrive.setCustomFetch(null);
   }
