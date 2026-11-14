@@ -2766,10 +2766,32 @@ async function loadAiDashboard() {
 
   // Form fields
   document.getElementById('ai-enabled-toggle').checked = cfg.enabled !== false;
-  const defModel = cfg.model || 'claude-sonnet-4-5';
+  const defModel = cfg.model || 'claude-sonnet-5-5';
   document.getElementById('ai-model-default').value = defModel;
+
+  // Dynamically populate model datalist & preset select with all live models from Anthropic
+  const liveModels = (cfg.modelsCache && cfg.modelsCache.list) || [];
+  const catalogModels = aiState.modelCatalog || [];
+  const mergedModels = [...liveModels];
+  for (const cm of catalogModels) {
+    if (!mergedModels.some((m) => m.id === cm.id)) mergedModels.push({ id: cm.id, name: cm.label });
+  }
+
+  const dl = document.getElementById('claude-models-datalist');
+  if (dl && mergedModels.length) {
+    dl.innerHTML = mergedModels.map((m) => `<option value="${esc(m.id)}">${esc(m.name || m.id)}</option>`).join('');
+  }
+
   const presetSel = document.getElementById('ai-model-preset-select');
   if (presetSel) {
+    for (const m of mergedModels) {
+      if (!Array.from(presetSel.options).some((o) => o.value === m.id)) {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = `✨ ${m.name || m.id}`;
+        presetSel.appendChild(opt);
+      }
+    }
     const hasOpt = Array.from(presetSel.options).some((o) => o.value === defModel);
     if (hasOpt) presetSel.value = defModel;
   }

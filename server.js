@@ -35,6 +35,10 @@ const ADVICE_REFUSAL = {
   en: 'I am Andrew’s digital twin, not Andrew himself, and I do not provide legal or financial advice.',
   id: 'Saya adalah digital twin Andrew, bukan Andrew sendiri, dan saya tidak memberikan nasihat hukum atau keuangan.'
 };
+const WARM_GREETING = {
+  en: 'Warm greetings, my friend, and welcome. It is a true pleasure to connect with you. I am Andrew Tani, here as your thinking companion on leadership, organizational alignment (Organizing for Business Excellence), executive cognitive neuroscience (Brain Quotient), and family business succession. What leadership reflection or challenge is on your mind today?',
+  id: 'Halo Sahabatku, selamat datang di ruang diskusi ini. Senang sekali dapat menyapa Anda. Saya Andrew Tani, hadir sebagai teman berpikir Anda seputar kepemimpinan, penyelarasan tim dan organisasi (Organizing for Business Excellence), neurosains kapasitas eksekutif (Brain Quotient), maupun suksesi bisnis keluarga. Apa tantangan atau refleksi kepemimpinan yang ingin kita diskusikan hari ini?'
+};
 const CAP_REACHED = {
   en: 'You have reached your monthly fair-use message allowance. Please wait for the next cycle or upgrade your plan.',
   id: 'Anda telah mencapai batas pemakaian wajar pesan bulanan Anda. Silakan tunggu periode berikutnya atau perbarui paket Anda.'
@@ -211,6 +215,7 @@ const STOPWORDS = new Set([
 ]);
 
 const OUT_OF_SCOPE_TOPIC_RE = /\b(presidency|president|presiden|pilpres|pemilu|partai politik|kampanye politik|menteri|kabinet|gubernur|walikota|dpr|mpr|geopolitics|geopolitik|rights?\s+issue|hmetd|saham|ihsg|stock\s+market|stock\s+price|ipo|dividen|dividend|obligasi|reksadana|crypto|cryptocurrency|kripto|bitcoin|ethereum|forex|valas|trading\s+saham|cuaca|weather|ramalan\s+cuaca|sepak\s+bola|football|soccer|resep\s+masakan|cooking\s+recipe|selebriti|celebrity|gosip)\b/i;
+const GREETING_RE = /^(halo|hai|hi|hello|hey|hei|selamat\s+(pagi|siang|sore|malam|datang)|assalamu\s*['’]?alaikum|salam(\s+hangat|\s+kenal)?|apa\s+kabar|good\s+(morning|afternoon|evening|day))([\s,]+(halo|hai|hi|hello|selamat\s+(pagi|siang|sore|malam)|apa\s+kabar|pak|bapak|om|coach|mr\.?|sir|andrew|tani|sahabatku|teman))*[\s!.,?]*$/i;
 
 function tokenize(s) {
   return String(s)
@@ -375,13 +380,16 @@ const PUBLIC_BOOK_TOPIC_RE = /(brain|quotient|neuroscience|neurosains|otak|kogni
 
 // ---------- conversation engine ----------
 async function answer(askerRing, question, lang, opts = {}) {
+  const trimmedQ = String(question || '').trim();
+  const isGreeting = GREETING_RE.test(trimmedQ);
+
   const special = checkSpecialRules(askerRing, question, lang);
   if (special.matched) {
     return { text: special.text, sources: [], refused: special.refused, outcome: special.outcome, topic: special.topic, mode: 'rule_guard' };
   }
 
   let hits = retrieve(askerRing, question);
-  if (askerRing <= 3 && PUBLIC_BOOK_TOPIC_RE.test(String(question || ''))) {
+  if (askerRing <= 3 && (isGreeting || PUBLIC_BOOK_TOPIC_RE.test(trimmedQ))) {
     const terms = tokenize(question);
     const seenIds = new Set(hits.map((h) => h.doc.id));
     for (const d of PUBLIC_BOOK_RING3_DOCS) {
@@ -389,6 +397,9 @@ async function answer(askerRing, question, lang, opts = {}) {
       const dt = new Set(tokenize(d.title + ' ' + d.text));
       let score = 0;
       for (const t of terms) if (dt.has(t)) score++;
+      if (isGreeting && (d.id === 'doc_r3_book_twin_id' || d.id === 'doc_r3_book_twin_en')) {
+        score = Math.max(score, 1);
+      }
       if (score > 0) hits.push({ doc: d, ring: 3, score });
     }
   }
@@ -399,12 +410,39 @@ async function answer(askerRing, question, lang, opts = {}) {
       return (b.score + bLangBoost) - (a.score + aLangBoost) || a.ring - b.ring;
     }).slice(0, 3);
   }
-  if (hits.length === 0) {
+
+  const hasAi = Boolean(
+    studio &&
+    studio.ai &&
+    studio.ai.loadCfg().enabled !== false &&
+    studio.ai.hasActiveKey &&
+    studio.ai.hasActiveKey()
+  );
+
+  const hadNoHitsOriginally = (hits.length === 0);
+
+  if (hadNoHitsOriginally) {
+    // 1. Strict confidential guard: question probing higher ring knowledge
     if (isRestrictedToStricterRing(askerRing, question)) {
       return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'refused_politely', topic: 'unmatched_or_restricted', mode: 'unmatched' };
     }
-    return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
+    // 2. Out of scope off-limits topics (politics, crypto, stock speculation, gossip, etc.)
+    if (OUT_OF_SCOPE_TOPIC_RE.test(trimmedQ)) {
+      return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
+    }
+
+    // 3. For greetings or when AI is ready, provide foundational Ring 3 canon instead of a 2ms hard cutoff
+    if (isGreeting || hasAi) {
+      const canonDocs = PUBLIC_BOOK_RING3_DOCS.filter((d) => d.lang === lang);
+      const fallbackDoc = canonDocs[0] || PUBLIC_BOOK_RING3_DOCS[0];
+      if (fallbackDoc) {
+        hits = [{ doc: fallbackDoc, ring: 3, score: 1 }];
+      }
+    } else {
+      return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
+    }
   }
+
   const context = hits.map((h) => `[${h.doc.id}] ${h.doc.title}\n${h.doc.text}`).join('\n\n');
   let text = '';
   let genInfo = { mode: 'extractive' };
@@ -416,18 +454,34 @@ async function answer(askerRing, question, lang, opts = {}) {
     } else if (gen.reason === 'model_error' && !opts.debug) {
       throw new Error('model_error_' + (gen.status || 500));
     } else {
-      text = hits[0].doc.text.slice(0, 950);
+      // Extractive fallback when AI fails, is disabled, or no key
+      if (isGreeting) {
+        text = WARM_GREETING[lang] || WARM_GREETING.id;
+      } else if (hadNoHitsOriginally) {
+        return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
+      } else {
+        text = hits[0].doc.text.slice(0, 950);
+      }
       if (gen.reason !== 'model_error') studio.ai.recordExtractive(askerRing, opts.source || 'chat');
     }
   } else {
-    text = hits[0].doc.text.slice(0, 950);
+    if (isGreeting) {
+      text = WARM_GREETING[lang] || WARM_GREETING.id;
+    } else if (hadNoHitsOriginally) {
+      return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
+    } else {
+      text = hits[0].doc.text.slice(0, 950);
+    }
   }
+
   const g = leakGuard(askerRing, text);
   if (!g.ok) {
     audit({ event: 'leak_blocked', askerRing, leakedRing: g.ring, doc: g.doc, outcome: 'guard_triggered' });
     return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'guard_triggered', topic: 'leak_guard', mode: genInfo.mode };
   }
-  const resObj = { text, sources: hits.map((h) => h.doc.id), refused: false, outcome: 'answered', topic: hits[0].doc.title };
+
+  const topicName = isGreeting ? 'greeting' : (hits[0] && hits[0].doc ? hits[0].doc.title : 'conversation');
+  const resObj = { text, sources: hits.map((h) => h.doc.id), refused: false, outcome: 'answered', topic: topicName };
   if (opts.debug) {
     resObj.mode = genInfo.mode;
     resObj.model = genInfo.model || null;
@@ -1586,6 +1640,9 @@ const userServer = http.createServer(async (req, res) => {
       });
       return send(res, 200, {
         reply: r.text,
+        refused: Boolean(r.refused),
+        outcome: r.outcome || (r.refused ? 'refused_politely' : 'answered'),
+        topic: r.topic || null,
         disclosure: DISCLOSURE[lang],
         ring: sess.label,
         usage: usageInfo,

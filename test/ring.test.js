@@ -1380,3 +1380,39 @@ test('Google Drive Explorer: Unassigned/Irrelevant, Fuzzy Search, Bulk Assign (.
     app.studio.works.gdrive.setCustomFetch(null);
   }
 });
+
+test('Warm Greetings are answered hospitably and intelligence is not bounded by zero keyword hits', async () => {
+  // 1. Indonesian greeting via /api/chat
+  const greetId = await user('POST', '/api/chat', { message: 'Halo Pak Andrew', lang: 'id' });
+  assert.strictEqual(greetId.status, 200);
+  assert.strictEqual(greetId.json.refused, false);
+  assert.strictEqual(greetId.json.outcome, 'answered');
+  assert.match(greetId.json.reply, /Halo Sahabatku|selamat datang|Andrew Tani/i);
+  assert.doesNotMatch(greetId.json.reply, /luar konteks|tidak tahu mengenai hal tersebut/i);
+
+  // 2. English greeting via /api/chat
+  const greetEn = await user('POST', '/api/chat', { message: 'Good morning Coach Andrew', lang: 'en' });
+  assert.strictEqual(greetEn.status, 200);
+  assert.strictEqual(greetEn.json.refused, false);
+  assert.strictEqual(greetEn.json.outcome, 'answered');
+  assert.match(greetEn.json.reply, /Warm greetings|welcome|Andrew Tani/i);
+
+  // 3. Admin Playground simulation for greeting
+  const playGreet = await admin('POST', '/admin/api/ai/playground', {
+    ring: 3,
+    lang: 'id',
+    message: 'Halo Pak Andrew'
+  });
+  assert.strictEqual(playGreet.status, 200);
+  assert.strictEqual(playGreet.json.refused, false);
+  assert.strictEqual(playGreet.json.outcome, 'answered');
+  assert.strictEqual(playGreet.json.topic, 'greeting');
+  assert.match(playGreet.json.text, /Halo Sahabatku|selamat datang|Andrew Tani/i);
+
+  // 4. Verification that off-scope guard still holds for politics/crypto
+  const offScope = await user('POST', '/api/chat', { message: 'Siapa calon presiden pemilu berikutnya?', lang: 'id' });
+  assert.strictEqual(offScope.status, 200);
+  assert.strictEqual(offScope.json.refused, true);
+  assert.strictEqual(offScope.json.outcome, 'out_of_scope');
+  assert.match(offScope.json.reply, /luar konteks ruang diskusi publik/i);
+});
