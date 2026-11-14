@@ -307,6 +307,13 @@ function isRestrictedToStricterRing(askerRing, question) {
         if (terms.some((t) => mt.has(t))) return true;
       }
     }
+    if (studio && studio.ai && typeof studio.ai.stricterTexts === 'function') {
+      const terms = tokenize(question);
+      for (const m of studio.ai.stricterTexts(askerRing)) {
+        const mt = new Set(tokenize(m.text));
+        if (terms.some((t) => mt.has(t))) return true;
+      }
+    }
   }
   return false;
 }
@@ -707,7 +714,7 @@ function sendFile(res, filePath, contentType = 'text/html; charset=utf-8', req =
     'cache-control': 'no-store',
     ...baseHeaders
   });
-  res.end(fs.readFileSync(filePath, 'utf8'));
+  res.end(fs.readFileSync(filePath));
 }
 
 function clientIp(req) {
@@ -720,6 +727,7 @@ function clientIp(req) {
 function body(req, limit = 5 * 1024 * 1024) {
   return new Promise((resolve, reject) => {
     let size = 0; const chunks = [];
+    req.on('error', reject);
     req.on('data', (c) => { size += c.length; if (size > limit) { reject(new Error('too_large')); req.destroy(); } else chunks.push(c); });
     req.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); } catch (e) { reject(new Error('bad_json')); } });
   });
