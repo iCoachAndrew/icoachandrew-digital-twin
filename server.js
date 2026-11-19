@@ -24,20 +24,20 @@ const OUT_OF_SCOPE = {
   id: 'Mohon maaf, saya tidak tahu mengenai hal tersebut karena berada di luar konteks ruang diskusi publik (Ring 3) ini. Ruang ini berfokus pada kepemimpinan, penyelarasan strategi & eksekusi tim (Organizing for Business Excellence), neurosains keputusan eksekutif (Brain Quotient), serta suksesi bisnis keluarga.'
 };
 const DISCLOSURE = {
-  en: 'I am Andrew’s digital twin, not Andrew himself.',
-  id: 'Saya adalah digital twin Andrew, bukan Andrew sendiri.'
+  en: 'I am iCoachAndrew, a digital twin, not Andrew himself.',
+  id: 'Saya adalah digital twin iCoachAndrew, bukan Andrew sendiri.'
 };
 const COMMITMENT_REFUSAL = {
-  en: 'As Andrew’s digital twin, I cannot commit Andrew to money, contracts, meetings, or promises.',
-  id: 'Sebagai digital twin Andrew, saya tidak dapat mengikat Andrew pada uang, kontrak, pertemuan, atau janji apa pun.'
+  en: 'As iCoachAndrew, a digital twin, I cannot commit Andrew to money, contracts, meetings, or promises.',
+  id: 'Sebagai digital twin iCoachAndrew, saya tidak dapat mengikat Andrew pada uang, kontrak, pertemuan, atau janji apa pun.'
 };
 const ADVICE_REFUSAL = {
-  en: 'I am Andrew’s digital twin, not Andrew himself, and I do not provide legal or financial advice.',
-  id: 'Saya adalah digital twin Andrew, bukan Andrew sendiri, dan saya tidak memberikan nasihat hukum atau keuangan.'
+  en: 'I am iCoachAndrew, a digital twin, not Andrew himself, and I do not provide legal or financial advice.',
+  id: 'Saya adalah digital twin iCoachAndrew, bukan Andrew sendiri, dan saya tidak memberikan nasihat hukum atau keuangan.'
 };
 const WARM_GREETING = {
-  en: 'Warm greetings, my friend, and welcome. It is a true pleasure to connect with you. I am Andrew Tani, here as your thinking companion on leadership, organizational alignment (Organizing for Business Excellence), executive cognitive neuroscience (Brain Quotient), and family business succession. What leadership reflection or challenge is on your mind today?',
-  id: 'Halo Sahabatku, selamat datang di ruang diskusi ini. Senang sekali dapat menyapa Anda. Saya Andrew Tani, hadir sebagai teman berpikir Anda seputar kepemimpinan, penyelarasan tim dan organisasi (Organizing for Business Excellence), neurosains kapasitas eksekutif (Brain Quotient), maupun suksesi bisnis keluarga. Apa tantangan atau refleksi kepemimpinan yang ingin kita diskusikan hari ini?'
+  en: 'Warm greetings, my friend, and welcome. It is a true pleasure to connect with you. I am iCoachAndrew, here as your thinking companion on leadership, organizational alignment (Organizing for Business Excellence), executive cognitive neuroscience (Brain Quotient), and family business succession. What leadership reflection or challenge is on your mind today?',
+  id: 'Halo Sahabatku, selamat datang di ruang diskusi ini. Senang sekali dapat menyapa Anda. Saya iCoachAndrew, hadir sebagai teman berpikir Anda seputar kepemimpinan, penyelarasan tim dan organisasi (Organizing for Business Excellence), neurosains kapasitas eksekutif (Brain Quotient), maupun suksesi bisnis keluarga. Apa tantangan atau refleksi kepemimpinan yang ingin kita diskusikan hari ini?'
 };
 const CAP_REACHED = {
   en: 'You have reached your monthly fair-use message allowance. Please wait for the next cycle or upgrade your plan.',
@@ -45,11 +45,11 @@ const CAP_REACHED = {
 };
 const PUBLIC_FREE_CHAT_LIMIT = Number(process.env.PUBLIC_FREE_CHAT_LIMIT || 10);
 const LEAD_GATE_PROMPT = {
-  en: 'You have completed your 10 free Q&A exchanges with Andrew Tani. To continue with unlimited free Q&A, please submit your Name, Email, and Personal Phone Number so our team may follow up with you.',
-  id: 'Anda telah menyelesaikan 10x tanya jawab gratis bersama Andrew Tani. Untuk melanjutkan tanya jawab gratis tanpa batas (unlimited), silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda untuk dihubungi lebih lanjut.'
+  en: 'You have completed your 10 free Q&A exchanges with iCoachAndrew. To continue with unlimited free Q&A, please submit your Name, Email, and Personal Phone Number so our team may follow up with you.',
+  id: 'Anda telah menyelesaikan 10x tanya jawab gratis bersama iCoachAndrew. Untuk melanjutkan tanya jawab gratis tanpa batas (unlimited), silakan lengkapi Nama, Email, dan Nomor Telepon pribadi Anda untuk dihubungi lebih lanjut.'
 };
 const FIXED_DUTIES = [
-  { id: 'disclosure', label: 'Kejujuran Identitas Digital Twin', rule: 'Selalu menyatakan diri sebagai digital twin Andrew Tani (bukan Andrew sendiri) bila ditanya secara tulus.' },
+  { id: 'disclosure', label: 'Kejujuran Identitas Digital Twin', rule: 'Selalu menyatakan diri sebagai digital twin iCoachAndrew Tani (bukan Andrew sendiri) bila ditanya secara tulus.' },
   { id: 'no_commitment', label: 'Larangan Mengikat Komitmen', rule: 'Tidak pernah mengikat Andrew pada uang, kontrak, investasi, pertemuan, atau janji apa pun.' },
   { id: 'no_legal_financial', label: 'Larangan Nasihat Hukum & Keuangan', rule: 'Tidak pernah memberikan nasihat hukum, pajak, investasi, atau keuangan.' },
   { id: 'ring_isolation', label: 'Isolasi Ketat Ring 0–3 & Leak Guard', rule: 'Penanya di Ring R hanya dapat mengakses pengetahuan & memori Ring N bila R <= N; semua balasan dipindai dengan 5-gram shingle Leak Guard.' }
@@ -413,7 +413,7 @@ const PUBLIC_BOOK_RING3_DOCS = [
   {
     ring: 3,
     id: 'doc_r3_book_twin_en',
-    title: 'About Pak Andrew Tani’s Published Books, Legacy & Digital Twin',
+    title: 'About iCoachAndrew’s Published Books, Legacy & Digital Twin',
     lang: 'en',
     text: 'Welcome, my friend. The iCoachAndrew Digital Twin is designed as your personal thinking partner, distilling over 40 years of my journey since 1983 advising enterprise leaders, my two official published books—"Organizing for Business Excellence" and "Brain Quotient" (Gramedia)—along with my reflective essays on peace of conscience and leadership songs. Amid the pressures of steering an organization, every leader needs a calm, fraternal, and discreet sanctuary to clarify their thoughts before making pivotal decisions. Here, you can converse directly about aligning strategy with daily team habits, applied neuroscience in leadership (Brain Quotient), family business succession, and maintaining inner clarity in times of change.'
   }
