@@ -189,6 +189,36 @@
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
     }
+
+    /* What They Say — Seamless Editorial Click-to-Play Facade */
+    .wts-card {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+    .wts-card:hover {
+      transform: translateY(-3px);
+    }
+    .wts-play-ring {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, box-shadow 0.28s ease;
+    }
+    .wts-facade-btn:hover .wts-play-ring,
+    .wts-facade-btn:focus-visible .wts-play-ring {
+      transform: scale(1.1);
+      background-color: #A41034;
+      box-shadow: 0 18px 36px -8px rgba(164, 16, 52, 0.55);
+    }
+    .wts-facade-btn:hover .wts-thumb-img {
+      transform: scale(1.04);
+    }
+    .wts-thumb-img {
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes wtsFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .wts-iframe-fade {
+      animation: wtsFadeIn 0.24s ease-out forwards;
+    }
   </style>
 </head>
 <body class="flex flex-col min-h-screen text-hbs-charcoal bg-[#FAF9F6] antialiased selection:bg-hbs-crimson selection:text-white">
@@ -251,11 +281,6 @@
             Co-author buku <em>Organizing for Business Excellence</em> &amp; <em>Brain Quotient</em>. Mendampingi dewan direksi, komisaris, dan pendiri usaha sejak 1983.
           </p>
         </details>
-
-        <button type="button" onclick="revealWhoIsAndrew('beranda'); closeNavDrawer();" class="w-full py-2 px-3 rounded-lg bg-hbs-crimson hover:bg-hbs-crimsonDark text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-          <span class="material-symbols-outlined text-[15px]">person_book</span>
-          <span id="drawer-open-bio-btn">Buka Halaman Siapa Andrew Tani</span>
-        </button>
       </div>
 
       <!-- Collapsible Navigation & Further Access Links -->
@@ -268,11 +293,11 @@
             <span class="material-symbols-outlined text-[17px]">forum</span>
             <span id="nav-chat">Ruang Bincang Eksekutif</span>
           </a>
-          <a href="#beranda" id="nav-who-andrew" onclick="revealWhoIsAndrew('beranda'); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+          <a href="#what-they-say" id="nav-who-andrew" onclick="revealWhoIsAndrew('what-they-say'); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
             <span class="material-symbols-outlined text-[17px] text-hbs-crimson">person_book</span>
             <span id="nav-who-andrew-text">Siapa Andrew Tani</span>
           </a>
-          <a href="/what-they-say" id="nav-what-they-say" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+          <a href="#what-they-say" id="nav-what-they-say" onclick="revealWhoIsAndrew('what-they-say'); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
             <span class="material-symbols-outlined text-[17px] text-hbs-crimson">play_circle</span>
             <span id="nav-what-they-say-text">What They Say</span>
           </a>
@@ -366,7 +391,7 @@
         </div>
 
         <!-- Collapsible Profile & Further Access Trigger Pill -->
-        <button type="button" id="header-who-btn" onclick="closeNavDrawer(); revealWhoIsAndrew('beranda');" class="px-2.5 py-1.5 rounded-full border border-gray-200 bg-white hover:border-hbs-crimson text-hbs-charcoal hover:text-hbs-crimson text-[11px] font-medium flex items-center gap-1 transition-all shadow-2xs cursor-pointer" title="Siapa Andrew Tani & Akses Lebih Lanjut">
+        <button type="button" id="header-who-btn" onclick="closeNavDrawer(); revealWhoIsAndrew('what-they-say');" class="px-2.5 py-1.5 rounded-full border border-gray-200 bg-white hover:border-hbs-crimson text-hbs-charcoal hover:text-hbs-crimson text-[11px] font-medium flex items-center gap-1 transition-all shadow-2xs cursor-pointer" title="Siapa Andrew Tani & Akses Lebih Lanjut">
           <span class="material-symbols-outlined text-[15px] text-hbs-crimson">person_book</span>
           <span id="header-who-btn-text" class="hidden sm:inline whitespace-nowrap">Siapa Andrew</span>
         </button>
@@ -391,7 +416,7 @@
           <div class="hidden" aria-hidden="true">
             <span id="chat-badge">INTERACTIVE CASE ROOM</span>
             <span id="chat-free-pill">10x Tanya Jawab Gratis</span>
-            <button type="button" id="chat-top-who-btn" onclick="revealWhoIsAndrew('beranda')"><span id="chat-top-who-text">Siapa Andrew Tani?</span></button>
+            <button type="button" id="chat-top-who-btn" onclick="revealWhoIsAndrew('what-they-say')"><span id="chat-top-who-text">Siapa Andrew Tani?</span></button>
             <span id="quick-prompt-label">Mulai Cepat:</span>
             <span id="chat-box-speaker">Andrew Tani</span>
             <span id="chat-speaker-who-link">Siapa Andrew Tani?</span>
@@ -527,8 +552,45 @@
       </section>
 
       <!-- ========================================== -->
-      <!-- SECTION 2: SIAPA ANDREW TANI (INTRO/HERO)  -->
-      <!-- (Placed after Chat Engine; revealed on tap) -->
+      <!-- SECTION 2A: WHAT THEY SAY (VIDEO SHOWCASE) -->
+      <!-- (First section revealed when opening "Siapa Andrew", followed by Executive Perspective) -->
+      <!-- ========================================== -->
+      <section id="what-they-say" data-bio-section="1" aria-label="What They Say — Video Testimoni Pemimpin" class="w-full bg-[#FAF9F6] py-12 lg:py-20 border-b border-hbs-stoneDark">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-10">
+          <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-hbs-stoneDark pb-6">
+            <div class="space-y-3 max-w-3xl">
+              <div class="inline-flex items-center gap-2 px-3 py-1 bg-hbs-crimsonLight text-hbs-crimson rounded text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider border border-hbs-crimson/20">
+                <span id="wts-badge">WHAT THEY SAY • PERSPEKTIF PARA PEMIMPIN</span>
+              </div>
+              <h2 id="wts-title" class="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-hbs-charcoal leading-[1.12] tracking-tight">
+                Kata Mereka tentang Andrew Tani
+              </h2>
+              <p id="wts-subtitle" class="text-base lg:text-lg text-hbs-muted leading-relaxed font-sans max-w-2xl">
+                Simak refleksi dan kesaksian langsung dari para pemimpin bisnis, pendiri usaha, dan tokoh nasional yang pernah berjalan bersama Pak Andrew Tani.
+              </p>
+            </div>
+            <div class="shrink-0 flex items-center gap-3">
+              <a href="#ruang-diskusi" onclick="focusChatEngine(); return false;" class="px-4 py-2.5 bg-white hover:bg-hbs-crimsonLight text-hbs-charcoal hover:text-hbs-crimson border border-hbs-stoneDark hover:border-hbs-crimson/40 rounded-lg font-medium text-xs sm:text-sm transition-all inline-flex items-center gap-2 shadow-2xs">
+                <span class="material-symbols-outlined text-[17px] text-hbs-crimson">forum</span>
+                <span id="wts-back-chat-text">Kembali ke Ruang Chat</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Responsive 3x2 Click-to-Play Video Grid (Synced with Ring 0 CMS) -->
+          <div id="wts-video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"></div>
+
+          <!-- Empty state (only shown if Admin clears all videos) -->
+          <div id="wts-empty-state" class="hidden text-center py-12 px-6 bg-white border border-hbs-stoneDark rounded-xl">
+            <span class="material-symbols-outlined text-4xl text-hbs-muted">video_library</span>
+            <p id="wts-empty-text" class="mt-3 text-sm text-hbs-muted">Belum ada video testimoni yang ditampilkan.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- SECTION 2B: SIAPA ANDREW TANI (EXECUTIVE PERSPECTIVE) -->
+      <!-- (Placed right below What They Say on scroll) -->
       <!-- ========================================== -->
       <section id="beranda" data-bio-section="1" class="w-full bg-white py-10 lg:py-20 border-b border-hbs-stoneDark">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
@@ -1053,12 +1115,6 @@
         <div id="footer-address" class="text-xs text-gray-400 font-mono">
           Andrew Tani &amp; Co. • Senior Management Advisory • Jakarta &amp; Singapore
         </div>
-        <div class="flex flex-wrap items-center gap-3 pt-1 text-xs">
-          <a href="/what-they-say" id="footer-what-they-say-link" class="inline-flex items-center gap-1.5 text-gray-300 hover:text-white underline underline-offset-4 decoration-hbs-crimson/80 transition-colors">
-            <span class="material-symbols-outlined text-[15px] text-hbs-crimson">play_circle</span>
-            <span id="footer-what-they-say-text">What They Say — Kata Mereka</span>
-          </a>
-        </div>
       </div>
 
       <div class="md:col-span-3 space-y-3">
@@ -1071,7 +1127,7 @@
           <span id="footer-wa-text">WhatsApp Sekretariat</span>
         </a>
         <div id="footer-social-links" class="pt-1 space-y-2">
-          <div id="footer-social-heading" class="font-mono text-[10px] uppercase tracking-wider text-gray-400">Ikuti Pak Andrew</div>
+          <div id="footer-social-heading" class="font-mono text-[10px] tracking-wider text-gray-400">IKUTI iCoachAndrew</div>
           <div class="flex items-center gap-2">
             <a id="footer-link-linkedin" href="https://www.linkedin.com/search/results/all/?keywords=Andrew%20Tani" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Andrew Tani" title="LinkedIn" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#0A66C2] flex items-center justify-center transition-colors">
               <svg viewBox="0 0 24 24" class="w-4 h-4 fill-white" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
@@ -2367,7 +2423,7 @@
       showFrontpageView();
       document.body.classList.add('bio-revealed');
       updateWhoTriggerUI();
-      const targetId = targetSectionId || 'beranda';
+      const targetId = targetSectionId || 'what-they-say';
       const el = document.getElementById(targetId);
       if (el) {
         setTimeout(() => {
@@ -2384,7 +2440,7 @@
         syncVisualViewportHeight();
         window.scrollTo({ top: 0, behavior: 'auto' });
       } else {
-        revealWhoIsAndrew('beranda');
+        revealWhoIsAndrew('what-they-say');
       }
     }
 
@@ -2735,7 +2791,7 @@
         el.textContent = isEnLang ? 'Buy the Book Online' : 'Beli Buku di Marketplace';
       });
       const socialHeading = document.getElementById('footer-social-heading');
-      if (socialHeading) socialHeading.textContent = isEnLang ? 'Follow Pak Andrew' : 'Ikuti Pak Andrew';
+      if (socialHeading) socialHeading.textContent = isEnLang ? 'FOLLOW iCoachAndrew' : 'IKUTI iCoachAndrew';
       const secHeading = document.getElementById('footer-secretariat-heading');
       if (secHeading) secHeading.textContent = isEnLang ? 'SECRETARIAT & ADVISORY' : 'SEKRETARIAT & KONSULTANSI';
       const secDesc = document.getElementById('footer-secretariat-desc');
@@ -2744,8 +2800,21 @@
         : 'Ingin merencanakan sesi konsultasi dewan atau mengundang Pak Andrew Tani langsung?';
       const waText = document.getElementById('footer-wa-text');
       if (waText) waText.textContent = isEnLang ? 'Secretariat WhatsApp' : 'WhatsApp Sekretariat';
-      const wtsFooterText = document.getElementById('footer-what-they-say-text');
-      if (wtsFooterText) wtsFooterText.textContent = isEnLang ? 'What They Say — Executive Perspectives' : 'What They Say — Kata Mereka';
+      const wtsBadge = document.getElementById('wts-badge');
+      if (wtsBadge) wtsBadge.textContent = isEnLang ? 'WHAT THEY SAY • EXECUTIVE PERSPECTIVES' : 'WHAT THEY SAY • PERSPEKTIF PARA PEMIMPIN';
+      const wtsTitle = document.getElementById('wts-title');
+      if (wtsTitle) wtsTitle.textContent = isEnLang ? 'What They Say About Andrew Tani' : 'Kata Mereka tentang Andrew Tani';
+      const wtsSubtitle = document.getElementById('wts-subtitle');
+      if (wtsSubtitle) wtsSubtitle.textContent = isEnLang
+        ? 'Watch candid reflections and perspectives from business leaders, founders, and public figures who have walked alongside Andrew Tani.'
+        : 'Simak refleksi dan kesaksian langsung dari para pemimpin bisnis, pendiri usaha, dan tokoh nasional yang pernah berjalan bersama Pak Andrew Tani.';
+      const wtsBackChat = document.getElementById('wts-back-chat-text');
+      if (wtsBackChat) wtsBackChat.textContent = isEnLang ? 'Back to Chat Room' : 'Kembali ke Ruang Chat';
+      const wtsEmptyText = document.getElementById('wts-empty-text');
+      if (wtsEmptyText) wtsEmptyText.textContent = isEnLang ? 'No video testimonials are currently listed.' : 'Belum ada video testimoni yang ditampilkan.';
+      if (typeof window.renderWhatTheySayVideos === 'function') {
+        window.renderWhatTheySayVideos(window.__wtsCurrentVideos || window.DEFAULT_WTS_VIDEOS);
+      }
       const whoBtn = document.getElementById('header-who-btn');
       if (whoBtn) {
         const whoLabel = isEnLang ? 'Who is Andrew Tani' : 'Siapa Andrew Tani';
@@ -3266,6 +3335,177 @@
       showFrontpageView();
     }
 
+    // ==================== WHAT THEY SAY — CLICK-TO-PLAY FACADE ENGINE ====================
+    (function initWhatTheySayEngine() {
+      const DEFAULT_WTS_VIDEOS = [
+        { id: 'wts_1', name: 'Edwin Soeryadjaya', youtubeId: 'VBdAdIIgB34', url: 'https://www.youtube.com/watch?v=VBdAdIIgB34' },
+        { id: 'wts_2', name: 'Hasnul Suhaimi', youtubeId: 'dTFxKrsPRbU', url: 'https://www.youtube.com/watch?v=dTFxKrsPRbU' },
+        { id: 'wts_3', name: 'Franky Welirang', youtubeId: 'FCKq-B-0YgE', url: 'https://www.youtube.com/watch?v=FCKq-B-0YgE' },
+        { id: 'wts_4', name: 'Tedy Djuhar', youtubeId: 'xdGuQeidPKI', url: 'https://www.youtube.com/watch?v=xdGuQeidPKI' },
+        { id: 'wts_5', name: 'Sandiaga Uno', youtubeId: 'xJNlJU0FsKg', url: 'https://www.youtube.com/watch?v=xJNlJU0FsKg' },
+        { id: 'wts_6', name: 'Richard Buntario', youtubeId: 'LWu2OXB3ZwI', url: 'https://www.youtube.com/watch?v=LWu2OXB3ZwI' }
+      ];
+      const YT_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+      const isStudioMode = new URLSearchParams(window.location.search).get('studio') === '1';
+      let activeCardEl = null;
+
+      function escWts(s) {
+        return String(s || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function buildFacadeMarkup(video) {
+        const isEn = window.currentLang === 'en';
+        const playLabel = isEn ? 'Play video testimonial by' : 'Putar video testimoni';
+        const safeName = escWts(video.name);
+        const safeId = escWts(video.youtubeId);
+        const hqThumb = `https://i.ytimg.com/vi/${safeId}/hqdefault.jpg`;
+        return `
+          <button type="button"
+            class="wts-facade-btn relative w-full h-full block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-hbs-crimson focus-visible:ring-inset cursor-pointer"
+            data-yt-id="${safeId}"
+            data-speaker="${safeName}"
+            aria-label="${escWts(playLabel)} ${safeName}">
+            <img src="${hqThumb}"
+              alt="${safeName}"
+              loading="lazy"
+              decoding="async"
+              data-yt-thumb="${safeId}"
+              class="wts-thumb-img w-full h-full object-cover"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/5 transition-colors duration-300"></div>
+            <span class="absolute inset-0 flex items-center justify-center">
+              <span class="wts-play-ring w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-hbs-crimson/92 text-white shadow-xl ring-4 ring-white/25 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-7 sm:h-7 fill-white translate-x-[1.5px]" aria-hidden="true">
+                  <path d="M8 5.14v14.72c0 .79.87 1.27 1.54.84l11.42-7.36a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z"/>
+                </svg>
+              </span>
+            </span>
+          </button>
+        `;
+      }
+
+      function upgradeThumbnailToMaxRes(imgEl, ytId) {
+        if (!imgEl || !YT_ID_RE.test(ytId)) return;
+        const probe = new Image();
+        probe.onload = function () {
+          if (probe.naturalWidth > 120 && imgEl.isConnected) imgEl.src = probe.src;
+        };
+        probe.src = `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`;
+      }
+
+      function restoreActivePlayer() {
+        if (!activeCardEl) return;
+        const stage = activeCardEl.querySelector('.wts-video-stage');
+        const idx = Number(activeCardEl.dataset.videoIndex);
+        const list = window.__wtsCurrentVideos || DEFAULT_WTS_VIDEOS;
+        const video = list[idx];
+        if (stage && video) {
+          stage.innerHTML = buildFacadeMarkup(video);
+          const img = stage.querySelector('img[data-yt-thumb]');
+          if (img) upgradeThumbnailToMaxRes(img, video.youtubeId);
+          bindStageClick(stage, activeCardEl, video);
+        }
+        activeCardEl.classList.remove('ring-2', 'ring-hbs-crimson/35');
+        activeCardEl = null;
+      }
+
+      function activateVideoPlayer(stageEl, cardEl, video) {
+        if (!YT_ID_RE.test(video.youtubeId)) return;
+        if (activeCardEl && activeCardEl !== cardEl) restoreActivePlayer();
+        const safeId = escWts(video.youtubeId);
+        const safeName = escWts(video.name);
+        stageEl.innerHTML = `
+          <iframe
+            class="wts-iframe-fade w-full h-full border-0"
+            src="https://www.youtube-nocookie.com/embed/${safeId}?autoplay=1&rel=0&modestbranding=1"
+            title="iCoachAndrew — ${safeName}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        `;
+        cardEl.classList.add('ring-2', 'ring-hbs-crimson/35');
+        activeCardEl = cardEl;
+        const iframe = stageEl.querySelector('iframe');
+        if (iframe && typeof iframe.focus === 'function') iframe.focus();
+      }
+
+      function bindStageClick(stageEl, cardEl, video) {
+        const btn = stageEl.querySelector('.wts-facade-btn');
+        if (!btn) return;
+        btn.addEventListener('click', (e) => {
+          if (isStudioMode && document.body.classList.contains('cms-inspect-mode')) {
+            e.preventDefault();
+            return;
+          }
+          activateVideoPlayer(stageEl, cardEl, video);
+        });
+      }
+
+      function renderWhatTheySayVideos(videos) {
+        const list = Array.isArray(videos)
+          ? videos.filter((v) => v && v.name && YT_ID_RE.test(String(v.youtubeId || '')))
+          : DEFAULT_WTS_VIDEOS;
+        window.__wtsCurrentVideos = list;
+        activeCardEl = null;
+
+        const grid = document.getElementById('wts-video-grid');
+        const emptyEl = document.getElementById('wts-empty-state');
+        if (!grid) return;
+
+        if (!list.length) {
+          grid.innerHTML = '';
+          if (emptyEl) emptyEl.classList.remove('hidden');
+          return;
+        }
+        if (emptyEl) emptyEl.classList.add('hidden');
+
+        const isEn = window.currentLang === 'en';
+        const watchOnYt = isEn ? 'Watch on YouTube' : 'Tonton di YouTube';
+        grid.innerHTML = '';
+
+        list.forEach((video, idx) => {
+          const safeName = escWts(video.name);
+          const ytUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(video.youtubeId)}`;
+          const card = document.createElement('article');
+          card.className = 'wts-card group bg-white border border-hbs-stoneDark hover:border-hbs-crimson/40 rounded-xl overflow-hidden shadow-xs hover:shadow-lg flex flex-col';
+          card.dataset.videoIndex = String(idx);
+          card.dataset.videoId = String(video.id || `wts_${idx + 1}`);
+          card.innerHTML = `
+            <div class="h-1 w-full bg-hbs-crimson/80 group-hover:bg-hbs-crimson transition-colors duration-300"></div>
+            <div class="wts-video-stage relative aspect-video w-full bg-hbs-charcoal overflow-hidden">
+              ${buildFacadeMarkup(video)}
+            </div>
+            <div class="px-5 py-4 bg-white border-t border-hbs-stoneDark/70 flex items-center justify-between gap-3">
+              <h3 class="font-serif text-lg sm:text-[19px] font-bold text-hbs-charcoal group-hover:text-hbs-crimson transition-colors leading-snug min-w-0">
+                ${safeName}
+              </h3>
+              <a href="${ytUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="${escWts(watchOnYt)}"
+                aria-label="${escWts(watchOnYt)} — ${safeName}"
+                class="w-8 h-8 rounded-lg text-hbs-muted hover:text-hbs-crimson hover:bg-hbs-crimsonLight/70 flex items-center justify-center transition-colors shrink-0">
+                <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+              </a>
+            </div>
+          `;
+          grid.appendChild(card);
+          const stage = card.querySelector('.wts-video-stage');
+          const img = stage ? stage.querySelector('img[data-yt-thumb]') : null;
+          if (img) upgradeThumbnailToMaxRes(img, video.youtubeId);
+          if (stage) bindStageClick(stage, card, video);
+        });
+      }
+
+      window.DEFAULT_WTS_VIDEOS = DEFAULT_WTS_VIDEOS;
+      window.__wtsCurrentVideos = DEFAULT_WTS_VIDEOS.slice();
+      window.renderWhatTheySayVideos = renderWhatTheySayVideos;
+    })();
+
     // Initialize on load
     syncVisualViewportHeight();
     loadLocalFreeQuotaBackup();
@@ -3275,7 +3515,7 @@
     initCookieConsentUI();
     try {
       const initHash = (window.location.hash || '').replace(/^#/, '');
-      if (['beranda', 'karya-buku', 'lingkaran-pendampingan', 'tentang-pak-andrew-tani'].includes(initHash)) {
+      if (['what-they-say', 'beranda', 'karya-buku', 'lingkaran-pendampingan', 'tentang-pak-andrew-tani'].includes(initHash)) {
         revealWhoIsAndrew(initHash);
       }
     } catch (_) {}

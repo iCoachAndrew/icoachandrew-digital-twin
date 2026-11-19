@@ -1429,7 +1429,7 @@ test('Book marketplace checkout links, footer social links, direct "Siapa Andrew
     assert.ok(html.includes(`id="${id}"`), `${id} footer link exists`);
   }
   assert.match(html, /id="footer-link-wa"[^>]*rel="noopener noreferrer"/, 'footer-link-wa carries rel="noopener noreferrer"');
-  assert.match(html, /id="header-who-btn" onclick="closeNavDrawer\(\); revealWhoIsAndrew\('beranda'\);"/, 'Siapa Andrew navigates directly without opening the drawer');
+  assert.match(html, /id="header-who-btn" onclick="closeNavDrawer\(\); revealWhoIsAndrew\('what-they-say'\);"/, 'Siapa Andrew navigates directly to What They Say first without opening the drawer');
   assert.ok(!/iCoachAndrew<span[^>]*>\.<\/span>/.test(html), 'Brand iCoachAndrew has no trailing dot');
 });
 
@@ -1509,10 +1509,14 @@ test('What They Say (/what-they-say): HBS Editorial page, Click-to-Play facade, 
     assert.ok(wtsHtml.includes(ytId), `Includes default video ${ytId}`);
   }
 
-  // 2. Main page links to /what-they-say from Navigation Drawer & Footer
+  // 2. Main page: Siapa Andrew starts with #what-they-say before #beranda (Executive Perspective), no redundant footer link, and IKUTI/FOLLOW iCoachAndrew branding
   const homeHtml = await (await fetch(U + '/')).text();
-  assert.ok(homeHtml.includes('href="/what-they-say" id="nav-what-they-say"'), 'Navigation Drawer links to /what-they-say');
-  assert.ok(homeHtml.includes('href="/what-they-say" id="footer-what-they-say-link"'), 'Footer links to /what-they-say');
+  const wtsIdx = homeHtml.indexOf('id="what-they-say" data-bio-section="1"');
+  const berandaIdx = homeHtml.indexOf('id="beranda" data-bio-section="1"');
+  assert.ok(wtsIdx > 0 && berandaIdx > 0 && wtsIdx < berandaIdx, 'Siapa Andrew starts with What They Say before Executive Perspective (#beranda)');
+  assert.ok(!homeHtml.includes('id="footer-what-they-say-link"'), 'Redundant footer What They Say link removed');
+  assert.ok(homeHtml.includes('>IKUTI iCoachAndrew<') && homeHtml.includes('FOLLOW iCoachAndrew'), 'Footer uses IKUTI iCoachAndrew / FOLLOW iCoachAndrew');
+  assert.ok(wtsHtml.includes('>IKUTI iCoachAndrew<') && wtsHtml.includes('FOLLOW iCoachAndrew'), 'Standalone /what-they-say footer uses IKUTI iCoachAndrew / FOLLOW iCoachAndrew');
 
   // 3. Preview route requires Ring 0 auth (denied when unauthenticated) and succeeds when logged in
   const unauthPreview = await fetch(A + '/preview-what-they-say');

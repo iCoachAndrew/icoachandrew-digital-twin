@@ -686,6 +686,7 @@
   // ---------- Human-friendly labels & plain-text entity decoder ----------
   const SECTION_LABELS = {
     'ruang-diskusi': 'Ruang Diskusi & Chat Utama',
+    'what-they-say': 'What They Say (Video Testimoni)',
     'beranda': 'Profil: Siapa Andrew Tani',
     'karya-buku': 'Pustaka & Buku Rujukan',
     'lingkaran-pendampingan': 'Pilihan Akses Diskusi',
@@ -750,6 +751,7 @@
     'wts-badge': 'Label Atas Halaman What They Say',
     'wts-title': 'Judul Utama Halaman What They Say',
     'wts-subtitle': 'Deskripsi Pengantar What They Say',
+    'wts-back-chat-text': 'Tombol Kembali ke Ruang Chat',
     'wts-cta-badge': 'Label Ajakan Diskusi (CTA)',
     'wts-cta-title': 'Judul Ajakan Diskusi (CTA)',
     'wts-cta-desc': 'Deskripsi Ajakan Diskusi (CTA)',

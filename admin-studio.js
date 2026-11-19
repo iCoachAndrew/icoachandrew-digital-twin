@@ -488,6 +488,7 @@ function setEditorLang(lang) {
 const FRIENDLY_SECTION_NAMES = {
   'header': 'Baris Menu Atas',
   'ruang-diskusi': 'Ruang Diskusi & Chat Utama',
+  'what-they-say': 'What They Say (Video Testimoni)',
   'beranda': 'Profil & Kisah Andrew Tani',
   'karya-buku': 'Buku & Publikasi',
   'paket-akses': 'Paket & Tingkatan Akses',
