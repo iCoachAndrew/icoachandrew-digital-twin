@@ -212,7 +212,7 @@
     <div class="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 min-w-0">
         <span class="font-serif text-lg font-bold tracking-tight text-hbs-charcoal truncate">
-          iCoachAndrew<span class="text-hbs-crimson">.</span>
+          iCoachAndrew
         </span>
       </div>
       <button type="button" onclick="closeNavDrawer()" class="w-8 h-8 rounded-lg hover:bg-gray-100 text-hbs-muted hover:text-hbs-charcoal flex items-center justify-center transition-colors cursor-pointer" title="Tutup Menu">
@@ -331,7 +331,7 @@
         </button>
         <a href="#" onclick="showFrontpageView(); return false;" class="flex items-baseline gap-2 min-w-0 group">
           <span class="font-serif text-lg sm:text-xl font-bold tracking-tight text-hbs-charcoal group-hover:text-hbs-crimson transition-colors whitespace-nowrap">
-            iCoachAndrew<span class="text-hbs-crimson">.</span>
+            iCoachAndrew
           </span>
           <span id="header-subtitle" class="hidden md:inline-block text-[10px] font-mono uppercase tracking-wider text-hbs-muted whitespace-nowrap truncate">
             Executive Mentorship &amp; Thought Leadership
@@ -362,7 +362,7 @@
         </div>
 
         <!-- Collapsible Profile & Further Access Trigger Pill -->
-        <button type="button" id="header-who-btn" onclick="toggleNavDrawer()" class="px-2.5 py-1.5 rounded-full border border-gray-200 bg-white hover:border-hbs-crimson text-hbs-charcoal hover:text-hbs-crimson text-[11px] font-medium flex items-center gap-1 transition-all shadow-2xs cursor-pointer" title="Siapa Andrew Tani & Akses Lebih Lanjut">
+        <button type="button" id="header-who-btn" onclick="closeNavDrawer(); revealWhoIsAndrew('beranda');" class="px-2.5 py-1.5 rounded-full border border-gray-200 bg-white hover:border-hbs-crimson text-hbs-charcoal hover:text-hbs-crimson text-[11px] font-medium flex items-center gap-1 transition-all shadow-2xs cursor-pointer" title="Siapa Andrew Tani & Akses Lebih Lanjut">
           <span class="material-symbols-outlined text-[15px] text-hbs-crimson">person_book</span>
           <span id="header-who-btn-text" class="hidden sm:inline whitespace-nowrap">Siapa Andrew</span>
         </button>
@@ -666,9 +666,19 @@
                   Arsitektur perancangan organisasi untuk mewujudkan keselarasan antara tujuan strategis bisnis dan kebiasaan kerja sehari-hari seluruh insan perusahaan.
                 </p>
               </div>
-              <div class="pt-4 mt-4 border-t border-hbs-stoneDark flex items-center justify-between text-xs font-bold text-hbs-crimson">
-                <span>Diskusikan Framework Ini →</span>
-                <span class="material-symbols-outlined text-[16px]">menu_book</span>
+              <div>
+                <div class="book-buy-links pt-4 mt-4 border-t border-hbs-stoneDark space-y-2" onclick="event.stopPropagation()">
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-hbs-muted flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-hbs-crimson">shopping_bag</span><span class="buy-book-label">Beli Buku di Marketplace</span></div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <a id="book1-buy-shopee" href="https://shopee.co.id/search?keyword=Organizing%20for%20Business%20Excellence%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#EE4D2D] hover:opacity-90 text-white transition-opacity">Shopee</a>
+                    <a id="book1-buy-tokopedia" href="https://www.tokopedia.com/search?st=product&amp;q=Organizing%20for%20Business%20Excellence%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#03AC0E] hover:opacity-90 text-white transition-opacity">Tokopedia</a>
+                    <a id="book1-buy-gramedia" href="https://www.gramedia.com/search?q=Organizing%20for%20Business%20Excellence" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#0D4FA3] hover:opacity-90 text-white transition-opacity">Gramedia</a>
+                  </div>
+                </div>
+                <div class="pt-3 mt-3 border-t border-hbs-stoneDark flex items-center justify-between text-xs font-bold text-hbs-crimson">
+                  <span>Diskusikan Framework Ini →</span>
+                  <span class="material-symbols-outlined text-[16px]">menu_book</span>
+                </div>
               </div>
             </div>
 
@@ -686,9 +696,19 @@
                   Menyelami neurosains kognitif kepemimpinan, pemahaman kapasitas berpikir eksekutif di bawah tekanan, dan optimalisasi energi mental para pengambil keputusan.
                 </p>
               </div>
-              <div class="pt-4 mt-4 border-t border-hbs-stoneDark flex items-center justify-between text-xs font-bold text-hbs-crimson">
-                <span>Diskusikan Neurosains Ini →</span>
-                <span class="material-symbols-outlined text-[16px]">psychology</span>
+              <div>
+                <div class="book-buy-links pt-4 mt-4 border-t border-hbs-stoneDark space-y-2" onclick="event.stopPropagation()">
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-hbs-muted flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-hbs-crimson">shopping_bag</span><span class="buy-book-label">Beli Buku di Marketplace</span></div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <a id="book2-buy-shopee" href="https://shopee.co.id/search?keyword=Brain%20Quotient%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#EE4D2D] hover:opacity-90 text-white transition-opacity">Shopee</a>
+                    <a id="book2-buy-tokopedia" href="https://www.tokopedia.com/search?st=product&amp;q=Brain%20Quotient%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#03AC0E] hover:opacity-90 text-white transition-opacity">Tokopedia</a>
+                    <a id="book2-buy-gramedia" href="https://www.gramedia.com/search?q=Brain%20Quotient%20Pahami%20Kemampuan%20Otak%20Anda" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#0D4FA3] hover:opacity-90 text-white transition-opacity">Gramedia</a>
+                  </div>
+                </div>
+                <div class="pt-3 mt-3 border-t border-hbs-stoneDark flex items-center justify-between text-xs font-bold text-hbs-crimson">
+                  <span>Diskusikan Neurosains Ini →</span>
+                  <span class="material-symbols-outlined text-[16px]">psychology</span>
+                </div>
               </div>
             </div>
 
@@ -836,7 +856,7 @@
                 Sejak mendirikan Andrew Tani &amp; Co. pada tahun 1983 di Jakarta, Andrew Tani telah mendampingi lebih dari 28 konglomerasi dan badan usaha terkemuka di Asia Tenggara. Melalui pendekatan humanistik yang dipadukan dengan ketegasan tata kelola, beliau membantu para pendiri dan pemimpin melewati masa-masa krisis, suksesi antargenerasi, dan penyelarasan strategi.
               </p>
               <div class="flex flex-wrap items-center gap-4 pt-2">
-                <a href="https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold text-white bg-hbs-charcoal hover:bg-black px-4 py-2.5 rounded transition-colors">
+                <a id="about-link-wa" href="https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-xs font-bold text-white bg-hbs-charcoal hover:bg-black px-4 py-2.5 rounded transition-colors">
                   <span class="material-symbols-outlined text-[16px]">support_agent</span>
                   <span>Hubungi Sekretariat Dewan</span>
                 </a>
@@ -1021,7 +1041,7 @@
       
       <div class="md:col-span-6 space-y-4">
         <div class="font-serif text-2xl font-bold tracking-tight">
-          iCoachAndrew<span class="text-hbs-crimson">.</span>
+          iCoachAndrew
         </div>
         <p id="footer-desc" class="text-hbs-muted text-xs leading-relaxed max-w-md">
           Kembaran Digital &amp; Warisan Pemikiran Kepemimpinan Andrew Tani. Dirancang untuk menemani para pemimpin membangun organisasi yang sehat, selaras, dan manusiawi berdasarkan pengalaman nyata sejak 1983.
@@ -1032,14 +1052,28 @@
       </div>
 
       <div class="md:col-span-3 space-y-3">
-        <div class="font-mono text-xs uppercase tracking-wider text-hbs-crimson font-bold">SEKRETARIAT &amp; KONSULTANSI</div>
-        <p class="text-xs text-hbs-muted leading-relaxed">
+        <div id="footer-secretariat-heading" class="font-mono text-xs uppercase tracking-wider text-hbs-crimson font-bold">SEKRETARIAT &amp; KONSULTANSI</div>
+        <p id="footer-secretariat-desc" class="text-xs text-hbs-muted leading-relaxed">
           Ingin merencanakan sesi konsultasi dewan atau mengundang Pak Andrew Tani langsung?
         </p>
-        <a id="footer-link-wa" href="https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold text-white bg-hbs-crimson hover:bg-hbs-crimsonDark px-3.5 py-2 rounded transition-colors shadow-xs">
+        <a id="footer-link-wa" href="https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-xs font-bold text-white bg-hbs-crimson hover:bg-hbs-crimsonDark px-3.5 py-2 rounded transition-colors shadow-xs">
           <span class="material-symbols-outlined text-[16px]">chat</span>
-          <span>WhatsApp Sekretariat</span>
+          <span id="footer-wa-text">WhatsApp Sekretariat</span>
         </a>
+        <div id="footer-social-links" class="pt-1 space-y-2">
+          <div id="footer-social-heading" class="font-mono text-[10px] uppercase tracking-wider text-gray-400">Ikuti Pak Andrew</div>
+          <div class="flex items-center gap-2">
+            <a id="footer-link-linkedin" href="https://www.linkedin.com/search/results/all/?keywords=Andrew%20Tani" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Andrew Tani" title="LinkedIn" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#0A66C2] flex items-center justify-center transition-colors">
+              <svg viewBox="0 0 24 24" class="w-4 h-4 fill-white" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+            </a>
+            <a id="footer-link-facebook" href="https://www.facebook.com/search/top?q=Andrew%20Tani" target="_blank" rel="noopener noreferrer" aria-label="Facebook Andrew Tani" title="Facebook" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#1877F2] flex items-center justify-center transition-colors">
+              <svg viewBox="0 0 24 24" class="w-4 h-4 fill-white" aria-hidden="true"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/></svg>
+            </a>
+            <a id="footer-link-instagram" href="https://www.instagram.com/icoachandrew/" target="_blank" rel="noopener noreferrer" aria-label="Instagram Andrew Tani" title="Instagram" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#E1306C] flex items-center justify-center transition-colors">
+              <svg viewBox="0 0 24 24" class="w-4 h-4 fill-white" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16zM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.2 4.36 2.62 6.78 6.98 6.98C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.2-4.35-2.62-6.78-6.98-6.98C15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
+            </a>
+          </div>
+        </div>
       </div>
 
       <div class="md:col-span-3 space-y-3 text-xs text-hbs-muted">
@@ -2663,7 +2697,14 @@
         const el = document.getElementById(key);
         if (!el) continue;
         if (typeof val === 'string') {
-          el.textContent = val;
+          const hasIcon = el.querySelector('.material-symbols-outlined');
+          if (hasIcon) {
+            const textSpan = Array.from(el.children).find((c) => c.tagName === 'SPAN' && !c.classList.contains('material-symbols-outlined'));
+            if (textSpan) textSpan.textContent = val;
+            else el.textContent = val;
+          } else {
+            el.textContent = val;
+          }
         } else if (val && typeof val === 'object') {
           if (val.html !== undefined) el.innerHTML = val.html;
           else if (val.text !== undefined) el.textContent = val.text;
@@ -2677,6 +2718,27 @@
       if (idBox && enBox) {
         idBox.classList.toggle('hidden', currentLang === 'en');
         enBox.classList.toggle('hidden', currentLang !== 'en');
+      }
+
+      const isEnLang = currentLang === 'en';
+      document.querySelectorAll('.buy-book-label').forEach((el) => {
+        el.textContent = isEnLang ? 'Buy the Book Online' : 'Beli Buku di Marketplace';
+      });
+      const socialHeading = document.getElementById('footer-social-heading');
+      if (socialHeading) socialHeading.textContent = isEnLang ? 'Follow Pak Andrew' : 'Ikuti Pak Andrew';
+      const secHeading = document.getElementById('footer-secretariat-heading');
+      if (secHeading) secHeading.textContent = isEnLang ? 'SECRETARIAT & ADVISORY' : 'SEKRETARIAT & KONSULTANSI';
+      const secDesc = document.getElementById('footer-secretariat-desc');
+      if (secDesc) secDesc.textContent = isEnLang
+        ? 'Looking to schedule a board advisory session or invite Pak Andrew Tani directly?'
+        : 'Ingin merencanakan sesi konsultasi dewan atau mengundang Pak Andrew Tani langsung?';
+      const waText = document.getElementById('footer-wa-text');
+      if (waText) waText.textContent = isEnLang ? 'Secretariat WhatsApp' : 'WhatsApp Sekretariat';
+      const whoBtn = document.getElementById('header-who-btn');
+      if (whoBtn) {
+        const whoLabel = isEnLang ? 'Who is Andrew Tani' : 'Siapa Andrew Tani';
+        whoBtn.title = whoLabel;
+        whoBtn.setAttribute('aria-label', whoLabel);
       }
 
       updateWhoTriggerUI();

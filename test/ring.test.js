@@ -1416,3 +1416,82 @@ test('Warm Greetings are answered hospitably and intelligence is not bounded by 
   assert.strictEqual(offScope.json.outcome, 'out_of_scope');
   assert.match(offScope.json.reply, /luar konteks ruang diskusi publik/i);
 });
+
+test('Book marketplace checkout links, footer social links, direct "Siapa Andrew" navigation & brand without trailing dot', async () => {
+  const html = await (await fetch(U + '/')).text();
+  for (const id of ['book1-buy-shopee', 'book1-buy-tokopedia', 'book1-buy-gramedia', 'book2-buy-shopee', 'book2-buy-tokopedia', 'book2-buy-gramedia']) {
+    assert.ok(html.includes(`id="${id}"`), `${id} marketplace link exists`);
+  }
+  assert.match(html, /href="https:\/\/shopee\.co\.id\//);
+  assert.match(html, /href="https:\/\/www\.tokopedia\.com\//);
+  assert.match(html, /href="https:\/\/www\.gramedia\.com\//);
+  for (const id of ['footer-link-wa', 'footer-link-linkedin', 'footer-link-facebook', 'footer-link-instagram']) {
+    assert.ok(html.includes(`id="${id}"`), `${id} footer link exists`);
+  }
+  assert.match(html, /id="footer-link-wa"[^>]*rel="noopener noreferrer"/, 'footer-link-wa carries rel="noopener noreferrer"');
+  assert.match(html, /id="header-who-btn" onclick="closeNavDrawer\(\); revealWhoIsAndrew\('beranda'\);"/, 'Siapa Andrew navigates directly without opening the drawer');
+  assert.ok(!/iCoachAndrew<span[^>]*>\.<\/span>/.test(html), 'Brand iCoachAndrew has no trailing dot');
+});
+
+
+test('Admin Page editable marketplace & social media URL links (POST /admin/api/site/links + XSS sanitization + runtime binding)', async () => {
+  const admHtml = await (await fetch(A + '/admin', { headers: { cookie } })).text();
+  assert.ok(admHtml.includes('id="ve-links-card"'), 'Admin links editor card exists');
+  assert.ok(admHtml.includes('id="sidebar-links-btn"'), 'Sidebar shortcut to links editor exists');
+  for (const id of [
+    've-link-book1-shopee', 've-link-book1-tokopedia', 've-link-book1-gramedia',
+    've-link-book2-shopee', 've-link-book2-tokopedia', 've-link-book2-gramedia',
+    've-link-whatsapp', 've-link-linkedin', 've-link-facebook', 've-link-instagram'
+  ]) {
+    assert.ok(admHtml.includes(`id="${id}"`), `Admin input #${id} exists`);
+  }
+
+  const runtimeJs = await (await fetch(U + '/cms-runtime.js')).text();
+  assert.ok(runtimeJs.includes('function applyLinks('), 'cms-runtime applies editable links');
+  assert.ok(runtimeJs.includes('#book1-buy-shopee') && runtimeJs.includes('#footer-link-instagram') && runtimeJs.includes('#about-link-wa'));
+
+  // Save valid URLs + attempt XSS payload + empty string to hide Facebook
+  const saveRes = await admin('POST', '/admin/api/site/links', {
+    links: {
+      book1Shopee: 'https://shopee.co.id/product/111/222',
+      book1Tokopedia: 'https://www.tokopedia.com/official/organizing-excellence',
+      book1Gramedia: 'https://www.gramedia.com/products/organizing-for-business-excellence',
+      book2Shopee: 'https://shopee.co.id/product/333/444',
+      book2Tokopedia: 'https://www.tokopedia.com/official/brain-quotient',
+      book2Gramedia: 'https://www.gramedia.com/products/brain-quotient',
+      whatsapp: 'https://wa.me/6281234567890?text=Halo',
+      linkedin: 'https://www.linkedin.com/in/andrewtani',
+      facebook: '',
+      instagram: 'javascript:alert(1)'
+    }
+  });
+  assert.strictEqual(saveRes.status, 200);
+  assert.strictEqual(saveRes.json.ok, true);
+  assert.strictEqual(saveRes.json.links.book1Shopee, 'https://shopee.co.id/product/111/222');
+  assert.strictEqual(saveRes.json.links.linkedin, 'https://www.linkedin.com/in/andrewtani');
+  assert.strictEqual(saveRes.json.links.facebook, '', 'Empty link preserved to hide icon');
+  assert.strictEqual(saveRes.json.links.instagram, undefined, 'XSS javascript: URL rejected cleanly');
+
+  const pubSite = await user('GET', '/api/site-content');
+  assert.strictEqual(pubSite.status, 200);
+  assert.strictEqual(pubSite.json.links.book1Shopee, 'https://shopee.co.id/product/111/222');
+  assert.strictEqual(pubSite.json.links.book2Gramedia, 'https://www.gramedia.com/products/brain-quotient');
+  assert.strictEqual(pubSite.json.links.whatsapp, 'https://wa.me/6281234567890?text=Halo');
+  assert.strictEqual(pubSite.json.links.linkedin, 'https://www.linkedin.com/in/andrewtani');
+  assert.strictEqual(pubSite.json.links.facebook, '');
+});
+
+test('QC Regression: Expanded conversational greetings (ID & EN) & corporate governance Presiden Direktur', async () => {
+  for (const [msg, lang, re] of [
+    ['Hello, how are you today?', 'en', /Warm greetings|welcome|Andrew Tani/i],
+    ['How are you?', 'en', /Warm greetings|welcome|Andrew Tani/i],
+    ['Pagi Pak Andrew', 'id', /Halo Sahabatku|selamat datang|Andrew Tani/i],
+    ['Halo, bagaimana kabarnya hari ini?', 'id', /Halo Sahabatku|selamat datang|Andrew Tani/i]
+  ]) {
+    const gr = await user('POST', '/api/chat', { message: msg, lang });
+    assert.strictEqual(gr.status, 200);
+    assert.strictEqual(gr.json.refused, false, `Greeting "${msg}" must not be refused`);
+    assert.strictEqual(gr.json.outcome, 'answered');
+    assert.match(gr.json.reply, re);
+  }
+});

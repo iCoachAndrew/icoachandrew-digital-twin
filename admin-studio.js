@@ -462,8 +462,8 @@ function setEditorViewport(w) {
 }
 
 function updateVeGridLayout() {
-  const leftCol = document.getElementById('ve-left-dock-col');
-  const rightCol = document.getElementById('ve-right-inspector-col');
+  const leftCol = document.getElementById('ve-left-dock');
+  const rightCol = document.getElementById('ve-right-inspector');
   const canvasCol = document.getElementById('ve-canvas-col');
   if (!canvasCol) return;
 
@@ -746,7 +746,11 @@ function applyInspectorChange() {
     next.placeholder = { ...(typeof next.placeholder === 'object' ? next.placeholder : {}), [editorLang]: ph };
   } else {
     const plainVal = document.getElementById('ins-text-value').value;
-    next.text = { ...(typeof next.text === 'object' ? next.text : {}), [editorLang]: plainVal };
+    const origPlain = decodeHtmlToPlainText(selectedElem.html || selectedElem.text || '');
+    const hasIconMarkup = /<svg\b|material-symbols-outlined/i.test(String(selectedElem.html || ''));
+    if (!hasIconMarkup && (plainVal !== origPlain || cur.text)) {
+      next.text = { ...(typeof next.text === 'object' ? next.text : {}), [editorLang]: plainVal };
+    }
   }
 
   if (selectedElem.isLink) {
@@ -976,6 +980,7 @@ function renderThemeDock() {
 
   const seo = siteState.draft.seo || {};
   populateWebInfoUI(seo);
+  populateSiteLinksUI(siteState.draft.links || {});
 }
 
 function onConsistentFontSelect(val) {
@@ -1125,6 +1130,161 @@ async function saveAndPublishWebInfo() {
   } else {
     toast('Gagal menyimpan informasi tab website.', true);
   }
+}
+
+// ==================== EDITABLE MARKETPLACE & SOCIAL MEDIA URL LINKS ====================
+const DEFAULT_SITE_LINKS = {
+  book1Shopee: 'https://shopee.co.id/search?keyword=Organizing%20for%20Business%20Excellence%20Andrew%20Tani',
+  book1Tokopedia: 'https://www.tokopedia.com/search?st=product&q=Organizing%20for%20Business%20Excellence%20Andrew%20Tani',
+  book1Gramedia: 'https://www.gramedia.com/search?q=Organizing%20for%20Business%20Excellence',
+  book2Shopee: 'https://shopee.co.id/search?keyword=Brain%20Quotient%20Andrew%20Tani',
+  book2Tokopedia: 'https://www.tokopedia.com/search?st=product&q=Brain%20Quotient%20Andrew%20Tani',
+  book2Gramedia: 'https://www.gramedia.com/search?q=Brain%20Quotient%20Pahami%20Kemampuan%20Otak%20Anda',
+  whatsapp: 'https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani',
+  linkedin: 'https://www.linkedin.com/search/results/all/?keywords=Andrew%20Tani',
+  facebook: 'https://www.facebook.com/search/top?q=Andrew%20Tani',
+  instagram: 'https://www.instagram.com/icoachandrew/'
+};
+
+const SITE_LINK_FIELDS = {
+  book1Shopee: { input: 've-link-book1-shopee', test: 've-test-book1-shopee' },
+  book1Tokopedia: { input: 've-link-book1-tokopedia', test: 've-test-book1-tokopedia' },
+  book1Gramedia: { input: 've-link-book1-gramedia', test: 've-test-book1-gramedia' },
+  book2Shopee: { input: 've-link-book2-shopee', test: 've-test-book2-shopee' },
+  book2Tokopedia: { input: 've-link-book2-tokopedia', test: 've-test-book2-tokopedia' },
+  book2Gramedia: { input: 've-link-book2-gramedia', test: 've-test-book2-gramedia' },
+  whatsapp: { input: 've-link-whatsapp', test: 've-test-whatsapp' },
+  linkedin: { input: 've-link-linkedin', test: 've-test-linkedin' },
+  facebook: { input: 've-link-facebook', test: 've-test-facebook' },
+  instagram: { input: 've-link-instagram', test: 've-test-instagram' }
+};
+
+function normalizeEditableLink(raw) {
+  let s = String(raw || '').trim();
+  if (!s) return '';
+  if (/[\x00-\x1f\x7f"'<>`]/.test(s)) return null;
+  if (/^\s*(javascript|data|vbscript):/i.test(s)) return null;
+  if (!/^(https?:\/\/|mailto:|tel:|\/|#|)/i.test(s) || (!/^(https?:\/\/|mailto:|tel:|\/|#)/i.test(s) && /^[a-z0-9.-]+\.[a-z]{2,}(\/|$|\?)/i.test(s))) {
+    s = 'https://' + s;
+  }
+  if (/^https?:\/\//i.test(s)) {
+    s = s.replace(/ /g, '%20');
+    if (s.length > 2048 || /\s/.test(s)) return null;
+    try {
+      const p = new URL(s);
+      if ((p.protocol !== 'http:' && p.protocol !== 'https:') || !p.hostname || !p.hostname.includes('.')) return null;
+      return s;
+    } catch (_) {
+      return null;
+    }
+  }
+  if (/^\/(?![\/\\])[^\s"'<>`]*$/.test(s)) return s;
+  if (/^#[\w\-:.]*$/.test(s)) return s;
+  if (/^mailto:[^\s"'<>`]+@[^\s"'<>`]+$/i.test(s)) return s;
+  if (/^tel:[+\d \-()]{5,}$/i.test(s)) return s;
+  return null;
+}
+
+function syncSiteLinkTestHref(key) {
+  const meta = SITE_LINK_FIELDS[key];
+  if (!meta) return;
+  const inp = document.getElementById(meta.input);
+  const a = document.getElementById(meta.test);
+  if (!inp || !a) return;
+  const clean = normalizeEditableLink(inp.value);
+  if (clean) {
+    a.href = clean;
+    a.tabIndex = 0;
+    a.removeAttribute('aria-disabled');
+    a.classList.remove('opacity-40', 'pointer-events-none');
+  } else {
+    a.removeAttribute('href');
+    a.tabIndex = -1;
+    a.setAttribute('aria-disabled', 'true');
+    a.classList.add('opacity-40', 'pointer-events-none');
+  }
+}
+
+function populateSiteLinksUI(links = {}) {
+  for (const [key, meta] of Object.entries(SITE_LINK_FIELDS)) {
+    const inp = document.getElementById(meta.input);
+    if (!inp) continue;
+    inp.value = links[key] !== undefined ? links[key] : DEFAULT_SITE_LINKS[key];
+    syncSiteLinkTestHref(key);
+  }
+}
+
+function toggleLinksCard() {
+  const card = document.getElementById('ve-links-card');
+  if (!card) return;
+  const isHid = card.classList.toggle('hidden');
+  if (!isHid) {
+    populateSiteLinksUI((siteState && siteState.draft && siteState.draft.links) || {});
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+async function openSiteLinksEditor() {
+  switchStudioTab('visual-editor');
+  document.querySelectorAll('#adminTabsNav .nav-btn').forEach((b) => b.classList.remove('active'));
+  const sbBtn = document.getElementById('sidebar-links-btn');
+  if (sbBtn) sbBtn.classList.add('active');
+  const card = document.getElementById('ve-links-card');
+  if (card) {
+    card.classList.remove('hidden');
+    await loadSiteState();
+    populateSiteLinksUI((siteState && siteState.draft && siteState.draft.links) || {});
+    setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  }
+}
+
+async function saveAndPublishSiteLinks() {
+  const payload = {};
+  for (const [key, meta] of Object.entries(SITE_LINK_FIELDS)) {
+    const inp = document.getElementById(meta.input);
+    const raw = inp ? inp.value.trim() : '';
+    if (raw === '') {
+      payload[key] = '';
+      continue;
+    }
+    const clean = normalizeEditableLink(raw);
+    if (!clean) {
+      toast(`Format URL tidak valid pada kolom "${key}". Gunakan awalan https:// yang lengkap.`, true);
+      if (inp) inp.focus();
+      return;
+    }
+    payload[key] = clean;
+    if (inp && inp.value !== clean) inp.value = clean;
+  }
+
+  const r = await api('POST', '/admin/api/site/links', { links: payload });
+  if (r.ok && r.data && r.data.links) {
+    siteState.draft = r.data.draft || siteState.draft;
+    siteState.draft.links = r.data.links;
+    if (typeof r.data.dirty === 'boolean') siteState.dirty = r.data.dirty;
+    updateDirtyIndicator();
+    populateSiteLinksUI(r.data.links);
+    postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+    if (Array.isArray(r.data.rejected) && r.data.rejected.length > 0) {
+      toast(`Sebagian URL ditolak karena tidak valid: ${r.data.rejected.join(', ')}. Mohon periksa format https://.`, true);
+    } else {
+      toast('Tautan Marketplace & Sosial Media berhasil disimpan dan langsung aktif di website Live!');
+    }
+  } else {
+    toast('Gagal menyimpan tautan marketplace & sosial media.', true);
+  }
+}
+
+async function resetSiteLinksToDefault() {
+  if (typeof confirm === 'function' && !confirm('Reset seluruh tautan marketplace buku dan sosial media kembali ke default lalu publikasikan ke website Live?')) {
+    return;
+  }
+  for (const [key, meta] of Object.entries(SITE_LINK_FIELDS)) {
+    const inp = document.getElementById(meta.input);
+    if (inp) inp.value = DEFAULT_SITE_LINKS[key];
+    syncSiteLinkTestHref(key);
+  }
+  await saveAndPublishSiteLinks();
 }
 
 function setThemeColor(key, hex) {
@@ -1394,6 +1554,23 @@ function pickMediaForInspector(url, alt) {
 
 // ==================== TAB 4: WORKS REPOSITORY RING 0–3 + GOOGLE DRIVE API ====================
 let gdriveState = { configured: false, authMode: 'service_account', ringFolders: { 0: '', 1: '', 2: '', 3: '' } };
+const GDRIVE_VAULT_LS_KEY = 'icoachandrew_gdrive_vault_v1';
+const GDRIVE_CLIENT_ID_LS_KEY = 'icoachandrew_gdrive_client_id_v1';
+
+async function tryAutoRestoreGDriveVault() {
+  try {
+    if (typeof localStorage === 'undefined') return false;
+    const savedBundle = localStorage.getItem(GDRIVE_VAULT_LS_KEY);
+    if (!savedBundle || !savedBundle.startsWith('gdb1.')) return false;
+    const res = await api('POST', '/admin/api/works/gdrive/restore-bundle', { sealedConfigBundle: savedBundle });
+    if (res.ok && res.data && res.data.ok && res.data.gdrive && res.data.gdrive.configured) {
+      gdriveState = res.data.gdrive;
+      renderGDriveConfigState();
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
 
 async function loadWorks() {
   const r = await api('GET', '/admin/api/works');
@@ -1401,6 +1578,9 @@ async function loadWorks() {
   worksData = r.data.works || [];
   if (r.data.gdrive) {
     gdriveState = r.data.gdrive;
+    if (!gdriveState.configured) {
+      await tryAutoRestoreGDriveVault();
+    }
     renderGDriveConfigState();
   }
   renderWorksGrid();
@@ -1408,6 +1588,16 @@ async function loadWorks() {
 
 function renderGDriveConfigState() {
   const g = gdriveState || {};
+  try {
+    if (typeof localStorage !== 'undefined') {
+      if (g.configured && g.sealedConfigBundle) {
+        localStorage.setItem(GDRIVE_VAULT_LS_KEY, g.sealedConfigBundle);
+      }
+      if (g.oauthClientId && !g.oauthClientId.startsWith('(via')) {
+        localStorage.setItem(GDRIVE_CLIENT_ID_LS_KEY, g.oauthClientId);
+      }
+    }
+  } catch (_) {}
   const badge = document.getElementById('gdrive-status-badge');
   const sub = document.getElementById('gdrive-summary-sub');
   const emailPill = document.getElementById('gdrive-client-email-pill');
@@ -1417,7 +1607,7 @@ function renderGDriveConfigState() {
 
   if (badge) {
     if (g.configured) {
-      const modeLabel = g.authMode === 'oauth2' ? 'OAUTH 2.0' : (g.authMode === 'service_account' ? 'SERVICE ACCOUNT' : 'API KEY');
+      const modeLabel = g.authMode === 'oauth2' ? 'OAUTH 2.0 • SESI PERSISTEN 30+ HARI' : (g.authMode === 'service_account' ? 'SERVICE ACCOUNT' : 'API KEY');
       badge.textContent = `GOOGLE DRIVE: TERHUBUNG (${modeLabel})`;
       badge.className = 'px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300';
     } else {
@@ -1429,7 +1619,7 @@ function renderGDriveConfigState() {
   const oauthBadge = document.getElementById('gd-oauth-status-badge');
   if (oauthBadge) {
     if (g.hasOauthRefreshToken && g.hasOauthClientId && g.hasOauthClientSecret) {
-      oauthBadge.textContent = 'TERHUBUNG (OAUTH 2.0 AKTIF)';
+      oauthBadge.textContent = 'TERHUBUNG (AUTO-REFRESH 30+ HARI & TAHAN DEPLOY)';
       oauthBadge.className = 'font-mono text-[10px] px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300';
     } else if (g.hasOauthClientId && g.hasOauthClientSecret) {
       oauthBadge.textContent = 'SIAP LOGIN GOOGLE (KLIK HUBUNGKAN)';
@@ -1445,8 +1635,15 @@ function renderGDriveConfigState() {
     redirectInput.value = g.oauthRedirectUri || (window.location.origin + '/admin/api/works/gdrive/oauth-callback');
   }
   const clientIdInput = document.getElementById('gd-oauth-client-id');
-  if (clientIdInput && g.oauthClientId) {
-    clientIdInput.value = g.oauthClientId;
+  if (clientIdInput) {
+    if (g.oauthClientId) {
+      clientIdInput.value = g.oauthClientId;
+    } else if (!clientIdInput.value) {
+      try {
+        const cachedCid = typeof localStorage !== 'undefined' && localStorage.getItem(GDRIVE_CLIENT_ID_LS_KEY);
+        if (cachedCid) clientIdInput.value = cachedCid;
+      } catch (_) {}
+    }
   }
 
   if (sub) {
@@ -2055,7 +2252,7 @@ async function bulkAssignGDriveItems(ring) {
   toast(`Selesai! ${r.data.processedFiles || items.length} dokumen berhasil dipetakan ke ${label} & disimpan sebagai .md.`);
 }
 
-async function browseGDriveFolder(folderId = '') {
+async function browseGDriveFolder(folderId = '', isRetry = false) {
   gdCurrentFolderId = folderId;
   const box = document.getElementById('gd-browser-content');
   const label = document.getElementById('gd-browser-folder-label');
@@ -2064,7 +2261,17 @@ async function browseGDriveFolder(folderId = '') {
   const url = '/admin/api/works/gdrive/browse' + (folderId ? ('?folderId=' + encodeURIComponent(folderId)) : '');
   const r = await api('GET', url);
   if (!r.ok || !r.data.ok) {
-    box.innerHTML = `<div class="p-4 rounded-xl bg-red-50 text-secondary border border-red-200 text-xs">${esc(r.data.error || 'Belum ada folder Google Drive yang dikonfigurasi.')}</div>`;
+    if (!isRetry && (await tryAutoRestoreGDriveVault())) {
+      return browseGDriveFolder(folderId, true);
+    }
+    const errText = r.data.error || 'Belum ada folder Google Drive yang dikonfigurasi.';
+    box.innerHTML = `<div class="p-4 rounded-xl bg-red-50 text-secondary border border-red-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="font-bold">${esc(errText)}</div>
+        <div class="text-[11px] text-on-surface-variant mt-0.5">Setelah Anda menghubungkan OAuth 2.0 sekali lagi pada versi terbaru ini, sesi OAuth &amp; Refresh Token akan disimpan permanen (bertahan 30+ hari &amp; otomatis dipulihkan setiap kali selesai deploy GitHub).</div>
+      </div>
+      <button onclick="document.getElementById('gdrive-config-panel')?.classList.remove('hidden');document.getElementById('gdrive-config-panel')?.scrollIntoView({behavior:'smooth'});" class="px-3.5 py-2 rounded-lg bg-primary text-white text-xs font-semibold shrink-0 cursor-pointer">⚙️ Buka Pengaturan OAuth 2.0</button>
+    </div>`;
     return;
   }
   gdCurrentBrowseData = {
@@ -2810,10 +3017,12 @@ async function loadAiDashboard() {
   if (respStyleEl) respStyleEl.value = cfg.responseStyle || 'concise_socratic';
   const citModeEl = document.getElementById('ai-citation-mode');
   if (citModeEl) citModeEl.value = cfg.citationMode || 'natural';
+  const defaultDos = (aiState && aiState.defaults && aiState.defaults.dosList) || aiState.defaultDosList || '';
+  const defaultDonts = (aiState && aiState.defaults && aiState.defaults.dontsList) || aiState.defaultDontsList || '';
   const dosEl = document.getElementById('ai-dos-list');
-  if (dosEl) dosEl.value = cfg.dosList || aiState.defaultDosList || '';
+  if (dosEl) dosEl.value = cfg.dosList || defaultDos;
   const dontsEl = document.getElementById('ai-donts-list');
-  if (dontsEl) dontsEl.value = cfg.dontsList || aiState.defaultDontsList || '';
+  if (dontsEl) dontsEl.value = cfg.dontsList || defaultDonts;
   document.getElementById('ai-extra-instructions').value = cfg.extraInstructions || '';
 
   // Recent calls
@@ -2827,10 +3036,12 @@ async function loadAiDashboard() {
 }
 
 function restoreDefaultAiDosDonts() {
+  const defaultDos = (aiState && aiState.defaults && aiState.defaults.dosList) || (aiState && aiState.defaultDosList) || '';
+  const defaultDonts = (aiState && aiState.defaults && aiState.defaults.dontsList) || (aiState && aiState.defaultDontsList) || '';
   const dosEl = document.getElementById('ai-dos-list');
   const dontsEl = document.getElementById('ai-donts-list');
-  if (dosEl && aiState && aiState.defaultDosList) dosEl.value = aiState.defaultDosList;
-  if (dontsEl && aiState && aiState.defaultDontsList) dontsEl.value = aiState.defaultDontsList;
+  if (dosEl && defaultDos) dosEl.value = defaultDos;
+  if (dontsEl && defaultDonts) dontsEl.value = defaultDonts;
   toast("Daftar Do's & Don'ts dikembalikan ke rekomendasi standar Digital Twin. Klik 'Simpan' untuk menerapkan.");
 }
 

@@ -388,7 +388,7 @@
           <span class="text-on-primary-container opacity-40">/</span>
           <button id="admin-top-lang-id" onclick="setEditorLang('id')" class="px-space-xs py-space-xs text-on-primary-container hover:text-on-primary" type="button">ID</button>
         </div>
-        <a href="/" onclick="if(location.port==='3001'){this.href=location.protocol+'//'+location.hostname+':3000';}" target="_blank" class="hidden sm:inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded bg-primary-container text-tertiary-fixed-dim hover:text-white transition-colors border border-on-tertiary-container/30">
+        <a href="/" onclick="if(location.port==='3001'){this.href=location.protocol+'//'+location.hostname+':3000';}" target="_blank" rel="noopener noreferrer" class="hidden sm:inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded bg-primary-container text-tertiary-fixed-dim hover:text-white transition-colors border border-on-tertiary-container/30">
           <span class="material-symbols-outlined text-[15px]">open_in_new</span>Lihat Web Publik
         </a>
         <button id="btn-logout-admin" onclick="adminLogout()" class="hidden text-xs px-2.5 py-1.5 rounded bg-secondary text-white font-semibold hover:bg-secondary/80">
@@ -464,6 +464,10 @@
             <button onclick="switchStudioTab('visual-editor')" data-tab="visual-editor" title="Visual Website Editor" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
               <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">web</span>
               <span class="sidebar-label truncate">Visual Website Editor</span>
+            </button>
+            <button onclick="openSiteLinksEditor()" id="sidebar-links-btn" title="Tautan Marketplace &amp; Sosial Media" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">link</span>
+              <span class="sidebar-label truncate">Tautan &amp; Sosmed</span>
             </button>
             <button onclick="switchStudioTab('media')" data-tab="media" title="Foto &amp; Media" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
               <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">photo_library</span>
@@ -982,6 +986,9 @@
             <button type="button" onclick="toggleWebInfoCard()" class="px-2.5 py-1 rounded-lg border border-secondary/40 bg-secondary-fixed/40 hover:bg-secondary hover:text-white text-secondary text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-[15px]">tab</span>Info Tab &amp; Logo
             </button>
+            <button type="button" onclick="toggleLinksCard()" class="px-2.5 py-1 rounded-lg border border-emerald-700/40 bg-emerald-50 hover:bg-emerald-700 hover:text-white text-emerald-800 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]">link</span>Tautan &amp; Sosmed
+            </button>
           </div>
 
           <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
@@ -1130,6 +1137,137 @@
                   </div>
                   <input id="ve-seo-favicon" type="text" oninput="syncWebInfoInputs('ve')" placeholder="Otomatis terisi saat upload logo..." class="w-full border border-outline-variant rounded px-2 py-1 text-[11px] bg-white"/>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- COLLAPSIBLE CARD: EDITOR TAUTAN MARKETPLACE BUKU & SOSIAL MEDIA FOOTER    -->
+        <!-- ========================================================================= -->
+        <div id="ve-links-card" class="hidden scroll-mt-32 bg-surface-container-lowest border border-emerald-700/30 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/40 pb-3">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-700 text-[19px]">link</span>
+                <h3 class="font-title-md text-primary font-serif font-bold text-base">Editor Tautan Marketplace Buku &amp; Sosial Media</h3>
+              </div>
+              <p class="text-xs text-on-surface-variant">Tempel URL resmi produk buku di Shopee, Tokopedia, dan Gramedia Online serta tautan WhatsApp, LinkedIn, Facebook, dan Instagram di footer website. Kosongkan kolom jika ingin menyembunyikan tombol/ikon tersebut.</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" onclick="toggleLinksCard()" class="px-2.5 py-1 rounded border border-outline-variant text-xs font-semibold text-on-surface-variant hover:text-primary cursor-pointer">Tutup ✕</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start text-xs">
+            <!-- Left: Book Marketplace Links -->
+            <div class="lg:col-span-7 space-y-3">
+              <!-- Book 1 -->
+              <div class="bg-surface rounded-xl p-3.5 border border-outline-variant/50 space-y-2.5">
+                <div class="font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-secondary">menu_book</span>
+                  <span>Buku 1: Organizing for Business Excellence</span>
+                </div>
+                <div class="space-y-2">
+                  <div class="space-y-1">
+                    <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                      <label for="ve-link-book1-shopee">URL Shopee</label>
+                      <a id="ve-test-book1-shopee" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                    </div>
+                    <input id="ve-link-book1-shopee" type="url" oninput="syncSiteLinkTestHref('book1Shopee')" placeholder="https://shopee.co.id/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                  </div>
+                  <div class="space-y-1">
+                    <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                      <label for="ve-link-book1-tokopedia">URL Tokopedia</label>
+                      <a id="ve-test-book1-tokopedia" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                    </div>
+                    <input id="ve-link-book1-tokopedia" type="url" oninput="syncSiteLinkTestHref('book1Tokopedia')" placeholder="https://www.tokopedia.com/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                  </div>
+                  <div class="space-y-1">
+                    <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                      <label for="ve-link-book1-gramedia">URL Gramedia Online</label>
+                      <a id="ve-test-book1-gramedia" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                    </div>
+                    <input id="ve-link-book1-gramedia" type="url" oninput="syncSiteLinkTestHref('book1Gramedia')" placeholder="https://www.gramedia.com/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Book 2 -->
+              <div class="bg-surface rounded-xl p-3.5 border border-outline-variant/50 space-y-2.5">
+                <div class="font-bold text-primary flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px] text-secondary">psychology</span>
+                  <span>Buku 2: Brain Quotient — Pahami Kemampuan Otak Anda</span>
+                </div>
+                <div class="space-y-2">
+                  <div class="space-y-1">
+                    <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                      <label for="ve-link-book2-shopee">URL Shopee</label>
+                      <a id="ve-test-book2-shopee" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                    </div>
+                    <input id="ve-link-book2-shopee" type="url" oninput="syncSiteLinkTestHref('book2Shopee')" placeholder="https://shopee.co.id/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                  </div>
+                  <div class="space-y-1">
+                    <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                      <label for="ve-link-book2-tokopedia">URL Tokopedia</label>
+                      <a id="ve-test-book2-tokopedia" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                    </div>
+                    <input id="ve-link-book2-tokopedia" type="url" oninput="syncSiteLinkTestHref('book2Tokopedia')" placeholder="https://www.tokopedia.com/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                  </div>
+                  <div class="space-y-1">
+                    <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                      <label for="ve-link-book2-gramedia">URL Gramedia Online</label>
+                      <a id="ve-test-book2-gramedia" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                    </div>
+                    <input id="ve-link-book2-gramedia" type="url" oninput="syncSiteLinkTestHref('book2Gramedia')" placeholder="https://www.gramedia.com/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Social Media & Secretariat Links -->
+            <div class="lg:col-span-5 bg-surface rounded-xl p-3.5 border border-outline-variant/50 space-y-2.5">
+              <div class="font-bold text-primary flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-emerald-700">share</span>
+                <span>Sosial Media &amp; WhatsApp Sekretariat (Footer)</span>
+              </div>
+              <div class="space-y-2.5">
+                <div class="space-y-1">
+                  <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                    <label for="ve-link-whatsapp">WhatsApp Sekretariat</label>
+                    <a id="ve-test-whatsapp" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                  </div>
+                  <input id="ve-link-whatsapp" type="url" oninput="syncSiteLinkTestHref('whatsapp')" placeholder="https://wa.me/628111983838?text=..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                </div>
+                <div class="space-y-1">
+                  <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                    <label for="ve-link-linkedin">LinkedIn</label>
+                    <a id="ve-test-linkedin" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                  </div>
+                  <input id="ve-link-linkedin" type="url" oninput="syncSiteLinkTestHref('linkedin')" placeholder="https://www.linkedin.com/in/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                </div>
+                <div class="space-y-1">
+                  <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                    <label for="ve-link-facebook">Facebook</label>
+                    <a id="ve-test-facebook" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                  </div>
+                  <input id="ve-link-facebook" type="url" oninput="syncSiteLinkTestHref('facebook')" placeholder="https://www.facebook.com/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                </div>
+                <div class="space-y-1">
+                  <div class="font-semibold text-on-surface-variant flex items-center justify-between">
+                    <label for="ve-link-instagram">Instagram</label>
+                    <a id="ve-test-instagram" target="_blank" rel="noopener noreferrer" class="text-[11px] text-primary hover:underline font-medium">Uji Buka ↗</a>
+                  </div>
+                  <input id="ve-link-instagram" type="url" oninput="syncSiteLinkTestHref('instagram')" placeholder="https://www.instagram.com/..." class="w-full border border-outline-variant rounded-lg px-3 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+                </div>
+              </div>
+              <div class="pt-3 border-t border-outline-variant/40 flex flex-wrap items-center justify-between gap-2">
+                <button type="button" onclick="resetSiteLinksToDefault()" class="px-3 py-1.5 rounded-lg border border-outline-variant bg-white hover:bg-surface-container text-on-surface-variant hover:text-primary text-xs font-semibold cursor-pointer">
+                  Reset ke Default
+                </button>
+                <button type="button" onclick="saveAndPublishSiteLinks()" class="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs cursor-pointer">
+                  <span class="material-symbols-outlined text-[15px]">check_circle</span>Simpan &amp; Terapkan Live
+                </button>
               </div>
             </div>
           </div>
@@ -1914,7 +2052,7 @@
 
               <datalist id="claude-models-datalist">
                 <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (Terkini — Rekomendasi Utama: Cerdas, Cepat &amp; Efisien)</option>
-                <option value="claude-opus-5-5">Claude Opus 5.5 (Flagship Terkini — Penalaran Kompleks &amp; Ring 0/Ring 1)</option>
+                <option value="claude-opus-5-5">Claude Opus 5.5 (Flagship Terkini — Penalaran Kompleks &amp; Ring 0/1)</option>
                 <option value="claude-haiku-5-5">Claude Haiku 5.5 (Terkini — Super Cepat &amp; Hemat Biaya Ring 3 Publik)</option>
                 <option value="claude-fable-5-2">Claude Fable 5.2 (Riset Strategis &amp; Analisis Mendalam)</option>
                 <option value="claude-sonnet-4-5">Claude Sonnet 4.5 (Seimbang &amp; Teruji)</option>
@@ -1929,9 +2067,9 @@
                 <label class="block space-y-1">
                   <span class="font-bold text-primary flex items-center justify-between">
                     <span>🤖 Jenis Model Utama (Default Claude Model)</span>
-                    <span class="font-mono text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">Bisa Ketik Model Apa Pun (Terkini / Masa Depan)</span>
+                    <span class="font-mono text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">Bisa Ketik / Pilih Model Terkini</span>
                   </span>
-                  <span class="block text-[11px] text-on-surface-variant">Pilih dari rekomendasi atau ketik langsung kode model resmi Anthropic (mis. <code>claude-sonnet-5-5</code>, <code>claude-opus-5-5</code>, dll).</span>
+                  <span class="block text-[11px] text-on-surface-variant">Pilih dari rekomendasi atau ketik langsung kode model resmi Anthropic terbaru (daftar otomatis terbarui saat klik Tes Claude API).</span>
                   <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 pt-1">
                     <select id="ai-model-preset-select" onchange="if(this.value)document.getElementById('ai-model-default').value=this.value" class="sm:col-span-7 border rounded-lg p-2 bg-white font-semibold text-primary text-xs">
                       <option value="claude-sonnet-5-5">★ Claude Sonnet 5.5 — Terkini (Rekomendasi Utama)</option>

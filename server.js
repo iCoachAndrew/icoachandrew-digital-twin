@@ -214,8 +214,16 @@ const STOPWORDS = new Set([
   'melalui', 'secara', 'terus', 'menerus', 'hari', 'harian', 'sehari', 'keseharian'
 ]);
 
-const OUT_OF_SCOPE_TOPIC_RE = /\b(presidency|president|presiden|pilpres|pemilu|partai politik|kampanye politik|menteri|kabinet|gubernur|walikota|dpr|mpr|geopolitics|geopolitik|rights?\s+issue|hmetd|saham|ihsg|stock\s+market|stock\s+price|ipo|dividen|dividend|obligasi|reksadana|crypto|cryptocurrency|kripto|bitcoin|ethereum|forex|valas|trading\s+saham|cuaca|weather|ramalan\s+cuaca|sepak\s+bola|football|soccer|resep\s+masakan|cooking\s+recipe|selebriti|celebrity|gosip)\b/i;
-const GREETING_RE = /^(halo|hai|hi|hello|hey|hei|selamat\s+(pagi|siang|sore|malam|datang)|assalamu\s*['’]?alaikum|salam(\s+hangat|\s+kenal)?|apa\s+kabar|good\s+(morning|afternoon|evening|day))([\s,]+(halo|hai|hi|hello|selamat\s+(pagi|siang|sore|malam)|apa\s+kabar|pak|bapak|om|coach|mr\.?|sir|andrew|tani|sahabatku|teman))*[\s!.,?]*$/i;
+const OUT_OF_SCOPE_TOPIC_RE = /\b(presidency|pilpres|pemilu|partai politik|kampanye politik|menteri|kabinet|gubernur|walikota|dpr|mpr|geopolitics|geopolitik|rights?\s+issue|hmetd|ihsg|stock\s+market|stock\s+price|obligasi|reksadana|crypto|cryptocurrency|kripto|bitcoin|ethereum|forex|valas|trading\s+saham|harga\s+saham|beli\s+saham|rekomendasi\s+saham|cuaca|weather|ramalan\s+cuaca|sepak\s+bola|football|soccer|resep\s+masakan|cooking\s+recipe|memasak\s+rendang|selebriti|celebrity|gosip)\b|(?<!vice\s)\bpresident\b(?!\s+(director|commissioner|of\s+the\s+(board|company)))|\bpresiden\b(?!\s+(direktur|komisaris))/i;
+const GREETING_RE = /^(halo|hai|hi|hello|hey|hei|pagi|siang|sore|malam|selamat\s+(pagi|siang|sore|malam|datang)|assalamu\s*['’]?alaikum|salam(\s+hangat|\s+kenal|\s+sejahtera)?|apa\s+kabar|bagaimana\s+kabar(nya)?(\s+hari\s+ini)?|gimana\s+kabar(nya)?(\s+hari\s+ini)?|how\s+are\s+you(\s+doing|\s+today)?|nice\s+to\s+meet\s+you|good\s+(morning|afternoon|evening|day))([\s,]+(halo|hai|hi|hello|pagi|siang|sore|malam|selamat\s+(pagi|siang|sore|malam)|apa\s+kabar|bagaimana\s+kabar(nya)?(\s+hari\s+ini)?|gimana\s+kabar(nya)?(\s+hari\s+ini)?|how\s+are\s+you(\s+doing|\s+today)?|pak|bapak|om|coach|mr\.?|sir|andrew|tani|sahabatku|teman))*[\s!.,?]*$/i;
+const LEADERSHIP_DOMAIN_RE = /\b(pemimpin|kepemimpinan|leader\w*|manajer|manager\w*|manajemen|management|tim|team\w*|organisasi|organi[sz]\w*|perusahaan|company|corporate|bisnis|business|strategi|strateg\w*|budaya|culture|suksesi|succession|direksi|komisaris|board|ceo|eksekutif|executive|konflik|conflict|keputusan|decision|komunikasi|communication|visi|misi|vision|karyawan|staff|pegawai|kinerja|performance|perubahan|change|transformasi|transformation|keluarga|family|pendiri|founder|generasi|generation|mentor\w*|coach\w*|nasihat|saran|advice|tantangan|challenge|otak|brain|stres|stress|fokus|focus|nurani|conscience|nilai|values|etika|ethics|tujuan|goal|target|delegasi|delegat\w*|trust|kepercayaan|kerja|work|karier|career|buku|book|karya|andrew|tani|orbex|quotient|tata\s+kelola|governance)\b/i;
+const STRICT_CONFIDENTIAL_TERMS = [
+  'unresolved family succession dispute', 'pt dirgantara holdings',
+  'password', 'passkey', 'salary', 'valuation', 'debt', 'confidential', 'secret', 'private',
+  'medical', 'diagnosis', 'hospital', 'lawsuit', 'investigation',
+  'acquisition', 'begapal', 'peacock', 'unreleased',
+  'sandi', 'gaji', 'valuasi', 'utang', 'rahasia', 'pribadi', 'medis', 'sengketa', 'akuisisi'
+];
 
 function tokenize(s) {
   return String(s)
@@ -225,15 +233,23 @@ function tokenize(s) {
 }
 
 // ---------- leak guard: reply must not contain text from a stricter store than the asker may read ----------
+function normalizeForShingle(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function shingles(text, k = 5) {
-  const w = String(text).toLowerCase().split(/\s+/).filter(Boolean);
+  const w = normalizeForShingle(text).split(' ').filter(Boolean);
   const out = new Set();
   for (let i = 0; i + k <= w.length; i++) out.add(w.slice(i, i + k).join(' '));
   return out;
 }
 
 function leakGuard(askerRing, reply) {
-  const rl = String(reply).toLowerCase().replace(/\s+/g, ' ');
+  const rl = normalizeForShingle(reply);
   for (let n = 0; n <= 3; n++) {
     if (askerRing <= n) continue; // asker may read this ring
     for (const d of loadStore(n)) {
@@ -286,33 +302,53 @@ function checkSpecialRules(askerRing, question, lang) {
     }
   }
 
-  // 6. Clearly out-of-scope topics (politics/presidency, capital market rights issue/stocks/crypto, trivia)
-  if (OUT_OF_SCOPE_TOPIC_RE.test(q)) {
+  // 6. Clearly out-of-scope public trivia/politics/speculation (Ring 3 public room only)
+  if (askerRing === 3 && OUT_OF_SCOPE_TOPIC_RE.test(q)) {
     return { matched: true, text: OUT_OF_SCOPE[lang], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope' };
   }
 
   return { matched: false };
 }
 
-function isRestrictedToStricterRing(askerRing, question) {
+function isRestrictedToStricterRing(askerRing, question, opts = {}) {
+  if (askerRing <= 0) return false;
   const qLower = String(question || '').toLowerCase();
-  if (SENSITIVE.some((w) => qLower.includes(w))) return true;
-  if (askerRing > 0) {
-    const allHits = retrieve(0, question);
-    if (allHits.some((h) => h.ring < askerRing)) return true;
-    if (studio && studio.memory) {
-      const terms = tokenize(question);
-      for (const m of studio.memory.stricterTexts(askerRing)) {
-        const mt = new Set(tokenize(m.text));
-        if (terms.some((t) => mt.has(t))) return true;
+  if (STRICT_CONFIDENTIAL_TERMS.some((w) => qLower.includes(w))) return true;
+  const terms = tokenize(question);
+  if (!terms.length) return false;
+
+  // Build public Ring 3 vocabulary so generic shared leadership terms never cause false refusals
+  const publicVocab = new Set();
+  for (const d of [...loadStore(3), ...PUBLIC_BOOK_RING3_DOCS]) {
+    for (const t of tokenize((d.title || '') + ' ' + (d.text || ''))) publicVocab.add(t);
+  }
+  const matchesStricterText = (text) => {
+    const mt = new Set(tokenize(text));
+    const overlap = terms.filter((t) => mt.has(t));
+    if (overlap.length >= 2) return true;
+    if (overlap.length === 1 && !publicVocab.has(overlap[0])) return true;
+    return false;
+  };
+
+  if (opts.onlyExplicitSecrets) {
+    if (studio && studio.ai && typeof studio.ai.stricterTexts === 'function') {
+      for (const m of studio.ai.stricterTexts(askerRing)) {
+        if (matchesStricterText(m.text)) return true;
       }
     }
-    if (studio && studio.ai && typeof studio.ai.stricterTexts === 'function') {
-      const terms = tokenize(question);
-      for (const m of studio.ai.stricterTexts(askerRing)) {
-        const mt = new Set(tokenize(m.text));
-        if (terms.some((t) => mt.has(t))) return true;
-      }
+    return false;
+  }
+
+  const allHits = retrieve(0, question);
+  if (allHits.some((h) => h.ring < askerRing)) return true;
+  if (studio && studio.memory) {
+    for (const m of studio.memory.stricterTexts(askerRing)) {
+      if (matchesStricterText(m.text)) return true;
+    }
+  }
+  if (studio && studio.ai && typeof studio.ai.stricterTexts === 'function') {
+    for (const m of studio.ai.stricterTexts(askerRing)) {
+      if (matchesStricterText(m.text)) return true;
     }
   }
   return false;
@@ -395,7 +431,13 @@ async function answer(askerRing, question, lang, opts = {}) {
     return { text: special.text, sources: [], refused: special.refused, outcome: special.outcome, topic: special.topic, mode: 'rule_guard' };
   }
 
-  let hits = retrieve(askerRing, question);
+  // Preemptive confidentiality check BEFORE public retrieval so mixing a public keyword cannot bypass stricter-ring guards
+  if (askerRing > 0 && isRestrictedToStricterRing(askerRing, question, { onlyExplicitSecrets: true })) {
+    return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'refused_politely', topic: 'unmatched_or_restricted', mode: 'unmatched' };
+  }
+
+  const topK = (studio && studio.ai && Number(studio.ai.loadCfg().topKDocs)) || 5;
+  let hits = retrieve(askerRing, question, Math.min(15, Math.max(3, topK)));
   if (askerRing <= 3 && (isGreeting || PUBLIC_BOOK_TOPIC_RE.test(trimmedQ))) {
     const terms = tokenize(question);
     const seenIds = new Set(hits.map((h) => h.doc.id));
@@ -415,7 +457,7 @@ async function answer(askerRing, question, lang, opts = {}) {
       const aLangBoost = (a.doc && a.doc.lang === lang) ? 0.5 : 0;
       const bLangBoost = (b.doc && b.doc.lang === lang) ? 0.5 : 0;
       return (b.score + bLangBoost) - (a.score + aLangBoost) || a.ring - b.ring;
-    }).slice(0, 3);
+    }).slice(0, Math.min(15, Math.max(3, topK)));
   }
 
   const hasAi = Boolean(
@@ -433,13 +475,10 @@ async function answer(askerRing, question, lang, opts = {}) {
     if (isRestrictedToStricterRing(askerRing, question)) {
       return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'refused_politely', topic: 'unmatched_or_restricted', mode: 'unmatched' };
     }
-    // 2. Out of scope off-limits topics (politics, crypto, stock speculation, gossip, etc.)
-    if (OUT_OF_SCOPE_TOPIC_RE.test(trimmedQ)) {
-      return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
-    }
 
-    // 3. For greetings or when AI is ready, provide foundational Ring 3 canon instead of a 2ms hard cutoff
-    if (isGreeting || hasAi) {
+    // 2. For greetings OR in-domain leadership/executive questions when AI is ready, supply foundational Ring 3 canon
+    //    (prevents unauthenticated cost-amplification on random off-domain trivia while freeing executive intelligence)
+    if (isGreeting || (hasAi && (askerRing < 3 || LEADERSHIP_DOMAIN_RE.test(trimmedQ)))) {
       const canonDocs = PUBLIC_BOOK_RING3_DOCS.filter((d) => d.lang === lang);
       const fallbackDoc = canonDocs[0] || PUBLIC_BOOK_RING3_DOCS[0];
       if (fallbackDoc) {
@@ -502,7 +541,8 @@ async function answer(askerRing, question, lang, opts = {}) {
 // ---------- sessions: ring comes from the server, never from the browser ----------
 const sessions = new Map(); // token -> { id, ring, exp, codeName?, memberId?, passphraseHash?, unlimited?, leadSubmitted? }
 const revokedAdminTokens = new Set(); // revoked stateless admin tokens on explicit logout
-const guestQuotas = new Map(); // guestKey -> { used, unlimited, leadSubmitted, displayName, email, phone, memberId, updatedAt }
+const guestQuotas = new Map(); // guestKey -> { used, unlimited, leadSubmitted, displayName, email, phone, memberId, messages, updatedAt }
+const memberHistories = new Map(); // verified Ring 2 memberId -> messages[] (never keyed by client guestId)
 const USER_COOKIE = 'icoach_session';
 const ADMIN_COOKIE = 'icoach_admin';
 const ADMIN_SESSION_TTL_SEC = Number(process.env.ADMIN_SESSION_TTL_SEC || (30 * 24 * 60 * 60)); // 30 days (1 month)
@@ -541,6 +581,12 @@ function getOrInitGuestQuota(guestKey) {
   if (guestQuotas.size > 2000) {
     for (const [k, v] of guestQuotas.entries()) {
       if (!v || now - (v.updatedAt || 0) > 7 * 86400000) guestQuotas.delete(k);
+    }
+    // Hard FIFO cap to prevent unbounded memory growth under guestId flooding
+    while (guestQuotas.size >= 5000) {
+      const oldest = guestQuotas.keys().next().value;
+      if (oldest === undefined) break;
+      guestQuotas.delete(oldest);
     }
   }
   let q = guestQuotas.get(key);
@@ -726,10 +772,21 @@ function clientIp(req) {
 }
 function body(req, limit = 5 * 1024 * 1024) {
   return new Promise((resolve, reject) => {
-    let size = 0; const chunks = [];
-    req.on('error', reject);
-    req.on('data', (c) => { size += c.length; if (size > limit) { reject(new Error('too_large')); req.destroy(); } else chunks.push(c); });
-    req.on('end', () => { try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); } catch (e) { reject(new Error('bad_json')); } });
+    let size = 0; let settled = false; const chunks = [];
+    const fail = (err) => { if (settled) return; settled = true; reject(err); };
+    req.on('error', fail);
+    req.on('data', (c) => {
+      if (settled) return;
+      size += c.length;
+      if (size > limit) { req.pause(); fail(new Error('too_large')); }
+      else chunks.push(c);
+    });
+    req.on('end', () => {
+      if (settled) return;
+      settled = true;
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); }
+      catch (e) { reject(new Error('bad_json')); }
+    });
   });
 }
 const safeEq = (a, b) => { const x = Buffer.from(String(a)), y = Buffer.from(String(b)); return x.length === y.length && crypto.timingSafeEqual(x, y); };
@@ -812,11 +869,11 @@ async function handleAdmin(req, res) {
 
     if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
       const origin = req.headers.origin;
-      if (origin) {
+      if (origin !== undefined) {
         let originHost = '';
         try { originHost = new URL(origin).host; } catch (_) {}
         const reqHost = req.headers.host;
-        if (originHost && reqHost && originHost !== reqHost) {
+        if (!originHost || (reqHost && originHost !== reqHost)) {
           audit({ event: 'admin_csrf_blocked', origin, host: reqHost });
           return send(res, 403, { error: 'cross_origin_denied' }, {}, req);
         }
@@ -1125,12 +1182,15 @@ const userServer = http.createServer(async (req, res) => {
     const urlObj = new URL(req.url, 'http://localhost');
     const pathname = urlObj.pathname;
 
-    const isStudioPreview = Boolean(
-      req.headers.referer &&
-      req.headers.referer.includes('/preview-site') &&
-      sessionRing(req, ADMIN_COOKIE) === 0 &&
-      (pathname === '/api/site-content' || pathname === '/api/works' || pathname === '/api/pricing' || pathname === '/api/session')
-    );
+    let isStudioPreview = false;
+    if (req.headers.referer && sessionRing(req, ADMIN_COOKIE) === 0 && (pathname === '/api/site-content' || pathname === '/api/works' || pathname === '/api/pricing' || pathname === '/api/session')) {
+      try {
+        const refUrl = new URL(req.headers.referer);
+        if ((!req.headers.host || refUrl.host === req.headers.host) && refUrl.pathname === '/preview-site') {
+          isStudioPreview = true;
+        }
+      } catch (_) {}
+    }
 
     // Allow accessing Admin portal via /admin, /admin.html, or admin subdomain on single-port hosting
     if (pathname === '/admin' || pathname === '/admin.html' || pathname.startsWith('/admin/') || pathname === '/admin-studio.js' || pathname === '/preview-site' || isStudioPreview || (req.headers.host && req.headers.host.startsWith('admin.'))) {
@@ -1139,11 +1199,11 @@ const userServer = http.createServer(async (req, res) => {
 
     if (['POST', 'PUT', 'DELETE'].includes(req.method) && !pathname.startsWith('/api/payments/webhook')) {
       const origin = req.headers.origin;
-      if (origin) {
+      if (origin !== undefined) {
         let originHost = '';
         try { originHost = new URL(origin).host; } catch (_) {}
         const reqHost = req.headers.host;
-        if (originHost && reqHost && originHost !== reqHost) {
+        if (!originHost || (reqHost && originHost !== reqHost)) {
           audit({ event: 'user_csrf_blocked', origin, host: reqHost });
           return send(res, 403, { error: 'cross_origin_denied' }, {}, req);
         }
@@ -1194,12 +1254,10 @@ const userServer = http.createServer(async (req, res) => {
     // Current session info
     if (req.method === 'GET' && pathname === '/api/session') {
       const sess = resolveUserSession(req);
-      const guestId = urlObj.searchParams.get('guestId') || getCookieToken(req, USER_COOKIE) || null;
-      const gq = guestId ? getOrInitGuestQuota(guestId) : null;
-      const chatHistory = (gq && Array.isArray(gq.messages)) ? gq.messages.slice(-40) : [];
       if (sess.ring === 2 && sess.memberId) {
         const member = loadMembers().find((m) => m.id === sess.memberId);
         const isUnlimited = Boolean(member && (member.unlimited || member.leadSubmitted));
+        const memHistory = (memberHistories.get(sess.memberId) || []).slice(-40);
         return send(res, 200, {
           ring: 2,
           label: 'member',
@@ -1211,10 +1269,11 @@ const userServer = http.createServer(async (req, res) => {
           usage: { used: member ? member.used : 0, limit: isUnlimited ? null : (member ? member.cap : DEFAULT_MONTHLY_CAP), unlimited: isUnlimited },
           freeUsage: { used: member ? member.used : 0, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false },
           conversations: member ? (member.conversations || []).slice(-10) : [],
-          chatHistory
+          chatHistory: memHistory
         });
       }
       if (sess.ring === 1 && sess.codeName) {
+        // Ring 1 confidentiality covenant: strictly zero transcript retention in server memory
         return send(res, 200, {
           ring: 1,
           label: 'ring1',
@@ -1223,9 +1282,13 @@ const userServer = http.createServer(async (req, res) => {
           unlimited: true,
           leadSubmitted: true,
           freeUsage: { used: 0, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false },
-          chatHistory
+          chatHistory: []
         });
       }
+      const cookieTok = getCookieToken(req, USER_COOKIE);
+      const guestId = urlObj.searchParams.get('guestId') || cookieTok || null;
+      const gq = guestId ? getOrInitGuestQuota(guestId) : null;
+      const chatHistory = (gq && Array.isArray(gq.messages)) ? gq.messages.slice(-40) : [];
       const isPublicUnlimited = Boolean(sess.unlimited || (gq && gq.unlimited));
       const publicUsed = gq ? gq.used : 0;
       return send(res, 200, {
@@ -1234,9 +1297,9 @@ const userServer = http.createServer(async (req, res) => {
         revoked: Boolean(sess.revoked),
         unlimited: isPublicUnlimited,
         leadSubmitted: Boolean(sess.leadSubmitted || (gq && gq.leadSubmitted)),
-        displayName: sess.displayName || (gq && gq.displayName) || null,
-        email: sess.email || (gq && gq.email) || null,
-        phone: sess.phone || (gq && gq.phone) || null,
+        displayName: sess.displayName || null,
+        email: sess.email || null,
+        phone: sess.phone || null,
         chatHistory,
         freeUsage: {
           used: publicUsed,
@@ -1249,7 +1312,7 @@ const userServer = http.createServer(async (req, res) => {
       });
     }
 
-    // Lead capture after 10 free Q&A -> unlocks unlimited free Q&A (Nama, Email, Nomor Telepon Pribadi)
+    // Lead capture after 10 free Q&A -> unlocks unlimited free Ring 3 Q&A ONLY (never grants Ring 2 login or alters Ring 2 members)
     if (req.method === 'POST' && (pathname === '/api/chat/lead' || pathname === '/api/auth/lead')) {
       const b = await body(req, 4000);
       const lang = langOf(b.lang);
@@ -1268,30 +1331,31 @@ const userServer = http.createServer(async (req, res) => {
       }
 
       const members = loadMembers();
-      let member = members.find((m) => m.email === email);
+      let existing = members.find((m) => m.email === email);
       const gq = guestId ? getOrInitGuestQuota(guestId) : null;
       const priorUsed = gq ? gq.used : PUBLIC_FREE_CHAT_LIMIT;
+      let leadRecordId = null;
 
-      if (member) {
-        member.displayName = displayName;
-        member.phone = phone;
-        if (!member.corporateHolding || member.corporateHolding.startsWith('Telp/WA:')) {
-          member.corporateHolding = 'Telp/WA: ' + phone;
-        }
-        member.unlimited = true;
-        member.leadSubmitted = true;
-        member.entitlement = 'active';
-        member.cap = Math.max(Number(member.cap) || 0, 999999);
-        member.updatedAt = new Date().toISOString();
-      } else {
-        member = {
-          id: 'm_' + crypto.randomBytes(5).toString('hex'),
+      if (existing && existing.leadOnly === true) {
+        // Update existing Ring 3 lead-only record (never grants Ring 2 access)
+        existing.displayName = displayName;
+        existing.phone = phone;
+        existing.corporateHolding = 'Telp/WA: ' + phone;
+        existing.updatedAt = new Date().toISOString();
+        leadRecordId = existing.id;
+        saveMembers(members);
+      } else if (!existing) {
+        // Create strictly Ring 3 lead-only record with NO Ring 2 credentialHash
+        const leadRec = {
+          id: 'lead_' + crypto.randomBytes(5).toString('hex'),
           email,
           displayName,
           phone,
           corporateHolding: 'Telp/WA: ' + phone,
-          credentialHash: hashSecret(phone + ':' + email),
-          entitlement: 'active',
+          credentialHash: null,
+          leadOnly: true,
+          ring: 3,
+          entitlement: 'lead',
           unlimited: true,
           leadSubmitted: true,
           leadSource: 'chat_10_gate',
@@ -1300,15 +1364,19 @@ const userServer = http.createServer(async (req, res) => {
           conversations: [],
           createdAt: new Date().toISOString()
         };
-        members.push(member);
+        leadRecordId = leadRec.id;
+        members.push(leadRec);
+        saveMembers(members);
+      } else {
+        // Existing Ring 2 member email: DO NOT mutate Ring 2 member entitlement, credentials, or profile!
+        leadRecordId = 'lead_' + crypto.randomBytes(5).toString('hex');
       }
-      saveMembers(members);
 
       const token = newSession(3, {
         ttlMs: 30 * 24 * 60 * 60 * 1000,
         unlimited: true,
         leadSubmitted: true,
-        memberId: member.id,
+        memberId: existing && !existing.leadOnly ? null : leadRecordId,
         displayName,
         email,
         phone
@@ -1322,11 +1390,11 @@ const userServer = http.createServer(async (req, res) => {
           q.displayName = displayName;
           q.email = email;
           q.phone = phone;
-          q.memberId = member.id;
+          q.memberId = existing && !existing.leadOnly ? null : leadRecordId;
         }
       }
 
-      audit({ event: 'chat_lead_submitted', ring: 3, sessionId: member.id, unlimited: true });
+      audit({ event: 'chat_lead_submitted', ring: 3, sessionId: leadRecordId, unlimited: true });
       return send(res, 200, {
         ok: true,
         ring: 3,
@@ -1336,7 +1404,7 @@ const userServer = http.createServer(async (req, res) => {
         email,
         phone,
         freeUsage: {
-          used: member.used,
+          used: priorUsed,
           limit: null,
           remaining: null,
           unlimited: true,
@@ -1357,7 +1425,19 @@ const userServer = http.createServer(async (req, res) => {
       const members = loadMembers();
       const freeActive = FREE_FOR_NOW && (!studio || studio.commerce.isFreeForNow());
       let member = members.find((m) => m.email === email);
-      if (member) {
+      if (member && member.leadOnly === true) {
+        // Upgrade lead-only record into a full Ring 2 member using the user's chosen credential
+        member.displayName = displayName || member.displayName;
+        member.corporateHolding = corporateHolding || member.corporateHolding;
+        member.credentialHash = hashSecret(credential);
+        member.leadOnly = false;
+        member.ring = 2;
+        member.entitlement = freeActive ? 'active' : 'pending_payment';
+        member.unlimited = false;
+        member.cap = DEFAULT_MONTHLY_CAP;
+        member.updatedAt = new Date().toISOString();
+        saveMembers(members);
+      } else if (member) {
         const v = verifySecret(credential, member.credentialHash);
         if (!v.ok) {
           audit({ event: 'member_signup_conflict', ring: 2 });
@@ -1402,7 +1482,7 @@ const userServer = http.createServer(async (req, res) => {
       const credential = String(b.credential || '').trim();
       const members = loadMembers();
       const member = members.find((m) => m.email === email);
-      if (!member) {
+      if (!member || member.leadOnly === true || !member.credentialHash || member.entitlement === 'lead') {
         audit({ event: 'member_login_failed', ring: 2 });
         return send(res, 401, { error: 'denied' }, {}, req);
       }
@@ -1435,7 +1515,8 @@ const userServer = http.createServer(async (req, res) => {
       if (!codeName || !otpCode || !passphrase) return send(res, 400, { error: 'bad_request' }, {}, req);
 
       const targetKey = 'r1_target:' + codeName.toLowerCase();
-      if (rateLimited(targetKey, 5, 300000)) {
+      const prevAttempt = attempts.get(targetKey);
+      if (prevAttempt && prevAttempt.reset > Date.now() && prevAttempt.n >= 5) {
         audit({ event: 'ring1_login_throttled', ring: 1, codeName });
         return send(res, 429, { error: 'account_locked', reply: REFUSAL[langOf(b.lang)] }, {}, req);
       }
@@ -1533,10 +1614,15 @@ const userServer = http.createServer(async (req, res) => {
     // Clear active browser session chat history (when user explicitly starts a New Conversation)
     if (req.method === 'POST' && pathname === '/api/chat/clear') {
       const b = await body(req, 4000);
-      const guestKey = String(b.guestId || getCookieToken(req, USER_COOKIE) || '').trim();
-      if (guestKey) {
-        const gq = getOrInitGuestQuota(guestKey);
-        if (gq) gq.messages = [];
+      const sess = resolveUserSession(req);
+      if (sess.ring === 2 && sess.memberId) {
+        memberHistories.delete(sess.memberId);
+      } else if (sess.ring === 3) {
+        const guestKey = String(b.guestId || getCookieToken(req, USER_COOKIE) || '').trim();
+        if (guestKey) {
+          const gq = getOrInitGuestQuota(guestKey);
+          if (gq) gq.messages = [];
+        }
       }
       return send(res, 200, { ok: true, chatHistory: [] }, {}, req);
     }
@@ -1558,9 +1644,7 @@ const userServer = http.createServer(async (req, res) => {
       }
       const ring = sess.ring;
 
-      // Enforce Ring 2 monthly fair-use cap (unless unlimited is active)
-      let usageInfo;
-      let freeUsage;
+      // Pre-check Ring 2 & Ring 3 quotas WITHOUT incrementing yet (only deduct after answer() succeeds)
       if (ring === 2 && sess.memberId) {
         const members = loadMembers();
         const member = members.find((m) => m.id === sess.memberId);
@@ -1570,14 +1654,11 @@ const userServer = http.createServer(async (req, res) => {
             audit({ event: 'chat_cap_reached', site: 'user', ring: 2, sessionId: sess.sessionId, outcome: 'refused_politely' });
             return send(res, 429, { error: 'cap_reached', reply: CAP_REACHED[lang], usage: { used: member.used, limit: member.cap } });
           }
-          member.used += 1;
-          member.conversations = member.conversations || [];
-          member.conversations.push({ title: q.slice(0, 48), at: new Date().toISOString() });
-          saveMembers(members);
-          usageInfo = { used: member.used, limit: isUnlimited ? null : member.cap, unlimited: isUnlimited };
-          freeUsage = { used: member.used, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false };
         }
       } else if (ring === 3) {
+        if (rateLimited('r3_chat:' + ip, 90, 60000)) {
+          return send(res, 429, { error: 'slow_down', reply: lang === 'id' ? 'Mohon jeda sejenak sebelum mengirim pesan berikutnya.' : 'Please pause briefly before sending your next message.' }, {}, req);
+        }
         if (guestKey) {
           const gq = getOrInitGuestQuota(guestKey);
           const isUnlimited = Boolean(sess.unlimited || (gq && gq.unlimited));
@@ -1598,43 +1679,74 @@ const userServer = http.createServer(async (req, res) => {
               }
             }, {}, req);
           }
-          gq.used += 1;
-          const memId = sess.memberId || gq.memberId;
-          if (memId) {
-            const members = loadMembers();
-            const member = members.find((m) => m.id === memId);
-            if (member) {
-              member.used = gq.used;
-              member.conversations = member.conversations || [];
-              member.conversations.push({ title: q.slice(0, 48), at: new Date().toISOString() });
-              saveMembers(members);
-            }
-          }
-          freeUsage = {
-            used: gq.used,
-            limit: isUnlimited ? null : PUBLIC_FREE_CHAT_LIMIT,
-            remaining: isUnlimited ? null : Math.max(0, PUBLIC_FREE_CHAT_LIMIT - gq.used),
-            unlimited: isUnlimited,
-            leadSubmitted: Boolean(sess.leadSubmitted || gq.leadSubmitted),
-            requireLead: !isUnlimited && gq.used >= PUBLIC_FREE_CHAT_LIMIT,
-            promptLead: !isUnlimited && gq.used >= PUBLIC_FREE_CHAT_LIMIT
-          };
         }
       }
 
-      const r = await answer(ring, q, lang);
-      if (guestKey) {
+      let r;
+      try {
+        r = await answer(ring, q, lang);
+      } catch (aiErr) {
+        audit({ event: 'chat_model_error', site: 'user', ring, msg: String(aiErr && aiErr.message || aiErr).slice(0, 120) });
+        const fallbackMsg = GREETING_RE.test(q.trim())
+          ? WARM_GREETING[lang]
+          : (lang === 'id'
+              ? 'Mohon maaf, layanan AI sedang sibuk sejenak. Silakan coba kirim ulang pertanyaan Anda beberapa saat lagi.'
+              : 'Apologies, the AI service is briefly busy. Please try sending your question again in a moment.');
+        return send(res, 503, { error: 'service_busy', reply: fallbackMsg, refused: false, outcome: 'service_busy' }, {}, req);
+      }
+
+      // Deduct quota & persist conversation ONLY AFTER answer() succeeds
+      let usageInfo;
+      let freeUsage;
+      if (ring === 2 && sess.memberId) {
+        const members = loadMembers();
+        const member = members.find((m) => m.id === sess.memberId);
+        if (member) {
+          const isUnlimited = Boolean(member.unlimited || member.leadSubmitted);
+          member.used += 1;
+          member.conversations = member.conversations || [];
+          member.conversations.push({ title: q.slice(0, 48), at: new Date().toISOString() });
+          saveMembers(members);
+          usageInfo = { used: member.used, limit: isUnlimited ? null : member.cap, unlimited: isUnlimited };
+          freeUsage = { used: member.used, limit: null, remaining: null, unlimited: true, leadSubmitted: true, requireLead: false };
+        }
+        // Store Ring 2 transcript strictly under verified memberId (never client guestId)
+        const hist = memberHistories.get(sess.memberId) || [];
+        const nowIso = new Date().toISOString();
+        hist.push({ role: 'user', text: q, source: chatSource, at: nowIso });
+        hist.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso });
+        memberHistories.set(sess.memberId, hist.slice(-40));
+      } else if (ring === 3 && guestKey) {
         const gq = getOrInitGuestQuota(guestKey);
-        if (gq) {
-          if (!Array.isArray(gq.messages)) gq.messages = [];
-          const nowIso = new Date().toISOString();
-          gq.messages.push({ role: 'user', text: q, source: chatSource, at: nowIso });
-          gq.messages.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso });
-          if (gq.messages.length > 40) {
-            gq.messages = gq.messages.slice(-40);
+        const isUnlimited = Boolean(sess.unlimited || (gq && gq.unlimited));
+        gq.used += 1;
+        const memId = sess.memberId || gq.memberId;
+        if (memId) {
+          const members = loadMembers();
+          const member = members.find((m) => m.id === memId && m.leadOnly === true);
+          if (member) {
+            member.used = gq.used;
+            member.conversations = member.conversations || [];
+            member.conversations.push({ title: q.slice(0, 48), at: new Date().toISOString() });
+            saveMembers(members);
           }
         }
+        if (!Array.isArray(gq.messages)) gq.messages = [];
+        const nowIso = new Date().toISOString();
+        gq.messages.push({ role: 'user', text: q, source: chatSource, at: nowIso });
+        gq.messages.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso });
+        if (gq.messages.length > 40) gq.messages = gq.messages.slice(-40);
+        freeUsage = {
+          used: gq.used,
+          limit: isUnlimited ? null : PUBLIC_FREE_CHAT_LIMIT,
+          remaining: isUnlimited ? null : Math.max(0, PUBLIC_FREE_CHAT_LIMIT - gq.used),
+          unlimited: isUnlimited,
+          leadSubmitted: Boolean(sess.leadSubmitted || gq.leadSubmitted),
+          requireLead: !isUnlimited && gq.used >= PUBLIC_FREE_CHAT_LIMIT,
+          promptLead: !isUnlimited && gq.used >= PUBLIC_FREE_CHAT_LIMIT
+        };
       }
+      // Note: Ring 0 & Ring 1 transcripts are NEVER retained in server memory (zero-retention confidentiality covenant).
       audit({
         event: 'chat',
         site: 'user',
@@ -1655,7 +1767,7 @@ const userServer = http.createServer(async (req, res) => {
         ring: sess.label,
         usage: usageInfo,
         ...(freeUsage ? { freeUsage, promptLead: Boolean(freeUsage.promptLead) } : {})
-      });
+      }, {}, req);
     }
 
     return send(res, 404, { error: 'not_found' });

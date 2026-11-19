@@ -33,7 +33,7 @@
             const val = String(attr.value || '').trim();
             if (name.startsWith('on') || name === 'srcdoc' || name === 'formaction') {
               child.removeAttribute(attr.name);
-            } else if ((name === 'href' || name === 'src' || name === 'xlink:href' || name === 'action') && /^(javascript|vbscript|data\s*:\s*text\/html)/i.test(val)) {
+            } else if ((name === 'href' || name === 'src' || name === 'xlink:href' || name === 'action') && !isSafeHref(val)) {
               child.removeAttribute(attr.name);
             }
           }
@@ -94,6 +94,7 @@
     if (originals.has(key) || !el) return;
     originals.set(key, {
       html: el.innerHTML,
+      htmlModified: false,
       src: el.tagName === 'IMG' ? el.getAttribute('src') : null,
       alt: el.tagName === 'IMG' ? el.getAttribute('alt') : null,
       href: el.tagName === 'A' ? el.getAttribute('href') : null,
@@ -111,8 +112,9 @@
         if (orig.alt !== null) el.setAttribute('alt', orig.alt);
       } else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
         if (orig.placeholder !== null) el.setAttribute('placeholder', orig.placeholder);
-      } else {
+      } else if (orig.htmlModified) {
         el.innerHTML = orig.html;
+        orig.htmlModified = false;
       }
       if (el.tagName === 'A' && orig.href !== null) el.setAttribute('href', orig.href);
       if (orig.styleCss) el.setAttribute('style', orig.styleCss);
@@ -122,6 +124,9 @@
         el.removeAttribute('data-cms-hidden');
       }
     }
+    document.querySelectorAll('.book-buy-links, #footer-social-links').forEach((wrap) => {
+      wrap.classList.remove('hidden');
+    });
   }
 
   function activeLang() {
@@ -154,17 +159,24 @@
       rememberOriginal(key, el);
 
       if (el.tagName === 'IMG') {
-        if (entry.src) el.setAttribute('src', entry.src);
+        if (entry.src && isSafeHref(entry.src)) el.setAttribute('src', entry.src);
         if (entry.alt !== undefined) el.setAttribute('alt', entry.alt);
       } else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
         const ph = pickI18n(entry.placeholder, lang);
         if (ph !== undefined) el.setAttribute('placeholder', ph);
       } else {
         const txt = pickI18n(entry.text, lang);
-        if (txt !== undefined) el.innerHTML = sanitizeHtml(txt);
+        if (txt !== undefined && !el.querySelector('svg')) {
+          const origRec = originals.get(key);
+          if (origRec) origRec.htmlModified = true;
+          el.innerHTML = sanitizeHtml(txt);
+        }
       }
 
-      if (el.tagName === 'A' && entry.href) el.setAttribute('href', entry.href);
+      if (el.tagName === 'A' && entry.href && isSafeHref(entry.href)) {
+        el.setAttribute('href', entry.href);
+        if (el.getAttribute('target') === '_blank') el.setAttribute('rel', 'noopener noreferrer');
+      }
 
       if (entry.style && typeof entry.style === 'object') {
         for (const [prop, val] of Object.entries(entry.style)) {
@@ -181,6 +193,7 @@
     applyLayoutAndBlocks(doc);
     applyTheme(doc.theme);
     applySeo(doc.seo);
+    applyLinks(doc.links);
     applyAnnouncement(doc.settings);
     applyTypographyScale(doc.settings);
     if (doc.settings && doc.settings.worksOnHome && worksList) renderWorksOnHome(worksList);
@@ -331,7 +344,15 @@
         const cachedFonts = localStorage.getItem('icoach_theme_fonts');
         if (cachedFonts) {
           const parsed = JSON.parse(cachedFonts);
-          if (parsed && typeof parsed === 'object') f = parsed;
+          if (parsed && typeof parsed === 'object') {
+            const cleanF = {};
+            for (const fk of ['consistentAll', 'serif', 'sans']) {
+              if (typeof parsed[fk] === 'string' && /^[A-Za-z0-9 ]{2,40}$/.test(parsed[fk].trim())) {
+                cleanF[fk] = parsed[fk].trim();
+              }
+            }
+            f = cleanF;
+          }
         }
       } catch (_) {}
     }
@@ -383,6 +404,69 @@
       if (!l) { l = document.createElement('link'); l.id = 'site-favicon'; l.rel = 'icon'; document.head.appendChild(l); }
       l.removeAttribute('type');
       l.href = seo.favicon;
+    }
+  }
+
+  const LINK_BINDINGS = {
+    book1Shopee: ['#book1-buy-shopee'],
+    book1Tokopedia: ['#book1-buy-tokopedia'],
+    book1Gramedia: ['#book1-buy-gramedia'],
+    book2Shopee: ['#book2-buy-shopee'],
+    book2Tokopedia: ['#book2-buy-tokopedia'],
+    book2Gramedia: ['#book2-buy-gramedia'],
+    whatsapp: ['#footer-link-wa', '#about-link-wa'],
+    linkedin: ['#footer-link-linkedin'],
+    facebook: ['#footer-link-facebook'],
+    instagram: ['#footer-link-instagram']
+  };
+
+  function isSafeHref(u) {
+    const s = String(u || '').trim();
+    if (!s || s.length > 2048) return false;
+    if (/[\x00-\x1f\x7f]/.test(s)) return false;
+    if (/^\s*(javascript|data|vbscript):/i.test(s)) return false;
+    if (!/^(https?:\/\/[^\s"'<>`]+|\/(?![\/\\])[^\s"'<>`]*|#[\w\-:.]*|mailto:[^\s"'<>`]+|tel:[+\d \-()]+)$/i.test(s)) return false;
+    if (/^https?:/i.test(s)) {
+      try {
+        const p = new URL(s);
+        if ((p.protocol !== 'http:' && p.protocol !== 'https:') || !p.hostname) return false;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function applyLinks(links) {
+    if (!links || typeof links !== 'object') return;
+    for (const [key, selectors] of Object.entries(LINK_BINDINGS)) {
+      if (links[key] === undefined) continue;
+      const val = String(links[key] || '').trim();
+      for (const sel of selectors) {
+        const el = document.querySelector(sel);
+        if (!el) continue;
+        rememberOriginal(sel, el);
+        if (val === '') {
+          el.setAttribute('data-cms-hidden', '1');
+          el.classList.add('hidden');
+        } else if (isSafeHref(val)) {
+          el.setAttribute('href', val);
+          if (el.getAttribute('target') === '_blank') el.setAttribute('rel', 'noopener noreferrer');
+          el.removeAttribute('data-cms-hidden');
+          el.classList.remove('hidden');
+        }
+      }
+    }
+    document.querySelectorAll('.book-buy-links').forEach((wrap) => {
+      const anchors = Array.from(wrap.querySelectorAll('a'));
+      const anyVisible = anchors.some((a) => !a.classList.contains('hidden'));
+      wrap.classList.toggle('hidden', anchors.length > 0 && !anyVisible);
+    });
+    const socialWrap = document.getElementById('footer-social-links');
+    if (socialWrap) {
+      const anchors = Array.from(socialWrap.querySelectorAll('a'));
+      const anyVisible = anchors.some((a) => !a.classList.contains('hidden'));
+      socialWrap.classList.toggle('hidden', anchors.length > 0 && !anyVisible);
     }
   }
 
@@ -521,17 +605,17 @@
       modal.className = 'fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4';
       document.body.appendChild(modal);
     }
-    const gws = (pricingData.gateways || []).map((g) => `<option value="${g.provider}">${g.provider.toUpperCase()} (${g.mode})</option>`).join('');
+    const gws = (pricingData.gateways || []).map((g) => `<option value="${esc(g.provider)}">${esc(String(g.provider || '').toUpperCase())} (${esc(g.mode)})</option>`).join('');
     modal.innerHTML = `
       <div class="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-outline-variant/30">
         <div class="flex items-center justify-between">
-          <h3 class="font-headline-sm text-xl text-primary">${plan.name}</h3>
+          <h3 class="font-headline-sm text-xl text-primary">${esc(plan.name)}</h3>
           <button onclick="document.getElementById('cms-checkout-modal').remove()" class="text-outline hover:text-primary">✕</button>
         </div>
-        <p class="text-xs text-on-surface-variant">${plan.tagline || ''}</p>
+        <p class="text-xs text-on-surface-variant">${esc(plan.tagline || '')}</p>
         <div class="grid grid-cols-2 gap-2 text-xs">
-          <label class="border rounded-lg p-3 cursor-pointer flex flex-col gap-1"><input type="radio" name="cms_cycle" value="monthly" checked/> <span>Bulanan</span><strong>${formatMoney(plan.priceMonthly, pricingData.currency)}</strong></label>
-          <label class="border rounded-lg p-3 cursor-pointer flex flex-col gap-1"><input type="radio" name="cms_cycle" value="yearly"/> <span>Tahunan</span><strong>${formatMoney(plan.priceYearly, pricingData.currency)}</strong></label>
+          <label class="border rounded-lg p-3 cursor-pointer flex flex-col gap-1"><input type="radio" name="cms_cycle" value="monthly" checked/> <span>Bulanan</span><strong>${esc(formatMoney(plan.priceMonthly, pricingData.currency))}</strong></label>
+          <label class="border rounded-lg p-3 cursor-pointer flex flex-col gap-1"><input type="radio" name="cms_cycle" value="yearly"/> <span>Tahunan</span><strong>${esc(formatMoney(plan.priceYearly, pricingData.currency))}</strong></label>
         </div>
         <div class="space-y-2">
           <label class="block text-xs font-semibold text-primary">Metode Pembayaran</label>
@@ -561,13 +645,13 @@
         box.textContent = 'Gagal membuat pesanan: ' + (j.detail || j.error || 'Periksa kembali data Anda.');
         return;
       }
-      if (j.redirectUrl) { window.location.href = j.redirectUrl; return; }
+      if (j.redirectUrl && isSafeHref(j.redirectUrl)) { window.location.href = j.redirectUrl; return; }
       if (j.instructions) {
         box.innerHTML = `<div class="p-3 rounded-lg bg-surface-container text-xs space-y-1">
-          <div><strong>Kode Pesanan:</strong> ${j.orderId}</div>
-          <div><strong>Nominal:</strong> ${formatMoney(j.amount, j.currency)}</div>
-          <div><strong>Bank:</strong> ${j.instructions.bankName} — ${j.instructions.accountNo} (${j.instructions.accountName})</div>
-          <div>${j.instructions.note || ''}</div>
+          <div><strong>Kode Pesanan:</strong> ${esc(j.orderId)}</div>
+          <div><strong>Nominal:</strong> ${esc(formatMoney(j.amount, j.currency))}</div>
+          <div><strong>Bank:</strong> ${esc(j.instructions.bankName)} — ${esc(j.instructions.accountNo)} (${esc(j.instructions.accountName)})</div>
+          <div>${esc(j.instructions.note || '')}</div>
         </div>`;
       }
     };
@@ -578,6 +662,7 @@
     const origSetLang = window.setLanguage;
     if (typeof origSetLang === 'function' && !origSetLang.__cmsWrapped) {
       const wrapped = function (lang) {
+        restoreOriginals();
         const res = origSetLang.apply(this, arguments);
         if (siteDoc) applySiteDoc(siteDoc);
         return res;
