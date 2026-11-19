@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>What They Say — Kata Mereka tentang Andrew Tani | iCoachAndrew</title>
+  <meta name="description" id="wts-meta-desc" content="Simak kesaksian dan perspektif langsung dari para pemimpin bisnis, pendiri usaha, dan tokoh nasional tentang Andrew Tani (iCoachAndrew)."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="What They Say — Kata Mereka tentang Andrew Tani | iCoachAndrew"/>
+  <meta property="og:description" content="Kesaksian dan refleksi para pemimpin bisnis dan tokoh nasional tentang pendampingan eksekutif Andrew Tani."/>
+  <meta property="og:url" content="https://icoachandrew.com/what-they-say"/>
+  <link id="site-favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23A41034'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%23FFFFFF' font-family='Georgia,serif' font-weight='bold' font-size='28'%3EAT%3C/text%3E%3C/svg%3E"/>
+
+  <!-- Google Fonts: Newsreader (Editorial Serif), Figtree (High Readability Sans), JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            hbs: {
+              crimson: '#A41034',
+              crimsonDark: '#820D29',
+              crimsonLight: '#FDF2F4',
+              charcoal: '#111827',
+              slate: '#1E293B',
+              stone: '#F8F9FA',
+              stoneDark: '#E5E7EB',
+              muted: '#64748B',
+              gold: '#D4AF37'
+            }
+          },
+          fontFamily: {
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            sans: ['Figtree', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    body {
+      font-family: 'Figtree', sans-serif;
+      color: #111827;
+      background-color: #FAF9F6;
+    }
+    h1, h2, h3, .font-serif-heading {
+      font-family: 'Newsreader', Georgia, serif;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F8F9FA;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #E5E7EB;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #A41034;
+    }
+    #collapsible-nav-drawer {
+      transform: translateX(-100%);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body.nav-drawer-open #collapsible-nav-drawer {
+      transform: translateX(0);
+    }
+    body.nav-drawer-open #collapsible-nav-backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .wts-card {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+    .wts-card:hover {
+      transform: translateY(-3px);
+    }
+    .wts-play-ring {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, box-shadow 0.28s ease;
+    }
+    .wts-facade-btn:hover .wts-play-ring,
+    .wts-facade-btn:focus-visible .wts-play-ring {
+      transform: scale(1.1);
+      background-color: #A41034;
+      box-shadow: 0 18px 36px -8px rgba(164, 16, 52, 0.55);
+    }
+    .wts-facade-btn:hover .wts-thumb-img {
+      transform: scale(1.04);
+    }
+    .wts-thumb-img {
+      transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes wtsFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .wts-iframe-fade {
+      animation: wtsFadeIn 0.24s ease-out forwards;
+    }
+  </style>
+</head>
+<body data-page="what-they-say" class="flex flex-col min-h-screen text-hbs-charcoal bg-[#FAF9F6] antialiased selection:bg-hbs-crimson selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- COLLAPSIBLE NAVIGATION DRAWER (CONSISTENT WITH MAIN SITE)                 -->
+  <!-- ========================================================================= -->
+  <div id="collapsible-nav-backdrop" onclick="closeNavDrawer()" class="fixed inset-0 bg-black/35 backdrop-blur-[1px] z-50 opacity-0 pointer-events-none transition-opacity duration-200"></div>
+
+  <aside id="collapsible-nav-drawer" aria-label="Menu Navigasi iCoachAndrew" class="fixed top-0 left-0 bottom-0 w-[300px] sm:w-[330px] max-w-[86vw] bg-white border-r border-gray-200 z-50 flex flex-col shadow-2xl">
+    <!-- Drawer Header -->
+    <div class="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between gap-2">
+      <a href="/" class="flex items-center gap-2 min-w-0">
+        <span class="font-serif text-lg font-bold tracking-tight text-hbs-charcoal truncate">
+          iCoachAndrew
+        </span>
+      </a>
+      <button type="button" onclick="closeNavDrawer()" class="w-8 h-8 rounded-lg hover:bg-gray-100 text-hbs-muted hover:text-hbs-charcoal flex items-center justify-center transition-colors cursor-pointer" title="Tutup Menu" aria-label="Tutup Menu">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <!-- Drawer Scrollable Body -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-5">
+      <!-- Primary Back-to-Chat Action -->
+      <a href="/" class="w-full py-2.5 px-3.5 rounded-xl bg-hbs-crimson hover:bg-hbs-crimsonDark text-white font-medium text-xs flex items-center justify-between transition-all shadow-xs">
+        <span class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[17px]">forum</span>
+          <span id="wts-drawer-chat-cta">Mulai Percakapan</span>
+        </span>
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+      </a>
+
+      <!-- Profile Mini Card -->
+      <div class="rounded-xl border border-gray-200 bg-[#FAF9F6] p-3.5 space-y-3">
+        <div class="flex items-center gap-3">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ-tVbAEK3drQ1bKI2mLQxXSsjnjrPsmbZy_qFDeUf0y7Vsos2VVTkr7hnPeyDRhBLC8Jy6lKwGhGOumCAExV2R_H9McUa5ipTl_Ym89kn7rfDvFRw65jTXLOuovam-wE-0qQQ4JXIbX8kZh8HomQBiyAO1bKkHTSl8ww5qG719VU1RyJ2c__JHWViynpOpIiBsSZ5QNn1PD8" alt="Pak Andrew Tani" class="w-11 h-11 rounded-full object-cover object-top border border-hbs-crimson shrink-0"/>
+          <div class="min-w-0">
+            <div class="font-serif font-bold text-sm text-hbs-charcoal truncate">Pak Andrew Tani</div>
+            <div class="text-[10px] font-mono text-hbs-crimson uppercase tracking-wider truncate">Senior Management Advisor</div>
+            <div class="text-[11px] text-hbs-muted truncate">40+ Thn • 28 Grup • 2 Buku Resmi</div>
+          </div>
+        </div>
+        <a href="/#beranda" class="w-full py-2 px-3 rounded-lg bg-white hover:bg-hbs-crimsonLight border border-gray-200 hover:border-hbs-crimson/40 text-hbs-charcoal hover:text-hbs-crimson text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+          <span class="material-symbols-outlined text-[15px] text-hbs-crimson">person_book</span>
+          <span id="wts-drawer-profile-btn">Lihat Profil Andrew Tani</span>
+        </a>
+      </div>
+
+      <!-- Navigation Links -->
+      <div class="space-y-1">
+        <div id="wts-drawer-nav-heading" class="px-2 pb-1 text-[10px] font-mono uppercase tracking-wider text-hbs-muted">
+          Akses Lebih Lanjut
+        </div>
+        <nav class="flex flex-col gap-1 text-xs font-medium">
+          <a href="/" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">forum</span>
+            <span id="wts-nav-chat">Ruang Bincang Eksekutif</span>
+          </a>
+          <a href="/#beranda" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">person_book</span>
+            <span id="wts-nav-who">Siapa Andrew Tani</span>
+          </a>
+          <a href="/what-they-say" aria-current="page" class="px-3 py-2.5 rounded-lg text-hbs-crimson bg-hbs-crimsonLight/70 font-semibold flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">play_circle</span>
+            <span id="wts-nav-current">What They Say</span>
+          </a>
+          <a href="/#karya-buku" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">menu_book</span>
+            <span id="wts-nav-books">Khazanah &amp; Buku Rujukan</span>
+          </a>
+          <a href="/#lingkaran-pendampingan" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">workspace_premium</span>
+            <span id="wts-nav-circles">Pilihan Akses &amp; Keanggotaan</span>
+          </a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-4 border-t border-gray-100 bg-gray-50/70">
+      <div class="text-[11px] font-mono text-hbs-muted text-center">
+        Andrew Tani &amp; Co. • Sejak 1983
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- STICKY MINIMALIST TOP BAR (EXACT MATCH WITH MAIN SITE)                    -->
+  <!-- ========================================================================= -->
+  <header class="w-full h-14 bg-[#FAF9F6]/92 backdrop-blur-md border-b border-gray-200/70 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-12 flex items-center justify-between gap-3">
+      <!-- Left: Hamburger + Brand + Breadcrumb -->
+      <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+        <button type="button" id="wts-drawer-toggle-btn" onclick="toggleNavDrawer()" class="w-9 h-9 rounded-xl hover:bg-gray-200/60 text-hbs-charcoal flex items-center justify-center transition-colors shrink-0 cursor-pointer" title="Buka Menu Navigasi" aria-label="Buka Menu Navigasi">
+          <span class="material-symbols-outlined text-[21px]">menu</span>
+        </button>
+        <a href="/" class="flex items-baseline gap-2 min-w-0 group">
+          <span class="font-serif text-lg sm:text-xl font-bold tracking-tight text-hbs-charcoal group-hover:text-hbs-crimson transition-colors whitespace-nowrap">
+            iCoachAndrew
+          </span>
+        </a>
+        <span class="hidden sm:inline-block text-gray-300 select-none">/</span>
+        <span id="wts-topbar-crumb" class="hidden sm:inline-block text-[11px] font-mono uppercase tracking-wider text-hbs-crimson font-semibold whitespace-nowrap truncate">
+          What They Say
+        </span>
+      </div>
+
+      <!-- Right: Language Toggle + Primary Chat Link -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div class="flex items-center gap-1 text-[11px] font-mono bg-white border border-gray-200/90 rounded-full px-2.5 py-1 shadow-2xs" aria-label="Pilihan Bahasa">
+          <button type="button" id="lang-id-btn" onclick="setLanguage('id')" class="font-bold text-hbs-charcoal hover:text-hbs-crimson transition-colors px-0.5 cursor-pointer">ID</button>
+          <span class="text-gray-300">|</span>
+          <button type="button" id="lang-en-btn" onclick="setLanguage('en')" class="text-gray-400 hover:text-hbs-charcoal transition-colors px-0.5 cursor-pointer">EN</button>
+        </div>
+
+        <a href="/" id="wts-header-chat-btn" class="px-3.5 py-1.5 rounded-full bg-hbs-crimson hover:bg-hbs-crimsonDark text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs whitespace-nowrap">
+          <span class="material-symbols-outlined text-[15px]">forum</span>
+          <span id="wts-header-chat-text">Mulai Berbincang</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN CONTENT                                                              -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 flex flex-col">
+
+    <!-- ========================================== -->
+    <!-- SECTION 1: EDITORIAL HERO HEADER           -->
+    <!-- ========================================== -->
+    <section id="wts-hero" class="w-full bg-white border-b border-hbs-stoneDark py-12 sm:py-16 lg:py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+        <div class="max-w-3xl space-y-5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-hbs-crimsonLight text-hbs-crimson rounded text-[11px] sm:text-xs font-mono font-bold uppercase tracking-wider border border-hbs-crimson/20">
+            <span id="wts-badge">WHAT THEY SAY • PERSPEKTIF PARA PEMIMPIN</span>
+          </div>
+
+          <h1 id="wts-title" class="font-serif text-3xl sm:text-4xl lg:text-[46px] font-bold text-hbs-charcoal leading-[1.12] tracking-tight">
+            Kata Mereka tentang Andrew Tani
+          </h1>
+
+          <p id="wts-subtitle" class="text-base sm:text-lg text-hbs-muted leading-relaxed font-sans max-w-2xl">
+            Simak refleksi dan kesaksian langsung dari para pemimpin bisnis, pendiri usaha, dan tokoh nasional yang pernah berjalan bersama Pak Andrew Tani.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: 3x2 VIDEO ENDORSEMENTS GRID     -->
+    <!-- ========================================== -->
+    <section id="wts-videos" aria-label="Video Testimoni Pemimpin" class="w-full bg-[#FAF9F6] py-12 sm:py-16 lg:py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+        <!-- Responsive 3x2 Grid (Rendered seamlessly via JS + synced with Ring 0 CMS) -->
+        <div id="wts-video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"></div>
+
+        <!-- Subtle Empty State (Only shown if Admin removes all videos) -->
+        <div id="wts-empty-state" class="hidden text-center py-16 px-6 bg-white border border-hbs-stoneDark rounded-xl">
+          <span class="material-symbols-outlined text-4xl text-hbs-muted">video_library</span>
+          <p id="wts-empty-text" class="mt-3 text-sm text-hbs-muted">Belum ada video testimoni yang ditampilkan.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SECTION 3: EXECUTIVE CTA BANNER            -->
+    <!-- ========================================== -->
+    <section id="wts-cta" class="w-full bg-white border-t border-hbs-stoneDark py-14 sm:py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+        <div class="rounded-2xl border border-hbs-stoneDark bg-[#FAF9F6] p-7 sm:p-10 lg:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative overflow-hidden">
+          <div class="absolute top-0 left-0 right-0 h-1 bg-hbs-crimson"></div>
+
+          <div class="space-y-3 max-w-2xl">
+            <div id="wts-cta-badge" class="font-mono text-[11px] uppercase tracking-widest text-hbs-crimson font-bold">
+              RUANG DISKUSI DIGITAL TWIN
+            </div>
+            <h2 id="wts-cta-title" class="font-serif text-2xl sm:text-3xl font-bold text-hbs-charcoal leading-tight">
+              Ingin Berdiskusi Langsung tentang Tantangan Kepemimpinan Anda?
+            </h2>
+            <p id="wts-cta-desc" class="text-sm sm:text-base text-hbs-muted leading-relaxed">
+              Mulai percakapan bersama Digital Twin Pak Andrew Tani secara gratis, atau hubungi Sekretariat untuk agenda pendampingan dewan dan organisasi.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 shrink-0">
+            <a href="/" id="wts-cta-primary" class="px-6 py-3.5 bg-hbs-crimson hover:bg-hbs-crimsonDark text-white rounded-lg font-semibold text-sm transition-all shadow-md inline-flex items-center gap-2">
+              <span id="wts-cta-primary-text">Mulai Berbincang Sekarang</span>
+              <span class="material-symbols-outlined text-[18px]">forum</span>
+            </a>
+            <a id="about-link-wa" href="https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="px-5 py-3.5 bg-white hover:bg-hbs-stone text-hbs-charcoal border border-hbs-stoneDark hover:border-hbs-charcoal rounded-lg font-semibold text-sm transition-all inline-flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px] text-hbs-crimson">chat</span>
+              <span id="wts-cta-secondary-text">Hubungi Sekretariat</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- HBS-INSPIRED ACADEMIC FOOTER (IDENTICAL TO MAIN SITE + CMS LINK BINDING)  -->
+  <!-- ========================================================================= -->
+  <footer class="w-full bg-hbs-charcoal text-white py-12 border-t-4 border-hbs-crimson text-sm mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8">
+
+      <div class="md:col-span-6 space-y-4">
+        <a href="/" class="inline-block font-serif text-2xl font-bold tracking-tight text-white hover:text-red-200 transition-colors">
+          iCoachAndrew
+        </a>
+        <p id="footer-desc" class="text-hbs-muted text-xs leading-relaxed max-w-md">
+          Kembaran Digital &amp; Warisan Pemikiran Kepemimpinan Andrew Tani. Dirancang untuk menemani para pemimpin membangun organisasi yang sehat, selaras, dan manusiawi berdasarkan pengalaman nyata sejak 1983.
+        </p>
+        <div id="footer-address" class="text-xs text-gray-400 font-mono">
+          Andrew Tani &amp; Co. • Senior Management Advisory • Jakarta &amp; Singapore
+        </div>
+        <div class="flex flex-wrap items-center gap-4 pt-1 text-xs">
+          <a href="/" id="wts-footer-home-link" class="text-gray-300 hover:text-white underline underline-offset-4 transition-colors">Ruang Bincang Eksekutif</a>
+          <span class="text-gray-600">•</span>
+          <a href="/#beranda" id="wts-footer-bio-link" class="text-gray-300 hover:text-white underline underline-offset-4 transition-colors">Siapa Andrew Tani</a>
+          <span class="text-gray-600">•</span>
+          <a href="/what-they-say" id="wts-footer-wts-link" class="text-white font-semibold underline underline-offset-4 decoration-hbs-crimson">What They Say</a>
+        </div>
+      </div>
+
+      <div class="md:col-span-3 space-y-3">
+        <div id="footer-secretariat-heading" class="font-mono text-xs uppercase tracking-wider text-hbs-crimson font-bold">SEKRETARIAT &amp; KONSULTANSI</div>
+        <p id="footer-secretariat-desc" class="text-xs text-hbs-muted leading-relaxed">
+          Ingin merencanakan sesi konsultasi dewan atau mengundang Pak Andrew Tani langsung?
+        </p>
+        <a id="footer-link-wa" href="https://wa.me/628111983838?text=Halo%20Sekretariat%20Andrew%20Tani" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-xs font-bold text-white bg-hbs-crimson hover:bg-hbs-crimsonDark px-3.5 py-2 rounded transition-colors shadow-xs">
+          <span class="material-symbols-outlined text-[16px]">chat</span>
+          <span id="footer-wa-text">WhatsApp Sekretariat</span>
+        </a>
+        <div id="footer-social-links" class="pt-1 space-y-2">
+          <div id="footer-social-heading" class="font-mono text-[10px] uppercase tracking-wider text-gray-400">Ikuti Pak Andrew</div>
+          <div class="flex items-center gap-2">
+            <a id="footer-link-linkedin" href="https://www.linkedin.com/search/results/all/?keywords=Andrew%20Tani" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn Andrew Tani" title="LinkedIn" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#0A66C2] flex items-center justify-center transition-colors">
+              <svg viewBox="0 0 24 24" class="w-4 h-4 fill-white" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+            </a>
+            <a id="footer-link-facebook" href="https://www.facebook.com/search/top?q=Andrew%20Tani" target="_blank" rel="noopener noreferrer" aria-label="Facebook Andrew Tani" title="Facebook" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#1877F2] flex items-center justify-center transition-colors">
+              <svg viewBox="0 0 24 24" class="w-4 h-4 fill-white" aria-hidden="true"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/></svg>
+            </a>
+            <a id="footer-link-instagram" href="https://www.instagram.com/icoachandrew/" target="_blank" rel="noopener noreferrer" aria-label="Instagram Andrew Tani" title="Instagram" class="w-9 h-9 rounded-full bg-white/10 hover:bg-[#E1306C] flex items-center justify-center transition-colors">
+              <svg viewBox="0 0 24 24" class="w-4 h-4 fill-white" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85C2.38 3.92 3.9 2.38 7.15 2.23 8.42 2.17 8.8 2.16 12 2.16zM12 0C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.2 4.36 2.62 6.78 6.98 6.98C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.2-4.35-2.62-6.78-6.98-6.98C15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="md:col-span-3 space-y-3 text-xs text-hbs-muted">
+        <div id="footer-ethics-heading" class="font-mono text-xs uppercase tracking-wider text-hbs-crimson font-bold">ETIKA &amp; PENAFIAN</div>
+        <p id="footer-disclaimer">
+          Seluruh materi dikurasi langsung dari karya dan pengalaman Andrew Tani. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.
+        </p>
+        <p id="footer-copyright" class="pt-2 text-gray-500">© 2026 Andrew Tani &amp; Co. All Rights Reserved.</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const DEFAULT_WTS_VIDEOS = [
+        { id: 'wts_1', name: 'Edwin Soeryadjaya', youtubeId: 'VBdAdIIgB34', url: 'https://www.youtube.com/watch?v=VBdAdIIgB34' },
+        { id: 'wts_2', name: 'Hasnul Suhaimi', youtubeId: 'dTFxKrsPRbU', url: 'https://www.youtube.com/watch?v=dTFxKrsPRbU' },
+        { id: 'wts_3', name: 'Franky Welirang', youtubeId: 'FCKq-B-0YgE', url: 'https://www.youtube.com/watch?v=FCKq-B-0YgE' },
+        { id: 'wts_4', name: 'Tedy Djuhar', youtubeId: 'xdGuQeidPKI', url: 'https://www.youtube.com/watch?v=xdGuQeidPKI' },
+        { id: 'wts_5', name: 'Sandiaga Uno', youtubeId: 'xJNlJU0FsKg', url: 'https://www.youtube.com/watch?v=xJNlJU0FsKg' },
+        { id: 'wts_6', name: 'Richard Buntario', youtubeId: 'LWu2OXB3ZwI', url: 'https://www.youtube.com/watch?v=LWu2OXB3ZwI' }
+      ];
+
+      const WTS_COPY = {
+        id: {
+          pageTitle: 'What They Say — Kata Mereka tentang Andrew Tani | iCoachAndrew',
+          'wts-topbar-crumb': 'What They Say',
+          'wts-header-chat-text': 'Mulai Berbincang',
+          'wts-drawer-chat-cta': 'Mulai Percakapan',
+          'wts-drawer-profile-btn': 'Lihat Profil Andrew Tani',
+          'wts-drawer-nav-heading': 'Akses Lebih Lanjut',
+          'wts-nav-chat': 'Ruang Bincang Eksekutif',
+          'wts-nav-who': 'Siapa Andrew Tani',
+          'wts-nav-current': 'What They Say',
+          'wts-nav-books': 'Khazanah & Buku Rujukan',
+          'wts-nav-circles': 'Pilihan Akses & Keanggotaan',
+          'wts-badge': 'WHAT THEY SAY • PERSPEKTIF PARA PEMIMPIN',
+          'wts-title': 'Kata Mereka tentang Andrew Tani',
+          'wts-subtitle': 'Simak refleksi dan kesaksian langsung dari para pemimpin bisnis, pendiri usaha, dan tokoh nasional yang pernah berjalan bersama Pak Andrew Tani.',
+          'wts-empty-text': 'Belum ada video testimoni yang ditampilkan.',
+          'wts-cta-badge': 'RUANG DISKUSI DIGITAL TWIN',
+          'wts-cta-title': 'Ingin Berdiskusi Langsung tentang Tantangan Kepemimpinan Anda?',
+          'wts-cta-desc': 'Mulai percakapan bersama Digital Twin Pak Andrew Tani secara gratis, atau hubungi Sekretariat untuk agenda pendampingan dewan dan organisasi.',
+          'wts-cta-primary-text': 'Mulai Berbincang Sekarang',
+          'wts-cta-secondary-text': 'Hubungi Sekretariat',
+          'footer-desc': 'Kembaran Digital & Warisan Pemikiran Kepemimpinan Andrew Tani. Dirancang untuk menemani para pemimpin membangun organisasi yang sehat, selaras, dan manusiawi berdasarkan pengalaman nyata sejak 1983.',
+          'footer-secretariat-heading': 'SEKRETARIAT & KONSULTANSI',
+          'footer-secretariat-desc': 'Ingin merencanakan sesi konsultasi dewan atau mengundang Pak Andrew Tani langsung?',
+          'footer-wa-text': 'WhatsApp Sekretariat',
+          'footer-social-heading': 'Ikuti Pak Andrew',
+          'footer-ethics-heading': 'ETIKA & PENAFIAN',
+          'footer-disclaimer': 'Seluruh materi dikurasi langsung dari karya dan pengalaman Andrew Tani. Ruang ini hadir sebagai teman berpikir, bukan pengganti nasihat hukum atau keuangan formal.',
+          'wts-footer-home-link': 'Ruang Bincang Eksekutif',
+          'wts-footer-bio-link': 'Siapa Andrew Tani',
+          'wts-footer-wts-link': 'What They Say',
+          playLabel: 'Putar video testimoni',
+          watchOnYt: 'Tonton di YouTube'
+        },
+        en: {
+          pageTitle: 'What They Say About Andrew Tani | iCoachAndrew',
+          'wts-topbar-crumb': 'What They Say',
+          'wts-header-chat-text': 'Start Conversation',
+          'wts-drawer-chat-cta': 'Start Conversation',
+          'wts-drawer-profile-btn': 'View Andrew Tani Profile',
+          'wts-drawer-nav-heading': 'Further Access',
+          'wts-nav-chat': 'Executive Case Room',
+          'wts-nav-who': 'Who is Andrew Tani',
+          'wts-nav-current': 'What They Say',
+          'wts-nav-books': 'Canon & Published Books',
+          'wts-nav-circles': 'Access Tiers & Membership',
+          'wts-badge': 'WHAT THEY SAY • EXECUTIVE PERSPECTIVES',
+          'wts-title': 'What They Say About Andrew Tani',
+          'wts-subtitle': 'Watch candid reflections and perspectives from business leaders, founders, and public figures who have walked alongside Andrew Tani.',
+          'wts-empty-text': 'No video testimonials are currently listed.',
+          'wts-cta-badge': 'DIGITAL TWIN CASE ROOM',
+          'wts-cta-title': 'Ready to Reflect on Your Own Leadership Challenge?',
+          'wts-cta-desc': 'Begin a complimentary conversation with Andrew Tani’s Digital Twin, or contact the Secretariat for board and executive advisory engagements.',
+          'wts-cta-primary-text': 'Start a Conversation Now',
+          'wts-cta-secondary-text': 'Contact Secretariat',
+          'footer-desc': 'Andrew Tani’s Digital Twin & Leadership Legacy. Crafted to accompany leaders in building healthy, aligned, and humane organizations rooted in real advisory practice since 1983.',
+          'footer-secretariat-heading': 'SECRETARIAT & ADVISORY',
+          'footer-secretariat-desc': 'Looking to schedule a board advisory session or invite Andrew Tani directly?',
+          'footer-wa-text': 'WhatsApp Secretariat',
+          'footer-social-heading': 'Follow Andrew Tani',
+          'footer-ethics-heading': 'ETHICS & DISCLAIMER',
+          'footer-disclaimer': 'All material is curated directly from Andrew Tani’s published works and practice. This space serves as a thinking companion, not formal legal or financial advice.',
+          'wts-footer-home-link': 'Executive Case Room',
+          'wts-footer-bio-link': 'Who is Andrew Tani',
+          'wts-footer-wts-link': 'What They Say',
+          playLabel: 'Play video testimonial by',
+          watchOnYt: 'Watch on YouTube'
+        }
+      };
+
+      let currentLang = 'id';
+      try {
+        const saved = localStorage.getItem('icoachandrew_lang');
+        if (saved === 'en' || saved === 'id') currentLang = saved;
+      } catch (_) {}
+      window.currentLang = currentLang;
+
+      let currentVideos = DEFAULT_WTS_VIDEOS.slice();
+      let activeCardEl = null;
+      const YT_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+      const isStudioMode = new URLSearchParams(window.location.search).get('studio') === '1';
+
+      function escHtml(s) {
+        return String(s || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function toggleNavDrawer() {
+        document.body.classList.toggle('nav-drawer-open');
+      }
+      function closeNavDrawer() {
+        document.body.classList.remove('nav-drawer-open');
+      }
+      window.toggleNavDrawer = toggleNavDrawer;
+      window.closeNavDrawer = closeNavDrawer;
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeNavDrawer();
+      });
+
+      function buildFacadeMarkup(video) {
+        const dict = WTS_COPY[currentLang] || WTS_COPY.id;
+        const safeName = escHtml(video.name);
+        const safeId = escHtml(video.youtubeId);
+        const hqThumb = `https://i.ytimg.com/vi/${safeId}/hqdefault.jpg`;
+        return `
+          <button type="button"
+            class="wts-facade-btn relative w-full h-full block text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-hbs-crimson focus-visible:ring-inset cursor-pointer"
+            data-yt-id="${safeId}"
+            data-speaker="${safeName}"
+            aria-label="${escHtml(dict.playLabel)} ${safeName}">
+            <img src="${hqThumb}"
+              alt="${safeName}"
+              loading="lazy"
+              decoding="async"
+              data-yt-thumb="${safeId}"
+              class="wts-thumb-img w-full h-full object-cover"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-black/5 transition-colors duration-300"></div>
+            <span class="absolute inset-0 flex items-center justify-center">
+              <span class="wts-play-ring w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-hbs-crimson/92 text-white shadow-xl ring-4 ring-white/25 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" class="w-6 h-6 sm:w-7 sm:h-7 fill-white translate-x-[1.5px]" aria-hidden="true">
+                  <path d="M8 5.14v14.72c0 .79.87 1.27 1.54.84l11.42-7.36a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z"/>
+                </svg>
+              </span>
+            </span>
+          </button>
+        `;
+      }
+
+      function upgradeThumbnailToMaxRes(imgEl, ytId) {
+        if (!imgEl || !YT_ID_RE.test(ytId)) return;
+        const probe = new Image();
+        probe.onload = function () {
+          // YouTube returns a 120x90 grey placeholder when maxresdefault does not exist
+          if (probe.naturalWidth > 120 && imgEl.isConnected) {
+            imgEl.src = probe.src;
+          }
+        };
+        probe.src = `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`;
+      }
+
+      function restoreActivePlayer() {
+        if (!activeCardEl) return;
+        const stage = activeCardEl.querySelector('.wts-video-stage');
+        const idx = Number(activeCardEl.dataset.videoIndex);
+        const video = currentVideos[idx];
+        if (stage && video) {
+          stage.innerHTML = buildFacadeMarkup(video);
+          const img = stage.querySelector('img[data-yt-thumb]');
+          if (img) upgradeThumbnailToMaxRes(img, video.youtubeId);
+          bindStageClick(stage, activeCardEl, video);
+        }
+        activeCardEl.classList.remove('ring-2', 'ring-hbs-crimson/35');
+        activeCardEl = null;
+      }
+
+      function activateVideoPlayer(stageEl, cardEl, video) {
+        if (!YT_ID_RE.test(video.youtubeId)) return;
+        if (activeCardEl && activeCardEl !== cardEl) {
+          restoreActivePlayer();
+        }
+        const safeId = escHtml(video.youtubeId);
+        const safeName = escHtml(video.name);
+        stageEl.innerHTML = `
+          <iframe
+            class="wts-iframe-fade w-full h-full border-0"
+            src="https://www.youtube-nocookie.com/embed/${safeId}?autoplay=1&rel=0&modestbranding=1"
+            title="iCoachAndrew — ${safeName}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        `;
+        cardEl.classList.add('ring-2', 'ring-hbs-crimson/35');
+        activeCardEl = cardEl;
+        const iframe = stageEl.querySelector('iframe');
+        if (iframe && typeof iframe.focus === 'function') iframe.focus();
+      }
+
+      function bindStageClick(stageEl, cardEl, video) {
+        const btn = stageEl.querySelector('.wts-facade-btn');
+        if (!btn) return;
+        btn.addEventListener('click', (e) => {
+          // Avoid triggering loud video autoplay while admin is in Studio inspect mode
+          if (isStudioMode && document.body.classList.contains('cms-inspect-mode')) {
+            e.preventDefault();
+            return;
+          }
+          activateVideoPlayer(stageEl, cardEl, video);
+        });
+      }
+
+      function renderWhatTheySayVideos(videos) {
+        const list = Array.isArray(videos)
+          ? videos.filter((v) => v && v.name && YT_ID_RE.test(String(v.youtubeId || '')))
+          : DEFAULT_WTS_VIDEOS;
+        currentVideos = list;
+        activeCardEl = null;
+
+        const grid = document.getElementById('wts-video-grid');
+        const emptyEl = document.getElementById('wts-empty-state');
+        if (!grid) return;
+
+        if (!list.length) {
+          grid.innerHTML = '';
+          if (emptyEl) emptyEl.classList.remove('hidden');
+          return;
+        }
+        if (emptyEl) emptyEl.classList.add('hidden');
+
+        const dict = WTS_COPY[currentLang] || WTS_COPY.id;
+        grid.innerHTML = '';
+
+        list.forEach((video, idx) => {
+          const safeName = escHtml(video.name);
+          const ytUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(video.youtubeId)}`;
+
+          const card = document.createElement('article');
+          card.className = 'wts-card group bg-white border border-hbs-stoneDark hover:border-hbs-crimson/40 rounded-xl overflow-hidden shadow-xs hover:shadow-lg flex flex-col';
+          card.dataset.videoIndex = String(idx);
+          card.dataset.videoId = String(video.id || `wts_${idx + 1}`);
+
+          card.innerHTML = `
+            <div class="h-1 w-full bg-hbs-crimson/80 group-hover:bg-hbs-crimson transition-colors duration-300"></div>
+            <div class="wts-video-stage relative aspect-video w-full bg-hbs-charcoal overflow-hidden">
+              ${buildFacadeMarkup(video)}
+            </div>
+            <div class="px-5 py-4 bg-white border-t border-hbs-stoneDark/70 flex items-center justify-between gap-3">
+              <h2 class="font-serif text-lg sm:text-[19px] font-bold text-hbs-charcoal group-hover:text-hbs-crimson transition-colors leading-snug min-w-0">
+                ${safeName}
+              </h2>
+              <a href="${ytUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="${escHtml(dict.watchOnYt)}"
+                aria-label="${escHtml(dict.watchOnYt)} — ${safeName}"
+                class="w-8 h-8 rounded-lg text-hbs-muted hover:text-hbs-crimson hover:bg-hbs-crimsonLight/70 flex items-center justify-center transition-colors shrink-0">
+                <span class="material-symbols-outlined text-[18px]">open_in_new</span>
+              </a>
+            </div>
+          `;
+
+          grid.appendChild(card);
+          const stage = card.querySelector('.wts-video-stage');
+          const img = stage ? stage.querySelector('img[data-yt-thumb]') : null;
+          if (img) upgradeThumbnailToMaxRes(img, video.youtubeId);
+          if (stage) bindStageClick(stage, card, video);
+        });
+      }
+
+      window.renderWhatTheySayVideos = renderWhatTheySayVideos;
+      window.DEFAULT_WTS_VIDEOS = DEFAULT_WTS_VIDEOS;
+
+      function setLanguage(lang) {
+        currentLang = (lang === 'en') ? 'en' : 'id';
+        window.currentLang = currentLang;
+        try { localStorage.setItem('icoachandrew_lang', currentLang); } catch (_) {}
+        document.documentElement.lang = currentLang;
+
+        const idBtn = document.getElementById('lang-id-btn');
+        const enBtn = document.getElementById('lang-en-btn');
+        if (idBtn && enBtn) {
+          if (currentLang === 'id') {
+            idBtn.className = 'font-bold text-hbs-charcoal hover:text-hbs-crimson transition-colors px-0.5 cursor-pointer';
+            enBtn.className = 'text-gray-400 hover:text-hbs-charcoal transition-colors px-0.5 cursor-pointer';
+          } else {
+            enBtn.className = 'font-bold text-hbs-charcoal hover:text-hbs-crimson transition-colors px-0.5 cursor-pointer';
+            idBtn.className = 'text-gray-400 hover:text-hbs-charcoal transition-colors px-0.5 cursor-pointer';
+          }
+        }
+
+        const dict = WTS_COPY[currentLang] || WTS_COPY.id;
+        document.title = dict.pageTitle;
+        for (const [id, text] of Object.entries(dict)) {
+          if (id === 'pageTitle' || id === 'playLabel' || id === 'watchOnYt') continue;
+          const el = document.getElementById(id);
+          if (el) el.textContent = text;
+        }
+        renderWhatTheySayVideos(currentVideos);
+      }
+
+      window.setLanguage = setLanguage;
+      window.switchLang = setLanguage;
+
+      setLanguage(currentLang);
+    })();
+  </script>
+  <script src="/cms-runtime.js" defer></script>
+</body>
+</html>

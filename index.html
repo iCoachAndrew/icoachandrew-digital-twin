@@ -272,6 +272,10 @@
             <span class="material-symbols-outlined text-[17px] text-hbs-crimson">person_book</span>
             <span id="nav-who-andrew-text">Siapa Andrew Tani</span>
           </a>
+          <a href="/what-they-say" id="nav-what-they-say" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
+            <span class="material-symbols-outlined text-[17px] text-hbs-crimson">play_circle</span>
+            <span id="nav-what-they-say-text">What They Say</span>
+          </a>
           <a href="#karya-buku" id="nav-books" onclick="revealWhoIsAndrew('karya-buku'); closeNavDrawer(); return false;" class="px-3 py-2.5 rounded-lg text-hbs-charcoal hover:bg-gray-100 hover:text-hbs-crimson flex items-center gap-2.5 transition-colors">
             <span class="material-symbols-outlined text-[17px] text-hbs-crimson">menu_book</span>
             <span>Khazanah &amp; Buku Rujukan</span>
@@ -1048,6 +1052,12 @@
         </p>
         <div id="footer-address" class="text-xs text-gray-400 font-mono">
           Andrew Tani &amp; Co. • Senior Management Advisory • Jakarta &amp; Singapore
+        </div>
+        <div class="flex flex-wrap items-center gap-3 pt-1 text-xs">
+          <a href="/what-they-say" id="footer-what-they-say-link" class="inline-flex items-center gap-1.5 text-gray-300 hover:text-white underline underline-offset-4 decoration-hbs-crimson/80 transition-colors">
+            <span class="material-symbols-outlined text-[15px] text-hbs-crimson">play_circle</span>
+            <span id="footer-what-they-say-text">What They Say — Kata Mereka</span>
+          </a>
         </div>
       </div>
 
@@ -2734,6 +2744,8 @@
         : 'Ingin merencanakan sesi konsultasi dewan atau mengundang Pak Andrew Tani langsung?';
       const waText = document.getElementById('footer-wa-text');
       if (waText) waText.textContent = isEnLang ? 'Secretariat WhatsApp' : 'WhatsApp Sekretariat';
+      const wtsFooterText = document.getElementById('footer-what-they-say-text');
+      if (wtsFooterText) wtsFooterText.textContent = isEnLang ? 'What They Say — Executive Perspectives' : 'What They Say — Kata Mereka';
       const whoBtn = document.getElementById('header-who-btn');
       if (whoBtn) {
         const whoLabel = isEnLang ? 'Who is Andrew Tani' : 'Siapa Andrew Tani';
@@ -3261,6 +3273,12 @@
     setLanguage(initialLang);
     restoreChatHistoryUI();
     initCookieConsentUI();
+    try {
+      const initHash = (window.location.hash || '').replace(/^#/, '');
+      if (['beranda', 'karya-buku', 'lingkaran-pendampingan', 'tentang-pak-andrew-tani'].includes(initHash)) {
+        revealWhoIsAndrew(initHash);
+      }
+    } catch (_) {}
     syncSession().then(() => {
       try {
         const params = new URLSearchParams(window.location.search);

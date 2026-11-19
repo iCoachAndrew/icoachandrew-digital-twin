@@ -956,6 +956,12 @@ async function handleAdmin(req, res) {
         : path.join(__dirname, 'index.html');
       return sendFile(res, idxPath, 'text/html; charset=utf-8', req);
     }
+    if (req.method === 'GET' && pathname === '/preview-what-they-say') {
+      const wtsPath = fs.existsSync(path.join(PUBLIC_DIR, 'what-they-say.html'))
+        ? path.join(PUBLIC_DIR, 'what-they-say.html')
+        : path.join(__dirname, 'what-they-say.html');
+      return sendFile(res, wtsPath, 'text/html; charset=utf-8', req);
+    }
     if (req.method === 'GET' && pathname === '/i18n/en.json') {
       const p = fs.existsSync(path.join(PUBLIC_DIR, 'i18n', 'en.json')) ? path.join(PUBLIC_DIR, 'i18n', 'en.json') : path.join(__dirname, 'i18n', 'en.json');
       return sendFile(res, p, 'application/json; charset=utf-8', req);
@@ -1186,14 +1192,14 @@ const userServer = http.createServer(async (req, res) => {
     if (req.headers.referer && sessionRing(req, ADMIN_COOKIE) === 0 && (pathname === '/api/site-content' || pathname === '/api/works' || pathname === '/api/pricing' || pathname === '/api/session')) {
       try {
         const refUrl = new URL(req.headers.referer);
-        if ((!req.headers.host || refUrl.host === req.headers.host) && refUrl.pathname === '/preview-site') {
+        if ((!req.headers.host || refUrl.host === req.headers.host) && (refUrl.pathname === '/preview-site' || refUrl.pathname === '/preview-what-they-say')) {
           isStudioPreview = true;
         }
       } catch (_) {}
     }
 
     // Allow accessing Admin portal via /admin, /admin.html, or admin subdomain on single-port hosting
-    if (pathname === '/admin' || pathname === '/admin.html' || pathname.startsWith('/admin/') || pathname === '/admin-studio.js' || pathname === '/preview-site' || isStudioPreview || (req.headers.host && req.headers.host.startsWith('admin.'))) {
+    if (pathname === '/admin' || pathname === '/admin.html' || pathname.startsWith('/admin/') || pathname === '/admin-studio.js' || pathname === '/preview-site' || pathname === '/preview-what-they-say' || isStudioPreview || (req.headers.host && req.headers.host.startsWith('admin.'))) {
       return handleAdmin(req, res);
     }
 
@@ -1229,6 +1235,12 @@ const userServer = http.createServer(async (req, res) => {
         ? path.join(PUBLIC_DIR, 'index.html')
         : path.join(__dirname, 'index.html');
       return sendFile(res, idxPath, 'text/html; charset=utf-8', req);
+    }
+    if (req.method === 'GET' && (pathname === '/what-they-say' || pathname === '/what-they-say/' || pathname === '/what-they-say.html')) {
+      const wtsPath = fs.existsSync(path.join(PUBLIC_DIR, 'what-they-say.html'))
+        ? path.join(PUBLIC_DIR, 'what-they-say.html')
+        : path.join(__dirname, 'what-they-say.html');
+      return sendFile(res, wtsPath, 'text/html; charset=utf-8', req);
     }
     if (req.method === 'GET' && pathname === '/cms-runtime.js') {
       const cmsPath = fs.existsSync(path.join(PUBLIC_DIR, 'cms-runtime.js'))

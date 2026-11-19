@@ -469,6 +469,10 @@
               <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">link</span>
               <span class="sidebar-label truncate">Tautan &amp; Sosmed</span>
             </button>
+            <button onclick="openWhatTheySayEditor()" id="sidebar-wts-btn" title="Video What They Say" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
+              <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">play_circle</span>
+              <span class="sidebar-label truncate">Video What They Say</span>
+            </button>
             <button onclick="switchStudioTab('media')" data-tab="media" title="Foto &amp; Media" class="nav-btn w-full px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2.5 text-left text-on-primary-container hover:bg-primary-container/60 hover:text-white transition-all cursor-pointer shrink-0">
               <span class="material-symbols-outlined text-[19px] nav-icon shrink-0">photo_library</span>
               <span class="sidebar-label truncate">Foto &amp; Media</span>
@@ -956,7 +960,8 @@
             </div>
 
             <div class="inline-flex rounded-lg border border-outline-variant bg-surface p-0.5 text-xs">
-              <button onclick="setEditorView('frontpage')" class="px-2 py-1 rounded-md hover:bg-surface-container font-medium cursor-pointer">Halaman Utama</button>
+              <button id="ve-page-home-btn" onclick="switchEditorPage('home')" class="px-2 py-1 rounded-md bg-primary text-white font-semibold cursor-pointer">Halaman Utama</button>
+              <button id="ve-page-wts-btn" onclick="switchEditorPage('what-they-say')" class="px-2 py-1 rounded-md hover:bg-surface-container text-on-surface-variant font-medium cursor-pointer" title="Pratinjau &amp; edit teks halaman /what-they-say">What They Say</button>
               <button id="btn-ve-toggle-bio" onclick="toggleCanvasBioSections()" class="px-2 py-1 rounded-md bg-amber-100 text-amber-900 font-semibold cursor-pointer" title="Tampilkan atau sembunyikan bagian Siapa Andrew Tani di kanvas">Bagian Profil: Tampil</button>
               <button onclick="setEditorView('chamber')" class="px-2 py-1 rounded-md hover:bg-surface-container font-medium cursor-pointer">Ruang Penasihat</button>
             </div>
@@ -988,6 +993,9 @@
             </button>
             <button type="button" onclick="toggleLinksCard()" class="px-2.5 py-1 rounded-lg border border-emerald-700/40 bg-emerald-50 hover:bg-emerald-700 hover:text-white text-emerald-800 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
               <span class="material-symbols-outlined text-[15px]">link</span>Tautan &amp; Sosmed
+            </button>
+            <button type="button" onclick="toggleWhatTheySayCard()" class="px-2.5 py-1 rounded-lg border border-rose-700/40 bg-rose-50 hover:bg-rose-700 hover:text-white text-rose-800 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[15px]">play_circle</span>Video What They Say
             </button>
           </div>
 
@@ -1270,6 +1278,48 @@
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- COLLAPSIBLE CARD: EDITOR VIDEO HALAMAN "WHAT THEY SAY" (/what-they-say)   -->
+        <!-- ========================================================================= -->
+        <div id="ve-wts-card" class="hidden scroll-mt-32 bg-surface-container-lowest border border-rose-700/30 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant/40 pb-3">
+            <div class="space-y-0.5">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-rose-700 text-[19px]">play_circle</span>
+                <h3 class="font-title-md text-primary font-serif font-bold text-base">Editor Video &amp; Halaman &ldquo;What They Say&rdquo;</h3>
+              </div>
+              <p class="text-xs text-on-surface-variant">Ganti, tambah, urutkan, atau hapus video testimoni YouTube yang tampil di <code>/what-they-say</code>. Tempel tautan YouTube (<code>youtube.com/watch?v=...</code>, <code>youtu.be/...</code>) atau 11 karakter ID video. Untuk mengedit judul &amp; deskripsi halaman, klik tombol <strong>Edit Teks di Kanvas</strong>.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+              <button type="button" onclick="switchEditorPage('what-they-say')" class="px-2.5 py-1.5 rounded-lg border border-primary/40 bg-primary/5 hover:bg-primary hover:text-white text-primary text-xs font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer">
+                <span class="material-symbols-outlined text-[15px]">edit_note</span>Edit Teks di Kanvas
+              </button>
+              <a href="/what-they-say" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 rounded-lg border border-outline-variant bg-white hover:bg-surface-container text-primary text-xs font-semibold inline-flex items-center gap-1">
+                <span>Buka Live ↗</span>
+              </a>
+              <button type="button" onclick="toggleWhatTheySayCard()" class="px-2.5 py-1.5 rounded-lg border border-outline-variant text-xs font-semibold text-on-surface-variant hover:text-primary cursor-pointer">Tutup ✕</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Video Cards Editor Grid -->
+          <div id="ve-wts-videos-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 text-xs"></div>
+
+          <!-- Action Bar -->
+          <div class="pt-3 border-t border-outline-variant/40 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="addWtsVideoRow()" class="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-white text-xs font-semibold inline-flex items-center gap-1 cursor-pointer">
+                <span class="material-symbols-outlined text-[15px]">add_circle</span>Tambah Video Baru
+              </button>
+              <button type="button" onclick="resetWhatTheySayToDefault()" class="px-3 py-1.5 rounded-lg border border-outline-variant bg-white hover:bg-surface-container text-on-surface-variant hover:text-primary text-xs font-semibold cursor-pointer">
+                Reset 6 Video Default
+              </button>
+            </div>
+            <button type="button" onclick="saveAndPublishWhatTheySay()" class="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-xs cursor-pointer">
+              <span class="material-symbols-outlined text-[16px]">check_circle</span>Simpan &amp; Terapkan Live
+            </button>
           </div>
         </div>
 

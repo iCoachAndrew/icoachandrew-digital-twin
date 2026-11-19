@@ -29,7 +29,7 @@ const THEME_COLOR_DEFS = [
   { key: 'secondary', label: 'Aksen Merah/Marun', def: '#a73833' }
 ];
 
-const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 const escJs = (s) => esc(String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' '));
 
 function toast(msg, isErr = false) {
@@ -285,6 +285,9 @@ async function loadSiteState() {
   renderThemeDock();
   renderBlocksDock();
   renderVersionsDock();
+  if (typeof populateWhatTheySayUI === 'function') {
+    populateWhatTheySayUI((siteState.draft && siteState.draft.whatTheySay && siteState.draft.whatTheySay.videos) || null);
+  }
   syncLocalFontScaleUI(effectiveScale, effectiveScope, false);
   postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
 }
@@ -403,13 +406,62 @@ function refreshCanvasInventory() {
   postToCanvas({ type: 'cms:request-state' });
 }
 
+let currentEditorMode = 'inspect';
+
 function setEditorMode(mode) {
-  document.getElementById('ve-mode-inspect').className = mode === 'inspect' ? 'px-2.5 py-1 rounded-md bg-primary text-white font-semibold' : 'px-2.5 py-1 rounded-md text-on-surface-variant';
-  document.getElementById('ve-mode-navigate').className = mode === 'navigate' ? 'px-2.5 py-1 rounded-md bg-primary text-white font-semibold' : 'px-2.5 py-1 rounded-md text-on-surface-variant';
-  postToCanvas({ type: 'cms:set-mode', mode });
+  currentEditorMode = mode === 'navigate' ? 'navigate' : 'inspect';
+  document.getElementById('ve-mode-inspect').className = currentEditorMode === 'inspect' ? 'px-2.5 py-1 rounded-md bg-primary text-white font-semibold' : 'px-2.5 py-1 rounded-md text-on-surface-variant';
+  document.getElementById('ve-mode-navigate').className = currentEditorMode === 'navigate' ? 'px-2.5 py-1 rounded-md bg-primary text-white font-semibold' : 'px-2.5 py-1 rounded-md text-on-surface-variant';
+  postToCanvas({ type: 'cms:set-mode', mode: currentEditorMode });
+}
+
+let currentEditorPage = 'home';
+
+function switchEditorPage(page) {
+  currentEditorPage = (page === 'what-they-say') ? 'what-they-say' : 'home';
+  const homeBtn = document.getElementById('ve-page-home-btn');
+  const wtsBtn = document.getElementById('ve-page-wts-btn');
+  if (homeBtn && wtsBtn) {
+    homeBtn.className = currentEditorPage === 'home'
+      ? 'px-2 py-1 rounded-md bg-primary text-white font-semibold cursor-pointer'
+      : 'px-2 py-1 rounded-md hover:bg-surface-container text-on-surface-variant font-medium cursor-pointer';
+    wtsBtn.className = currentEditorPage === 'what-they-say'
+      ? 'px-2 py-1 rounded-md bg-primary text-white font-semibold cursor-pointer'
+      : 'px-2 py-1 rounded-md hover:bg-surface-container text-on-surface-variant font-medium cursor-pointer';
+  }
+  const bioBtn = document.getElementById('btn-ve-toggle-bio');
+  if (bioBtn) bioBtn.classList.toggle('hidden', currentEditorPage !== 'home');
+
+  const iframe = document.getElementById('ve-preview-iframe');
+  const targetPath = currentEditorPage === 'what-they-say' ? '/preview-what-they-say?studio=1' : '/preview-site?studio=1';
+  if (iframe) {
+    const curSrc = iframe.getAttribute('src') || '';
+    if (curSrc !== targetPath) {
+      selectedElem = null;
+      const insForm = document.getElementById('ins-form');
+      const insEmpty = document.getElementById('ins-empty-state');
+      if (insForm) insForm.classList.add('hidden');
+      if (insEmpty) insEmpty.classList.remove('hidden');
+      iframe.onload = () => {
+        postToCanvas({ type: 'cms:set-mode', mode: currentEditorMode });
+        if (siteState && siteState.draft) {
+          postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+          postToCanvas({ type: 'cms:set-lang', lang: editorLang });
+        }
+      };
+      iframe.setAttribute('src', targetPath);
+    } else if (currentEditorPage === 'home') {
+      postToCanvas({ type: 'cms:set-view', view: 'frontpage' });
+    }
+  }
 }
 
 function setEditorView(view) {
+  if (currentEditorPage !== 'home') {
+    switchEditorPage('home');
+    setTimeout(() => postToCanvas({ type: 'cms:set-view', view }), 350);
+    return;
+  }
   postToCanvas({ type: 'cms:set-view', view });
 }
 
@@ -439,6 +491,9 @@ const FRIENDLY_SECTION_NAMES = {
   'beranda': 'Profil & Kisah Andrew Tani',
   'karya-buku': 'Buku & Publikasi',
   'paket-akses': 'Paket & Tingkatan Akses',
+  'wts-hero': 'What They Say — Judul & Deskripsi',
+  'wts-videos': 'What They Say — Galeri Video',
+  'wts-cta': 'What They Say — Ajakan Diskusi',
   'footer': 'Informasi Kontak & Kaki Halaman'
 };
 
@@ -583,6 +638,8 @@ window.addEventListener('message', async (e) => {
       if (txtEl) txtEl.value = cleanText;
     }
     queueSaveDraft({ elements: { [msg.key]: entry } });
+  } else if (msg.type === 'cms:open-wts-editor') {
+    openWhatTheySayEditor(msg.videoId || '');
   }
 });
 
@@ -1287,6 +1344,270 @@ async function resetSiteLinksToDefault() {
   await saveAndPublishSiteLinks();
 }
 
+// ==================== WHAT THEY SAY VIDEO TESTIMONIALS EDITOR ====================
+const DEFAULT_WTS_VIDEOS = [
+  { id: 'wts_1', name: 'Edwin Soeryadjaya', youtubeId: 'VBdAdIIgB34', url: 'https://www.youtube.com/watch?v=VBdAdIIgB34' },
+  { id: 'wts_2', name: 'Hasnul Suhaimi', youtubeId: 'dTFxKrsPRbU', url: 'https://www.youtube.com/watch?v=dTFxKrsPRbU' },
+  { id: 'wts_3', name: 'Franky Welirang', youtubeId: 'FCKq-B-0YgE', url: 'https://www.youtube.com/watch?v=FCKq-B-0YgE' },
+  { id: 'wts_4', name: 'Tedy Djuhar', youtubeId: 'xdGuQeidPKI', url: 'https://www.youtube.com/watch?v=xdGuQeidPKI' },
+  { id: 'wts_5', name: 'Sandiaga Uno', youtubeId: 'xJNlJU0FsKg', url: 'https://www.youtube.com/watch?v=xJNlJU0FsKg' },
+  { id: 'wts_6', name: 'Richard Buntario', youtubeId: 'LWu2OXB3ZwI', url: 'https://www.youtube.com/watch?v=LWu2OXB3ZwI' }
+];
+
+const WTS_YT_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+const WTS_YT_HOSTS = new Set(['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'www.youtu.be', 'youtube-nocookie.com', 'www.youtube-nocookie.com']);
+let wtsEditorVideos = DEFAULT_WTS_VIDEOS.map((v) => ({ ...v }));
+
+function extractYoutubeIdClient(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  if (WTS_YT_ID_RE.test(s)) return s;
+  let candidate = s;
+  if (!/^https?:\/\//i.test(candidate) && /^(www\.|m\.)?(youtube\.com|youtu\.be|youtube-nocookie\.com)\//i.test(candidate)) {
+    candidate = 'https://' + candidate;
+  }
+  try {
+    const u = new URL(candidate);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    const host = u.hostname.toLowerCase();
+    if (!WTS_YT_HOSTS.has(host)) return null;
+    let id = '';
+    if (host === 'youtu.be' || host === 'www.youtu.be') {
+      id = (u.pathname.replace(/^\/+/, '').split('/')[0] || '').trim();
+    } else if (u.pathname === '/watch') {
+      id = (u.searchParams.get('v') || '').trim();
+    } else {
+      const m = /^\/(embed|shorts|live|v)\/([A-Za-z0-9_-]{11})(?:[/?#]|$)/.exec(u.pathname);
+      if (m) id = m[2];
+    }
+    return WTS_YT_ID_RE.test(id) ? id : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function populateWhatTheySayUI(videos) {
+  if (Array.isArray(videos)) {
+    wtsEditorVideos = videos.map((v, i) => ({
+      id: v.id || `wts_${i + 1}`,
+      name: String(v.name || ''),
+      youtubeId: String(v.youtubeId || extractYoutubeIdClient(v.url || '') || ''),
+      url: String(v.url || (v.youtubeId ? `https://www.youtube.com/watch?v=${v.youtubeId}` : ''))
+    }));
+  } else {
+    wtsEditorVideos = DEFAULT_WTS_VIDEOS.map((v) => ({ ...v }));
+  }
+  renderWhatTheySayEditorList();
+}
+
+function renderWhatTheySayEditorList(highlightVideoId = '') {
+  const box = document.getElementById('ve-wts-videos-list');
+  if (!box) return;
+  if (!wtsEditorVideos.length) {
+    box.innerHTML = '<div class="col-span-full p-5 text-center text-xs text-outline bg-surface rounded-xl border border-dashed border-outline-variant">Belum ada video. Klik <strong>+ Tambah Video Baru</strong> untuk menambahkan video YouTube.</div>';
+    return;
+  }
+  box.innerHTML = wtsEditorVideos.map((v, idx) => {
+    const ytId = extractYoutubeIdClient(v.url || v.youtubeId);
+    const thumbUrl = ytId ? `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg` : '';
+    const ytOpenUrl = ytId ? `https://www.youtube.com/watch?v=${ytId}` : '#';
+    const isHighlighted = highlightVideoId && v.id === highlightVideoId;
+    return `
+      <div data-wts-row-id="${esc(v.id)}" class="bg-surface rounded-xl border ${isHighlighted ? 'border-rose-600 ring-2 ring-rose-200' : 'border-outline-variant/60'} p-3 space-y-2.5 flex flex-col">
+        <div class="flex items-center justify-between gap-2">
+          <span class="font-mono text-[10px] font-bold uppercase tracking-wider text-primary bg-surface-container px-2 py-0.5 rounded">Video #${idx + 1}</span>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="moveWtsVideoRow(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Geser ke atas" class="w-6 h-6 rounded border border-outline-variant bg-white hover:bg-surface-container text-primary disabled:opacity-35 flex items-center justify-center cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+            </button>
+            <button type="button" onclick="moveWtsVideoRow(${idx}, 1)" ${idx === wtsEditorVideos.length - 1 ? 'disabled' : ''} title="Geser ke bawah" class="w-6 h-6 rounded border border-outline-variant bg-white hover:bg-surface-container text-primary disabled:opacity-35 flex items-center justify-center cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">arrow_downward</span>
+            </button>
+            <button type="button" onclick="removeWtsVideoRow(${idx})" title="Hapus video" class="w-6 h-6 rounded border border-rose-200 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white flex items-center justify-center transition-colors cursor-pointer">
+              <span class="material-symbols-outlined text-[14px]">delete</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="relative aspect-video w-full rounded-lg overflow-hidden bg-slate-900 border border-outline-variant/40 flex items-center justify-center">
+          ${thumbUrl
+            ? `<img id="ve-wts-thumb-${idx}" src="${thumbUrl}" alt="${esc(v.name || 'Preview')}" class="w-full h-full object-cover"/>`
+            : `<div id="ve-wts-thumb-${idx}" class="text-[11px] text-slate-300 text-center px-3">Tempel URL/ID YouTube valid untuk pratinjau thumbnail</div>`
+          }
+          <span id="ve-wts-status-${idx}" class="absolute top-1.5 right-1.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${ytId ? 'bg-emerald-700/90 text-white' : 'bg-rose-700/90 text-white'}">
+            ${ytId ? 'YouTube OK' : 'URL Belum Valid'}
+          </span>
+        </div>
+
+        <label class="block space-y-1">
+          <span class="font-semibold text-on-surface-variant text-[11px]">Nama Tokoh (Caption Minimalis)</span>
+          <input type="text" value="${esc(v.name)}" oninput="onWtsFieldInput(${idx}, 'name', this.value)" placeholder="Contoh: Edwin Soeryadjaya" class="w-full border border-outline-variant rounded-lg px-2.5 py-1.5 text-xs bg-white focus:border-primary focus:outline-none"/>
+        </label>
+
+        <div class="space-y-1">
+          <div class="flex items-center justify-between text-[11px]">
+            <label class="font-semibold text-on-surface-variant">URL / ID Video YouTube</label>
+            <a id="ve-wts-open-${idx}" href="${ytOpenUrl}" target="_blank" rel="noopener noreferrer" class="${ytId ? 'text-primary hover:underline font-medium' : 'hidden'}">Uji Buka ↗</a>
+          </div>
+          <input type="text" value="${esc(v.url || v.youtubeId)}" oninput="onWtsFieldInput(${idx}, 'url', this.value)" placeholder="https://www.youtube.com/watch?v=... atau ID 11 huruf" class="w-full border border-outline-variant rounded-lg px-2.5 py-1.5 text-xs bg-white font-mono focus:border-primary focus:outline-none"/>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function onWtsFieldInput(idx, field, val) {
+  if (!wtsEditorVideos[idx]) return;
+  if (field === 'name') {
+    wtsEditorVideos[idx].name = val;
+  } else if (field === 'url') {
+    wtsEditorVideos[idx].url = val;
+    const ytId = extractYoutubeIdClient(val);
+    wtsEditorVideos[idx].youtubeId = ytId || '';
+    const statusEl = document.getElementById(`ve-wts-status-${idx}`);
+    const openEl = document.getElementById(`ve-wts-open-${idx}`);
+    const thumbEl = document.getElementById(`ve-wts-thumb-${idx}`);
+    if (statusEl) {
+      statusEl.textContent = ytId ? 'YouTube OK' : 'URL Belum Valid';
+      statusEl.className = `absolute top-1.5 right-1.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${ytId ? 'bg-emerald-700/90 text-white' : 'bg-rose-700/90 text-white'}`;
+    }
+    if (openEl) {
+      if (ytId) {
+        openEl.href = `https://www.youtube.com/watch?v=${ytId}`;
+        openEl.className = 'text-primary hover:underline font-medium';
+      } else {
+        openEl.className = 'hidden';
+      }
+    }
+    if (thumbEl) {
+      if (ytId && thumbEl.tagName === 'IMG') {
+        thumbEl.src = `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`;
+      } else if (ytId && thumbEl.tagName !== 'IMG') {
+        const img = document.createElement('img');
+        img.id = `ve-wts-thumb-${idx}`;
+        img.src = `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`;
+        img.alt = wtsEditorVideos[idx].name || 'Preview';
+        img.className = 'w-full h-full object-cover';
+        thumbEl.replaceWith(img);
+      }
+    }
+  }
+}
+
+function addWtsVideoRow() {
+  if (wtsEditorVideos.length >= 24) {
+    toast('Maksimal 24 video What They Say.', true);
+    return;
+  }
+  wtsEditorVideos.push({
+    id: 'wts_' + Math.random().toString(36).slice(2, 8),
+    name: '',
+    youtubeId: '',
+    url: ''
+  });
+  renderWhatTheySayEditorList();
+}
+
+function removeWtsVideoRow(idx) {
+  if (idx < 0 || idx >= wtsEditorVideos.length) return;
+  wtsEditorVideos.splice(idx, 1);
+  renderWhatTheySayEditorList();
+}
+
+function moveWtsVideoRow(idx, dir) {
+  const target = idx + dir;
+  if (target < 0 || target >= wtsEditorVideos.length) return;
+  const tmp = wtsEditorVideos[idx];
+  wtsEditorVideos[idx] = wtsEditorVideos[target];
+  wtsEditorVideos[target] = tmp;
+  renderWhatTheySayEditorList();
+}
+
+function toggleWhatTheySayCard() {
+  const card = document.getElementById('ve-wts-card');
+  if (!card) return;
+  const isHid = card.classList.toggle('hidden');
+  if (!isHid) {
+    populateWhatTheySayUI((siteState && siteState.draft && siteState.draft.whatTheySay && siteState.draft.whatTheySay.videos) || null);
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+async function openWhatTheySayEditor(focusVideoId = '') {
+  switchStudioTab('visual-editor');
+  document.querySelectorAll('#adminTabsNav .nav-btn').forEach((b) => b.classList.remove('active'));
+  const sbBtn = document.getElementById('sidebar-wts-btn');
+  if (sbBtn) sbBtn.classList.add('active');
+  const card = document.getElementById('ve-wts-card');
+  if (card) {
+    card.classList.remove('hidden');
+    await loadSiteState();
+    populateWhatTheySayUI((siteState && siteState.draft && siteState.draft.whatTheySay && siteState.draft.whatTheySay.videos) || null);
+    if (focusVideoId) renderWhatTheySayEditorList(focusVideoId);
+    switchEditorPage('what-they-say');
+    setTimeout(() => {
+      const safeRowId = focusVideoId
+        ? ((typeof CSS !== 'undefined' && typeof CSS.escape === 'function') ? CSS.escape(focusVideoId) : String(focusVideoId).replace(/[^A-Za-z0-9_-]/g, ''))
+        : '';
+      const targetRow = safeRowId ? card.querySelector(`[data-wts-row-id="${safeRowId}"]`) : null;
+      (targetRow || card).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+  }
+}
+
+async function saveAndPublishWhatTheySay() {
+  const payload = [];
+  for (let i = 0; i < wtsEditorVideos.length; i++) {
+    const v = wtsEditorVideos[i];
+    const name = String(v.name || '').trim();
+    const ytId = extractYoutubeIdClient(v.url || v.youtubeId);
+    if (!name) {
+      toast(`Nama tokoh pada Video #${i + 1} belum diisi.`, true);
+      return;
+    }
+    if (!ytId) {
+      toast(`URL/ID YouTube pada Video #${i + 1} (${name}) tidak valid. Gunakan link youtube.com atau youtu.be.`, true);
+      return;
+    }
+    payload.push({
+      id: v.id || `wts_${i + 1}`,
+      name,
+      youtubeId: ytId,
+      url: `https://www.youtube.com/watch?v=${ytId}`
+    });
+  }
+  const r = await api('POST', '/admin/api/site/what-they-say', { videos: payload });
+  if (r.ok && r.data && r.data.whatTheySay) {
+    siteState.draft = r.data.draft || siteState.draft;
+    siteState.draft.whatTheySay = r.data.whatTheySay;
+    if (typeof r.data.dirty === 'boolean') siteState.dirty = r.data.dirty;
+    updateDirtyIndicator();
+    populateWhatTheySayUI(r.data.whatTheySay.videos);
+    postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+    toast(`Daftar ${r.data.whatTheySay.videos.length} video "What They Say" berhasil disimpan dan langsung aktif di website Live!`);
+  } else {
+    toast('Gagal menyimpan daftar video What They Say.', true);
+  }
+}
+
+async function resetWhatTheySayToDefault() {
+  if (typeof confirm === 'function' && !confirm('Reset daftar video What They Say kembali ke 6 video resmi awal dan terapkan langsung ke Live?')) {
+    return;
+  }
+  const r = await api('POST', '/admin/api/site/what-they-say', { reset: true });
+  if (r.ok && r.data && r.data.whatTheySay) {
+    siteState.draft = r.data.draft || siteState.draft;
+    siteState.draft.whatTheySay = r.data.whatTheySay;
+    if (typeof r.data.dirty === 'boolean') siteState.dirty = r.data.dirty;
+    updateDirtyIndicator();
+    populateWhatTheySayUI(r.data.whatTheySay.videos);
+    postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+    toast('Daftar video What They Say berhasil dikembalikan ke 6 video resmi awal.');
+  } else {
+    toast('Gagal mereset video What They Say.', true);
+  }
+}
+
 function setThemeColor(key, hex) {
   siteState.draft.theme = siteState.draft.theme || { colors: {}, fonts: {}, customCss: '' };
   siteState.draft.theme.colors = { ...(siteState.draft.theme.colors || {}), [key]: hex };
@@ -1350,6 +1671,7 @@ async function saveSiteDraft() {
     blocks: siteState.draft.blocks,
     theme: siteState.draft.theme,
     seo: siteState.draft.seo,
+    whatTheySay: siteState.draft.whatTheySay,
     settings: siteState.draft.settings
   });
   if (r.ok) {

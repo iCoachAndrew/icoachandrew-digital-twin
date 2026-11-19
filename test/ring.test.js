@@ -1495,3 +1495,94 @@ test('QC Regression: Expanded conversational greetings (ID & EN) & corporate gov
     assert.match(gr.json.reply, re);
   }
 });
+
+test('What They Say (/what-they-say): HBS Editorial page, Click-to-Play facade, Ring 0 CMS text & video CRUD', async () => {
+  // 1. Public page serves cleanly with all 6 official videos and no noindex
+  const wtsPage = await fetch(U + '/what-they-say');
+  assert.strictEqual(wtsPage.status, 200);
+  const wtsHtml = await wtsPage.text();
+  assert.ok(!wtsHtml.includes('noindex'), 'Page must be indexable (no noindex)');
+  assert.ok(wtsHtml.includes('id="wts-title"') && wtsHtml.includes('id="wts-subtitle"') && wtsHtml.includes('id="wts-video-grid"'));
+  assert.ok(wtsHtml.includes('/cms-runtime.js'), 'Connected to Ring 0 CMS runtime');
+  assert.ok(wtsHtml.includes('youtube-nocookie.com/embed/'), 'Uses privacy-enhanced YouTube click-to-play facade');
+  for (const ytId of ['VBdAdIIgB34', 'dTFxKrsPRbU', 'FCKq-B-0YgE', 'xdGuQeidPKI', 'xJNlJU0FsKg', 'LWu2OXB3ZwI']) {
+    assert.ok(wtsHtml.includes(ytId), `Includes default video ${ytId}`);
+  }
+
+  // 2. Main page links to /what-they-say from Navigation Drawer & Footer
+  const homeHtml = await (await fetch(U + '/')).text();
+  assert.ok(homeHtml.includes('href="/what-they-say" id="nav-what-they-say"'), 'Navigation Drawer links to /what-they-say');
+  assert.ok(homeHtml.includes('href="/what-they-say" id="footer-what-they-say-link"'), 'Footer links to /what-they-say');
+
+  // 3. Preview route requires Ring 0 auth (denied when unauthenticated) and succeeds when logged in
+  const unauthPreview = await fetch(A + '/preview-what-they-say');
+  assert.ok(unauthPreview.status === 401 || unauthPreview.status === 429, `Expected 401 or 429 unauthenticated, got ${unauthPreview.status}`);
+  const authPreview = await fetch(A + '/preview-what-they-say?studio=1', { headers: { cookie } });
+  assert.strictEqual(authPreview.status, 200);
+
+  // 4. Admin Studio UI contains Video What They Say manager & page switcher
+  const admHtml = await (await fetch(A + '/admin', { headers: { cookie } })).text();
+  assert.ok(admHtml.includes('id="sidebar-wts-btn"') && admHtml.includes('id="ve-wts-card"') && admHtml.includes('id="ve-page-wts-btn"'));
+
+  // 5. Update/replace videos via POST /admin/api/site/what-they-say + reject malicious/non-YouTube URLs
+  const updRes = await admin('POST', '/admin/api/site/what-they-say', {
+    videos: [
+      { id: 'wts_1', name: 'Edwin Soeryadjaya', url: 'https://youtu.be/VBdAdIIgB34' },
+      { id: 'wts_custom', name: 'Tokoh Baru', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+      { id: 'wts_bad_xss', name: 'Bad XSS', url: 'javascript:alert(1)' },
+      { id: 'wts_bad_host', name: 'Bad Host', url: 'https://evil.example/watch?v=dQw4w9WgXcQ' }
+    ]
+  });
+  assert.strictEqual(updRes.status, 200);
+  assert.strictEqual(updRes.json.ok, true);
+  assert.strictEqual(updRes.json.whatTheySay.videos.length, 2, 'Only valid YouTube videos accepted');
+  assert.strictEqual(updRes.json.rejected.length, 2, 'Malicious/non-YouTube URLs rejected');
+  assert.strictEqual(updRes.json.whatTheySay.videos[1].youtubeId, 'dQw4w9WgXcQ');
+
+  const pubAfterUpd = await user('GET', '/api/site-content');
+  assert.strictEqual(pubAfterUpd.status, 200);
+  assert.strictEqual(pubAfterUpd.json.whatTheySay.videos.length, 2);
+  assert.strictEqual(pubAfterUpd.json.whatTheySay.videos[1].name, 'Tokoh Baru');
+
+  // 5b. Fail-closed check: submitting only invalid videos must return 400 and NOT wipe live videos
+  const allBadRes = await admin('POST', '/admin/api/site/what-they-say', {
+    videos: [
+      { id: 'bad_1', name: 'Evil', url: 'javascript:alert(1)' },
+      { id: 'bad_2', name: 'Evil2', url: 'https://phishing.example/watch?v=dQw4w9WgXcQ' }
+    ]
+  });
+  assert.strictEqual(allBadRes.status, 400);
+  assert.strictEqual(allBadRes.json.error, 'no_valid_videos');
+  const pubStillIntact = await user('GET', '/api/site-content');
+  assert.strictEqual(pubStillIntact.json.whatTheySay.videos.length, 2, 'Live videos preserved on all-invalid payload');
+
+  // 5c. Duplicate IDs are deduplicated safely
+  const dupRes = await admin('POST', '/admin/api/site/what-they-say', {
+    videos: [
+      { id: 'same_id', name: 'Leader One', url: 'https://youtu.be/VBdAdIIgB34' },
+      { id: 'same_id', name: 'Leader Two', url: 'https://youtu.be/dTFxKrsPRbU' }
+    ]
+  });
+  assert.strictEqual(dupRes.status, 200);
+  assert.notStrictEqual(dupRes.json.whatTheySay.videos[0].id, dupRes.json.whatTheySay.videos[1].id, 'Duplicate video IDs deduplicated');
+
+  // 6. Edit What They Say page title & description via Ring 0 CMS draft -> publish
+  const draftText = await admin('POST', '/admin/api/site/draft', {
+    elements: {
+      '#wts-title': { text: { id: 'Suara Para Pemimpin Tentang Andrew Tani', en: 'Voices of Leaders on Andrew Tani' } },
+      '#wts-subtitle': { text: { id: 'Kumpulan testimoni video eksekutif resmi.', en: 'Official executive video testimonials.' } }
+    }
+  });
+  assert.strictEqual(draftText.status, 200);
+  const pubText = await admin('POST', '/admin/api/site/publish', { note: 'Update teks What They Say' });
+  assert.strictEqual(pubText.status, 200);
+  const pubSite2 = await user('GET', '/api/site-content');
+  assert.strictEqual(pubSite2.json.elements['#wts-title'].text.id, 'Suara Para Pemimpin Tentang Andrew Tani');
+
+  // 7. Reset videos back to official 6 defaults
+  const resetRes = await admin('POST', '/admin/api/site/what-they-say', { reset: true });
+  assert.strictEqual(resetRes.status, 200);
+  assert.strictEqual(resetRes.json.whatTheySay.videos.length, 6);
+  assert.strictEqual(resetRes.json.whatTheySay.videos[0].name, 'Edwin Soeryadjaya');
+  assert.strictEqual(resetRes.json.whatTheySay.videos[5].name, 'Richard Buntario');
+});

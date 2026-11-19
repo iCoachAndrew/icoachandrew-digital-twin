@@ -194,11 +194,19 @@
     applyTheme(doc.theme);
     applySeo(doc.seo);
     applyLinks(doc.links);
+    applyWhatTheySay(doc.whatTheySay);
     applyAnnouncement(doc.settings);
     applyTypographyScale(doc.settings);
     if (doc.settings && doc.settings.worksOnHome && worksList) renderWorksOnHome(worksList);
     if (doc.settings && doc.settings.pricingOnHome && pricingData) renderPricingOnHome(pricingData);
     if (isStudio) notifyParentState();
+  }
+
+  function applyWhatTheySay(wts) {
+    if (!wts || !Array.isArray(wts.videos)) return;
+    if (typeof window.renderWhatTheySayVideos === 'function') {
+      window.renderWhatTheySayVideos(wts.videos);
+    }
   }
 
   function applyTypographyScale(settings) {
@@ -388,16 +396,19 @@
   function applySeo(seo) {
     if (!seo) return;
     window.__cmsSeo = seo;
-    const lang = activeLang();
-    if (lang === 'en' && seo.titleEn) {
-      document.title = seo.titleEn;
-    } else if (seo.title) {
-      document.title = seo.title;
-    }
-    if (seo.description) {
-      let m = document.querySelector('meta[name="description"]');
-      if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); }
-      m.content = seo.description;
+    const isSubpage = document.body && document.body.dataset && document.body.dataset.page && document.body.dataset.page !== 'home';
+    if (!isSubpage) {
+      const lang = activeLang();
+      if (lang === 'en' && seo.titleEn) {
+        document.title = seo.titleEn;
+      } else if (seo.title) {
+        document.title = seo.title;
+      }
+      if (seo.description) {
+        let m = document.querySelector('meta[name="description"]');
+        if (!m) { m = document.createElement('meta'); m.name = 'description'; document.head.appendChild(m); }
+        m.content = seo.description;
+      }
     }
     if (seo.favicon) {
       let l = document.getElementById('site-favicon') || document.querySelector('link[rel="icon"]');
@@ -679,6 +690,9 @@
     'karya-buku': 'Pustaka & Buku Rujukan',
     'lingkaran-pendampingan': 'Pilihan Akses Diskusi',
     'tentang-pak-andrew-tani': 'Rekam Jejak & Biografi',
+    'wts-hero': 'What They Say — Judul & Deskripsi',
+    'wts-videos': 'What They Say — Galeri Video',
+    'wts-cta': 'What They Say — Ajakan Diskusi (CTA)',
     'footer': 'Catatan Kaki (Bagian Bawah)',
     'halaman': 'Bagian Atas / Navigasi'
   };
@@ -730,7 +744,17 @@
     'footer-contact-desc': 'Teks Kontak Sekretariat',
     'footer-wa-text': 'Teks Tombol WhatsApp Sekretariat',
     'footer-ethics-title': 'Judul Etika & Penafian',
-    'footer-ethics-desc': 'Isi Etika & Penafian'
+    'footer-ethics-desc': 'Isi Etika & Penafian',
+    'wts-topbar-crumb': 'Label Breadcrumb What They Say',
+    'wts-header-chat-text': 'Teks Tombol Chat di Header',
+    'wts-badge': 'Label Atas Halaman What They Say',
+    'wts-title': 'Judul Utama Halaman What They Say',
+    'wts-subtitle': 'Deskripsi Pengantar What They Say',
+    'wts-cta-badge': 'Label Ajakan Diskusi (CTA)',
+    'wts-cta-title': 'Judul Ajakan Diskusi (CTA)',
+    'wts-cta-desc': 'Deskripsi Ajakan Diskusi (CTA)',
+    'wts-cta-primary-text': 'Teks Tombol Mulai Berbincang',
+    'wts-cta-secondary-text': 'Teks Tombol Hubungi Sekretariat'
   };
 
   function decodeHtmlToPlainText(rawHtml, fallbackEl) {
@@ -792,6 +816,7 @@
   // ---------- Studio Visual Canvas Bridge (?studio=1) ----------
   function initStudioBridge() {
     document.body.classList.add('bio-revealed');
+    document.body.classList.add('cms-inspect-mode');
     const badge = document.createElement('div');
     badge.setAttribute('data-cms-injected', 'studio-ui');
     badge.style.cssText = 'position:fixed;pointer-events:none;z-index:99998;border:2px solid #b18d48;border-radius:6px;transition:all 80ms ease;display:none;box-shadow:0 0 0 2px rgba(0,22,55,0.18);';
@@ -836,6 +861,7 @@
 
     function describeEl(el) {
       if (!el) return '';
+      if (el.closest && el.closest('.wts-card')) return 'VIDEO WHAT THEY SAY • Klik untuk kelola/ganti video';
       const t = el.tagName.toLowerCase();
       if (t === 'img') return 'FOTO / GAMBAR • Klik untuk ganti';
       if (t === 'section') return 'BAGIAN: ' + getFriendlySectionName(el.id || '');
@@ -867,6 +893,13 @@
 
     document.addEventListener('click', (e) => {
       if (studioMode !== 'inspect') return;
+      const wtsCard = e.target && e.target.closest ? e.target.closest('.wts-card') : null;
+      if (wtsCard) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.parent.postMessage({ type: 'cms:open-wts-editor', videoId: wtsCard.dataset.videoId || '' }, window.location.origin);
+        return;
+      }
       const t = pickBestTarget(e.target);
       if (!isEditableTarget(t)) return;
       e.preventDefault();
@@ -903,6 +936,7 @@
         updateBoxes();
       } else if (msg.type === 'cms:set-mode') {
         studioMode = msg.mode === 'navigate' ? 'navigate' : 'inspect';
+        document.body.classList.toggle('cms-inspect-mode', studioMode === 'inspect');
         updateBoxes();
       } else if (msg.type === 'cms:set-view') {
         if (msg.view === 'chamber' && typeof window.openChamberView === 'function') window.openChamberView();
@@ -984,6 +1018,7 @@
   function scanPageInventory() {
     const images = [];
     document.querySelectorAll('img').forEach((img, i) => {
+      if (img.closest('.wts-card')) return;
       const key = computeKey(img);
       if (!key) return;
       rememberOriginal(key, img);
@@ -1018,10 +1053,10 @@
 
     const editableElements = [];
     const seenKeys = new Set();
-    const candidates = document.querySelectorAll('h1, h2, h3, [id^="chat-"], [id^="prompt-chip-"], [id^="who-trigger-"], [id^="hero-"], [id^="portrait-"], [id^="book"], [id^="tier"], [id^="footer-"], #header-subtitle, #top-bar-left');
+    const candidates = document.querySelectorAll('h1, h2, h3, [id^="chat-"], [id^="prompt-chip-"], [id^="who-trigger-"], [id^="hero-"], [id^="portrait-"], [id^="book"], [id^="tier"], [id^="footer-"], [id^="wts-"], #header-subtitle, #top-bar-left');
     candidates.forEach((el) => {
       if (!el || el.tagName === 'IMG' || el.tagName === 'SECTION' || el.tagName === 'FORM' || el.tagName === 'AUDIO') return;
-      if (el.closest('[data-cms-injected="studio-ui"]')) return;
+      if (el.closest('[data-cms-injected="studio-ui"]') || el.closest('.wts-card') || el.id === 'wts-video-grid' || el.id === 'wts-empty-state') return;
       const key = computeKey(el);
       if (!key || seenKeys.has(key)) return;
       const plain = decodeHtmlToPlainText(el.innerHTML, el);
