@@ -1,11 +1,11 @@
 {
     "schema_version": 2,
     "commit": "",
-    "indexed_at": "2026-11-19T12:32:23Z",
+    "indexed_at": "2026-11-19T14:37:21Z",
     "project": "Github-Digital-Twin",
-    "nodes": 2477,
-    "edges": 5977,
-    "original_size": 7798784,
-    "compressed_size": 1262985,
+    "nodes": 2519,
+    "edges": 6095,
+    "original_size": 7929856,
+    "compressed_size": 1299412,
     "compression_level": 9
 }

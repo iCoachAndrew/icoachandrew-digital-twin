@@ -149,7 +149,7 @@ function ensureStores() {
 }
 
 const readJson = (f) => db.readDocument(f);
-const writeJson = (f, v) => db.writeDocument(f, v);
+const writeJson = (f, v, opts) => db.writeDocument(f, v, opts);
 const loadStore = (ring) => db.loadStore(ring);
 const saveStore = (ring, v) => db.saveStore(ring, v);
 const loadPending = () => db.loadPending();
@@ -167,6 +167,41 @@ function readableRings(askerRing) {
   const out = [];
   for (let n = 0; n <= 3; n++) if (askerRing <= n) out.push(n);
   return out;
+}
+
+const SHORT_DOMAIN_TERMS = new Set([
+  'tim', 'bos', 'ceo', 'cfo', 'coo', 'cto', 'hrd', 'kpi', 'okr', 'sop', 'ego', 'ide', 'bq', 'iq', 'eq', 'visi', 'misi'
+]);
+
+// Concept expansion bridges casual/free-form Indonesian & English leadership phrasing to Ring 3 public pillars
+const LEADERSHIP_CONCEPT_MAP = [
+  {
+    re: /\b(anak\s+buah|bawahan|staf|karyawan|pegawai|anggota\s+tim|tim\b|bos\b|atasan|rekan\s+kerja|silo|kompak|toxic|toksik|micromanage|delegasi|delegate|akuntabilitas|accountability|tanggung\s+jawab|disiplin|inisiatif|resign|turnover|feedback|teguran|menegur|motivasi|strategi|eksekusi|budaya|culture|kolaborasi|rapat|meeting|target|kpi|okr|konflik)\b/i,
+    boost: ['organizing', 'excellence', 'strategi', 'eksekusi', 'budaya', 'akuntabilitas', 'kolaborasi', 'mendengarkan', 'alignment']
+  },
+  {
+    re: /\b(burnout|stres|stress|lelah|capek|emosi|marah|panik|reaktif|reactive|krisis|crisis|ragu|bimbang|dilema|keputusan|decision|fokus|focus|overthinking|mental|otak|brain|kognitif|cognitive|tekanan|pressure|tenang|calm|blind\s+spot|empati|empathy|mindset|psikologi)\b/i,
+    boost: ['brain', 'quotient', 'neurosains', 'neuroscience', 'otak', 'kognitif', 'keputusan', 'tekanan', 'empati', 'ketenangan']
+  },
+  {
+    re: /\b(keluarga|family|orang\s+tua|ayah|ibu|pendiri|founder|penerus|next[\s-]?gen|generasi|generation|suksesi|succession|warisan|legacy|senior|junior|handayani|pamong)\b/i,
+    boost: ['suksesi', 'succession', 'pendiri', 'founder', 'generasi', 'keluarga', 'handayani']
+  },
+  {
+    re: /\b(nurani|conscience|hati|etika|ethics|integritas|integrity|jujur|adil|bijak|wisdom|makna|purpose|nilai|values|karakter|character|keteladanan|teladan|curhat|refleksi|reflection|karier|career)\b/i,
+    boost: ['nurani', 'conscience', 'refleksi', 'ketenangan', 'kembaran', 'digital', 'twin']
+  }
+];
+
+function expandConceptTerms(question) {
+  const extra = new Set();
+  const q = String(question || '');
+  for (const entry of LEADERSHIP_CONCEPT_MAP) {
+    if (entry.re.test(q)) {
+      for (const kw of entry.boost) extra.add(kw);
+    }
+  }
+  return [...extra];
 }
 
 function retrieve(askerRing, question, limit = 3) {
@@ -214,22 +249,60 @@ const STOPWORDS = new Set([
   'melalui', 'secara', 'terus', 'menerus', 'hari', 'harian', 'sehari', 'keseharian'
 ]);
 
-const OUT_OF_SCOPE_TOPIC_RE = /\b(presidency|pilpres|pemilu|partai politik|kampanye politik|menteri|kabinet|gubernur|walikota|dpr|mpr|geopolitics|geopolitik|rights?\s+issue|hmetd|ihsg|stock\s+market|stock\s+price|obligasi|reksadana|crypto|cryptocurrency|kripto|bitcoin|ethereum|forex|valas|trading\s+saham|harga\s+saham|beli\s+saham|rekomendasi\s+saham|cuaca|weather|ramalan\s+cuaca|sepak\s+bola|football|soccer|resep\s+masakan|cooking\s+recipe|memasak\s+rendang|selebriti|celebrity|gosip)\b|(?<!vice\s)\bpresident\b(?!\s+(director|commissioner|of\s+the\s+(board|company)))|\bpresiden\b(?!\s+(direktur|komisaris))/i;
+const OUT_OF_SCOPE_TOPIC_RE = /\b(presidency|pilpres|pemilu|partai politik|kampanye politik|menteri|kabinet|gubernur|walikota|dpr|mpr|geopolitics|geopolitik|rights?\s+issue|hmetd|ihsg|stock\s+market|stock\s+price|obligasi|reksadana|crypto|cryptocurrency|kripto|bitcoin|ethereum|forex|valas|trading\s+saham|harga\s+saham|beli\s+saham|rekomendasi\s+saham|cuaca|weather|ramalan\s+cuaca|sepak\s+bola|football|soccer|resep\s+(masakan|kue|makanan)|cara\s+memasak|cooking\s+recipe|memasak\s+rendang|selebriti|celebrity|gosip\s+(artis|seleb\w*|infotainment)|celebrity\s+gossip|write\s+(me\s+)?(a\s+)?(python|javascript|java|c\+\+|html|css|sql)(\s+\w+){0,2}\s+(code|script|scraper|program|function)|buatkan\s+(kode|coding|script|program)(\s+\w+){0,2}\s+(python|javascript|html|sql)|soal\s+(matematika|fisika|kimia)|ramalan\s+(zodiak|shio|bintang)|judi\s+online|togel|slot\s+gacor|lirik\s+lagu\s+(pop|korea|kpop|dangdut)|sinopsis\s+(film|anime|drakor))\b|(?<!vice\s)\bpresident\b(?!\s+(director|commissioner|of\s+the\s+(board|company)))|\bpresiden\b(?!\s+(direktur|komisaris))/i;
+
+function isGibberishInput(s) {
+  const t = String(s || '').trim();
+  if (!t) return true;
+  if (!/\p{L}/u.test(t)) return true; // Pure digits / punctuation / symbols
+  const words = t.toLowerCase().split(/\s+/).filter(Boolean);
+  // Single keyboard-smash or repeated-char spam (e.g. "asdfghjkl", "qwertyuiop", "zzzzzz", "xqwrtyplk")
+  if (words.length === 1 && words[0].length >= 6) {
+    if (/^(.)\1{4,}$/.test(words[0])) return true;
+    if (!/[aiueoy]/i.test(words[0])) return true;
+    if (/(asdfg|sdfgh|dfghj|fghjk|ghjkl|qwert|werty|ertyu|rtyui|tyuio|yuiop|zxcvb|xcvbn|cvbnm)/i.test(words[0])) return true;
+    if (/^(asdf|qwer|zxcv|hjkl|jklm|uiop){2,}/i.test(words[0])) return true;
+  }
+  return false;
+}
 const GREETING_RE = /^(halo|hai|hi|hello|hey|hei|pagi|siang|sore|malam|selamat\s+(pagi|siang|sore|malam|datang)|assalamu\s*['’]?alaikum|salam(\s+hangat|\s+kenal|\s+sejahtera)?|apa\s+kabar|bagaimana\s+kabar(nya)?(\s+hari\s+ini)?|gimana\s+kabar(nya)?(\s+hari\s+ini)?|how\s+are\s+you(\s+doing|\s+today)?|nice\s+to\s+meet\s+you|good\s+(morning|afternoon|evening|day))([\s,]+(halo|hai|hi|hello|pagi|siang|sore|malam|selamat\s+(pagi|siang|sore|malam)|apa\s+kabar|bagaimana\s+kabar(nya)?(\s+hari\s+ini)?|gimana\s+kabar(nya)?(\s+hari\s+ini)?|how\s+are\s+you(\s+doing|\s+today)?|pak|bapak|om|coach|mr\.?|sir|andrew|tani|sahabatku|teman))*[\s!.,?]*$/i;
-const LEADERSHIP_DOMAIN_RE = /\b(pemimpin|kepemimpinan|leader\w*|manajer|manager\w*|manajemen|management|tim|team\w*|organisasi|organi[sz]\w*|perusahaan|company|corporate|bisnis|business|strategi|strateg\w*|budaya|culture|suksesi|succession|direksi|komisaris|board|ceo|eksekutif|executive|konflik|conflict|keputusan|decision|komunikasi|communication|visi|misi|vision|karyawan|staff|pegawai|kinerja|performance|perubahan|change|transformasi|transformation|keluarga|family|pendiri|founder|generasi|generation|mentor\w*|coach\w*|nasihat|saran|advice|tantangan|challenge|otak|brain|stres|stress|fokus|focus|nurani|conscience|nilai|values|etika|ethics|tujuan|goal|target|delegasi|delegat\w*|trust|kepercayaan|kerja|work|karier|career|buku|book|karya|andrew|tani|orbex|quotient|tata\s+kelola|governance)\b/i;
-const STRICT_CONFIDENTIAL_TERMS = [
+const LEADERSHIP_DOMAIN_RE = /\b(pemimpin|kepemimpinan|memimpin|dipimpin|leader\w*|manajer|manager\w*|manajemen|management|tim|team\w*|organisasi|organi[sz]\w*|perusahaan|company|corporate|bisnis|business|usaha|startup|entrepreneur\w*|strategi|strateg\w*|budaya|culture|suksesi|succession|direksi|direktur|komisaris|board|ceo|cfo|coo|cto|hrd|eksekutif|executive|konflik|conflict|keputusan|memutuskan|decision|komunikasi|communication|visi|misi|vision|karyawan|staff|staf|pegawai|bawahan|anak\s+buah|atasan|bos|rekan|divisi|departemen|kinerja|performance|perubahan|change|transformasi|transformation|keluarga|family|pendiri|founder|generasi|generation|mentor\w*|coach\w*|nasihat|saran|advice|tantangan|challenge|otak|brain|stres|stress|burnout|lelah|capek|emosi|marah|reaktif|fokus|focus|nurani|conscience|nilai|values|etika|ethics|integritas|integrity|karakter|character|tujuan|goal|target|kpi|okr|delegasi|delegat\w*|trust|kepercayaan|percaya|kerja|kantor|work\w*|karier|karir|career|buku|book|karya|andrew|tani|orbex|quotient|tata\s+kelola|governance|feedback|masukan|teguran|menegur|motivasi|motivat\w*|inisiatif|disiplin|kompak|silo|toxic|toksik|resign|turnover|micromanag\w*|dilema|dilemma|bimbang|ragu|proyek|project|rapat|meeting|kolaborasi|collaborat\w*|akuntabilitas|accountabilit\w*|tanggung\s+jawab|keteladanan|teladan|pamong|handayani|mindset|mental|empati|empathy|ego|curhat|refleksi|bijak|wisdom)\b/i;
+
+// Unambiguously sensitive / confidential terms that always trigger stricter-ring privacy refusal
+const HARD_CONFIDENTIAL_TERMS = [
   'unresolved family succession dispute', 'pt dirgantara holdings',
-  'password', 'passkey', 'salary', 'valuation', 'debt', 'confidential', 'secret', 'private',
+  'password', 'passkey', 'valuation', 'confidential',
   'medical', 'diagnosis', 'hospital', 'lawsuit', 'investigation',
   'acquisition', 'begapal', 'peacock', 'unreleased',
-  'sandi', 'gaji', 'valuasi', 'utang', 'rahasia', 'pribadi', 'medis', 'sengketa', 'akuisisi'
+  'sandi', 'valuasi', 'medis', 'akuisisi'
 ];
 
+// Everyday words (rahasia, pribadi, gaji, utang, sengketa, secret, private, salary, debt) only trigger privacy refusal
+// when probing Andrew Tani / clients / board / Ring 0-2 internal secrets — NOT general leadership coaching (e.g. "rahasia tim kompak", "batas pribadi & kerja")
+const CONTEXTUAL_PRIVATE_PROBE_RE = /(\b(rahasia|pribadi|private|secret|gaji|salary|utang|debt|sengketa)\b.*\b(andrew|tani|klien|client|direksi|board|komisaris|ring\s*[012]|brankas|arsip|catatan\s+internal|dokumen\s+internal|keluarga\s+(pak\s+)?andrew|perusahaan\s+(pak\s+)?andrew|divestment|blueprint|project_zephyr|zephyr)\b|\b(andrew|tani|klien|client|direksi|board|komisaris|ring\s*[012]|brankas|arsip|keluarga\s+(pak\s+)?andrew)\b.*\b(rahasia|pribadi|private|secret|gaji|salary|utang|debt|sengketa)\b|\b(rahasia\s+pribadi|private\s+(matter|notes?|file|info\w*|data|life)|secret\s+(file|notes?|plan|deal|project|code))\b)/i;
+
 function tokenize(s) {
-  return String(s)
+  const raw = String(s)
     .toLowerCase()
     .split(/[^\p{L}\p{N}]+/u)
-    .filter((w) => w.length > 3 && !STOPWORDS.has(w));
+    .filter((w) => (w.length > 3 || SHORT_DOMAIN_TERMS.has(w)) && !STOPWORDS.has(w));
+  const out = [];
+  const seen = new Set();
+  for (const w of raw) {
+    if (!seen.has(w)) { seen.add(w); out.push(w); }
+    // Lightweight Indonesian/English stem variants to improve recall without losing exact token matching
+    let stem = w;
+    if (w.length >= 7) {
+      stem = w
+        .replace(/^(meng|meny|mem|men|ber|ter|per|pe|ke|di)/, '')
+        .replace(/(kannya|annya|nya|kan|lah|ing|ed|es|s)$/, '');
+      if (stem.length >= 4 && stem !== w && !STOPWORDS.has(stem) && !seen.has(stem)) {
+        seen.add(stem);
+        out.push(stem);
+      }
+    }
+  }
+  return out;
 }
 
 // ---------- leak guard: reply must not contain text from a stricter store than the asker may read ----------
@@ -273,8 +346,8 @@ function leakGuard(askerRing, reply) {
 function checkSpecialRules(askerRing, question, lang) {
   const q = String(question).toLowerCase();
 
-  // 1. Prompt injection / rule-override attempts
-  if (/(ignore (all )?(the )?(previous |prior )?(instructions|rules|guidelines)|disregard (all )?(your )?(rules|instructions)|system prompt|abaikan (semua |seluruh )?(aturan|instruksi)|bocorkan ring 0)/i.test(q)) {
+  // 1. Prompt injection / rule-override / system-prompt exfiltration attempts
+  if (/(ignore (all )?(the )?(previous |prior )?(instructions|rules|guidelines)|disregard (all )?(your )?(rules|instructions)|system prompt|(repeat|reveal|print|show|dump) (all )?(your |the )?(system|hidden|initial|internal) (prompt|instructions|rules)|pretend (you are|to have) ring 0|act as ring 0|override ring|jailbreak|abaikan (semua |seluruh )?(aturan|instruksi)|(tampilkan|tunjukkan|ungkapkan|bocorkan) (semua |seluruh )?(system prompt|instruksi (sistem|rahasia)|aturan rahasia|ring 0)|berpura[\s-]?pura.*ring 0)/i.test(q)) {
     return { matched: true, text: REFUSAL[lang], refused: true, outcome: 'guard_triggered', topic: 'prompt_injection' };
   }
 
@@ -302,8 +375,8 @@ function checkSpecialRules(askerRing, question, lang) {
     }
   }
 
-  // 6. Clearly out-of-scope public trivia/politics/speculation (Ring 3 public room only)
-  if (askerRing === 3 && OUT_OF_SCOPE_TOPIC_RE.test(q)) {
+  // 6. Clearly out-of-scope public trivia/politics/speculation or gibberish spam (Ring 3 public room only)
+  if (askerRing === 3 && (OUT_OF_SCOPE_TOPIC_RE.test(q) || isGibberishInput(question))) {
     return { matched: true, text: OUT_OF_SCOPE[lang], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope' };
   }
 
@@ -313,7 +386,8 @@ function checkSpecialRules(askerRing, question, lang) {
 function isRestrictedToStricterRing(askerRing, question, opts = {}) {
   if (askerRing <= 0) return false;
   const qLower = String(question || '').toLowerCase();
-  if (STRICT_CONFIDENTIAL_TERMS.some((w) => qLower.includes(w))) return true;
+  if (HARD_CONFIDENTIAL_TERMS.some((w) => qLower.includes(w))) return true;
+  if (CONTEXTUAL_PRIVATE_PROBE_RE.test(qLower)) return true;
   const terms = tokenize(question);
   if (!terms.length) return false;
 
@@ -325,8 +399,10 @@ function isRestrictedToStricterRing(askerRing, question, opts = {}) {
   const matchesStricterText = (text) => {
     const mt = new Set(tokenize(text));
     const overlap = terms.filter((t) => mt.has(t));
-    if (overlap.length >= 2) return true;
-    if (overlap.length === 1 && !publicVocab.has(overlap[0])) return true;
+    if (overlap.length < 2) return false;
+    const exclusiveOverlap = overlap.filter((t) => !publicVocab.has(t));
+    if (exclusiveOverlap.length >= 2) return true;
+    if (overlap.length >= 3 && exclusiveOverlap.length >= 1) return true;
     return false;
   };
 
@@ -336,13 +412,31 @@ function isRestrictedToStricterRing(askerRing, question, opts = {}) {
         if (matchesStricterText(m.text)) return true;
       }
     }
+    // Guard stricter-ring stored memories (facts/secrets, never boilerplate directives) preemptively too
+    if (studio && studio.memory) {
+      for (const m of studio.memory.stricterTexts(askerRing)) {
+        if (m.kind === 'directive') continue;
+        if (matchesStricterText(m.text)) return true;
+      }
+    }
+    // Also guard stricter-ring knowledge documents preemptively so mixing public keywords cannot bypass Ring isolation
+    for (let r = 0; r < askerRing; r++) {
+      for (const d of loadStore(r)) {
+        if (matchesStricterText((d.title || '') + ' ' + (d.text || ''))) return true;
+      }
+    }
     return false;
   }
 
-  const allHits = retrieve(0, question);
-  if (allHits.some((h) => h.ring < askerRing)) return true;
+  for (let r = 0; r < askerRing; r++) {
+    for (const d of loadStore(r)) {
+      if (matchesStricterText((d.title || '') + ' ' + (d.text || ''))) return true;
+    }
+  }
   if (studio && studio.memory) {
     for (const m of studio.memory.stricterTexts(askerRing)) {
+      // Only check stored memories (facts/secrets), never generic behavioral meta-directives
+      if (m.kind === 'directive') continue;
       if (matchesStricterText(m.text)) return true;
     }
   }
@@ -436,16 +530,19 @@ async function answer(askerRing, question, lang, opts = {}) {
     return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'refused_politely', topic: 'unmatched_or_restricted', mode: 'unmatched' };
   }
 
-  const topK = (studio && studio.ai && Number(studio.ai.loadCfg().topKDocs)) || 5;
-  let hits = retrieve(askerRing, question, Math.min(15, Math.max(3, topK)));
-  if (askerRing <= 3 && (isGreeting || PUBLIC_BOOK_TOPIC_RE.test(trimmedQ))) {
+  const topK = (studio && studio.ai && Number(studio.ai.loadCfg().topKDocs)) || 6;
+  const effectiveLimit = Math.min(15, Math.max(3, topK));
+  let hits = retrieve(askerRing, question, effectiveLimit);
+  if (askerRing <= 3 && (isGreeting || PUBLIC_BOOK_TOPIC_RE.test(trimmedQ) || expandConceptTerms(trimmedQ).length > 0)) {
     const terms = tokenize(question);
+    const concepts = expandConceptTerms(trimmedQ);
     const seenIds = new Set(hits.map((h) => h.doc.id));
     for (const d of PUBLIC_BOOK_RING3_DOCS) {
       if (seenIds.has(d.id)) continue;
       const dt = new Set(tokenize(d.title + ' ' + d.text));
       let score = 0;
-      for (const t of terms) if (dt.has(t)) score++;
+      for (const t of terms) if (dt.has(t)) score += 1;
+      for (const c of concepts) if (dt.has(c)) score += 0.35;
       if (isGreeting && (d.id === 'doc_r3_book_twin_id' || d.id === 'doc_r3_book_twin_en')) {
         score = Math.max(score, 1);
       }
@@ -457,7 +554,7 @@ async function answer(askerRing, question, lang, opts = {}) {
       const aLangBoost = (a.doc && a.doc.lang === lang) ? 0.5 : 0;
       const bLangBoost = (b.doc && b.doc.lang === lang) ? 0.5 : 0;
       return (b.score + bLangBoost) - (a.score + aLangBoost) || a.ring - b.ring;
-    }).slice(0, Math.min(15, Math.max(3, topK)));
+    }).slice(0, effectiveLimit);
   }
 
   const hasAi = Boolean(
@@ -471,21 +568,29 @@ async function answer(askerRing, question, lang, opts = {}) {
   const hadNoHitsOriginally = (hits.length === 0);
 
   if (hadNoHitsOriginally) {
-    // 1. Strict confidential guard: question probing higher ring knowledge
+    // 1. Strict confidential guard: question probing higher ring knowledge or memories
     if (isRestrictedToStricterRing(askerRing, question)) {
       return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'refused_politely', topic: 'unmatched_or_restricted', mode: 'unmatched' };
     }
 
-    // 2. For greetings OR in-domain leadership/executive questions when AI is ready, supply foundational Ring 3 canon
-    //    (prevents unauthenticated cost-amplification on random off-domain trivia while freeing executive intelligence)
-    if (isGreeting || (hasAi && (askerRing < 3 || LEADERSHIP_DOMAIN_RE.test(trimmedQ)))) {
+    // 2. When Claude AI is active, unlock free-form phrasing / casual / mixed-language leadership questions
+    //    by providing the complete Ring 3 foundational canon and letting Claude apply grounded wisdom + scope boundaries.
+    if (isGreeting || hasAi) {
       const canonDocs = PUBLIC_BOOK_RING3_DOCS.filter((d) => d.lang === lang);
-      const fallbackDoc = canonDocs[0] || PUBLIC_BOOK_RING3_DOCS[0];
-      if (fallbackDoc) {
-        hits = [{ doc: fallbackDoc, ring: 3, score: 1 }];
-      }
+      const pack = canonDocs.length ? canonDocs : PUBLIC_BOOK_RING3_DOCS.slice(0, 4);
+      hits = pack.map((d) => ({ doc: d, ring: 3, score: 0.5 }));
     } else {
       return { text: OUT_OF_SCOPE[lang], sources: [], refused: true, outcome: 'out_of_scope', topic: 'out_of_scope', mode: 'unmatched' };
+    }
+  } else if (hasAi && askerRing === 3 && hits.length < 3) {
+    // Enrich thin Ring 3 context with foundational public pillars so Claude never gives narrow or forced book-blurb replies
+    const seenIds = new Set(hits.map((h) => h.doc.id));
+    for (const d of PUBLIC_BOOK_RING3_DOCS.filter((x) => x.lang === lang)) {
+      if (hits.length >= Math.min(effectiveLimit, 4)) break;
+      if (!seenIds.has(d.id)) {
+        seenIds.add(d.id);
+        hits.push({ doc: d, ring: 3, score: 0.25 });
+      }
     }
   }
 
@@ -493,7 +598,14 @@ async function answer(askerRing, question, lang, opts = {}) {
   let text = '';
   let genInfo = { mode: 'extractive' };
   if (studio && studio.ai) {
-    const gen = await studio.ai.generate({ askerRing, lang, question, context, source: opts.source || 'chat' });
+    const gen = await studio.ai.generate({
+      askerRing,
+      lang,
+      question,
+      context,
+      history: askerRing >= 2 ? opts.history : undefined, // Zero-retention for Ring 0 & Ring 1
+      source: opts.source || 'chat'
+    });
     genInfo = gen;
     if (gen.ok) {
       text = gen.text;
@@ -526,10 +638,19 @@ async function answer(askerRing, question, lang, opts = {}) {
     return { text: REFUSAL[lang], sources: [], refused: true, outcome: 'guard_triggered', topic: 'leak_guard', mode: genInfo.mode };
   }
 
-  const topicName = isGreeting ? 'greeting' : (hits[0] && hits[0].doc ? hits[0].doc.title : 'conversation');
-  const resObj = { text, sources: hits.map((h) => h.doc.id), refused: false, outcome: 'answered', topic: topicName };
+  const trimmedReply = String(text || '').trim();
+  const isPrivacyRefusal = trimmedReply === REFUSAL.id || trimmedReply === REFUSAL.en;
+  const isOutOfScopeReply = trimmedReply === OUT_OF_SCOPE.id || trimmedReply === OUT_OF_SCOPE.en
+    || /di luar konteks ruang diskusi publik \(ring 3\)|outside the context of this public discussion space \(ring 3\)/i.test(trimmedReply);
+  const refused = isPrivacyRefusal || isOutOfScopeReply;
+  const outcome = isPrivacyRefusal ? 'refused_politely' : (isOutOfScopeReply ? 'out_of_scope' : 'answered');
+
+  const topicName = isGreeting ? 'greeting' : (isOutOfScopeReply ? 'out_of_scope' : (hits[0] && hits[0].doc ? hits[0].doc.title : 'conversation'));
+  const resObj = { text, sources: refused ? [] : hits.map((h) => h.doc.id), refused, outcome, topic: topicName };
   if (opts.debug) {
     resObj.mode = genInfo.mode;
+    resObj.reason = genInfo.reason || null;
+    resObj.detail = genInfo.detail || null;
     resObj.model = genInfo.model || null;
     resObj.latencyMs = genInfo.latencyMs || 0;
     resObj.usage = genInfo.usage || null;
@@ -1668,7 +1789,8 @@ const userServer = http.createServer(async (req, res) => {
           }
         }
       } else if (ring === 3) {
-        if (rateLimited('r3_chat:' + ip, 90, 60000)) {
+        const r3PerMin = process.env.NODE_ENV === 'test' ? 90 : 30;
+        if (rateLimited('r3_chat:' + ip, r3PerMin, 60000)) {
           return send(res, 429, { error: 'slow_down', reply: lang === 'id' ? 'Mohon jeda sejenak sebelum mengirim pesan berikutnya.' : 'Please pause briefly before sending your next message.' }, {}, req);
         }
         if (guestKey) {
@@ -1694,9 +1816,21 @@ const userServer = http.createServer(async (req, res) => {
         }
       }
 
+      // Gather bounded multi-turn conversation history strictly for Ring 2 & Ring 3 (zero-retention preserved for Ring 0 & Ring 1)
+      // Exclude refused/guard-triggered turns so prompt-injection or blocked probes NEVER poison subsequent Claude turns
+      let chatHistory = [];
+      if (ring === 2 && sess.memberId) {
+        const rawHist = (memberHistories.get(sess.memberId) || []).filter((m) => !m.refused);
+        chatHistory = rawHist.slice(-6).map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+      } else if (ring === 3 && guestKey) {
+        const gq = getOrInitGuestQuota(guestKey);
+        const rawHist = ((gq && Array.isArray(gq.messages)) ? gq.messages : []).filter((m) => !m.refused);
+        chatHistory = rawHist.slice(-6).map((m) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+      }
+
       let r;
       try {
-        r = await answer(ring, q, lang);
+        r = await answer(ring, q, lang, { history: chatHistory });
       } catch (aiErr) {
         audit({ event: 'chat_model_error', site: 'user', ring, msg: String(aiErr && aiErr.message || aiErr).slice(0, 120) });
         const fallbackMsg = GREETING_RE.test(q.trim())
@@ -1710,6 +1844,7 @@ const userServer = http.createServer(async (req, res) => {
       // Deduct quota & persist conversation ONLY AFTER answer() succeeds
       let usageInfo;
       let freeUsage;
+      const wasRefused = Boolean(r.refused);
       if (ring === 2 && sess.memberId) {
         const members = loadMembers();
         const member = members.find((m) => m.id === sess.memberId);
@@ -1725,8 +1860,8 @@ const userServer = http.createServer(async (req, res) => {
         // Store Ring 2 transcript strictly under verified memberId (never client guestId)
         const hist = memberHistories.get(sess.memberId) || [];
         const nowIso = new Date().toISOString();
-        hist.push({ role: 'user', text: q, source: chatSource, at: nowIso });
-        hist.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso });
+        hist.push({ role: 'user', text: q, source: chatSource, at: nowIso, refused: wasRefused });
+        hist.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso, refused: wasRefused });
         memberHistories.set(sess.memberId, hist.slice(-40));
       } else if (ring === 3 && guestKey) {
         const gq = getOrInitGuestQuota(guestKey);
@@ -1745,8 +1880,8 @@ const userServer = http.createServer(async (req, res) => {
         }
         if (!Array.isArray(gq.messages)) gq.messages = [];
         const nowIso = new Date().toISOString();
-        gq.messages.push({ role: 'user', text: q, source: chatSource, at: nowIso });
-        gq.messages.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso });
+        gq.messages.push({ role: 'user', text: q, source: chatSource, at: nowIso, refused: wasRefused });
+        gq.messages.push({ role: 'twin', text: r.text, source: chatSource, at: nowIso, refused: wasRefused });
         if (gq.messages.length > 40) gq.messages = gq.messages.slice(-40);
         freeUsage = {
           used: gq.used,
@@ -1797,7 +1932,7 @@ function initStudio() {
       DATA, PUBLIC_DIR, db, readJson, writeJson, audit, send, body,
       loadStore, saveStore, loadPending, savePending, loadPrecedents, savePrecedents,
       loadCodenames, saveCodenames, loadMembers, saveMembers,
-      SENSITIVE, readableRings, REFUSAL, FREE_FOR_NOW, DEFAULT_MONTHLY_CAP,
+      SENSITIVE, readableRings, REFUSAL, OUT_OF_SCOPE, FREE_FOR_NOW, DEFAULT_MONTHLY_CAP,
       sessions, answer: (...args) => answer(...args), FIXED_DUTIES
     });
   }

@@ -3244,17 +3244,41 @@ async function loadAiDashboard() {
   const u = aiState.usage || { month: {} };
 
   const pill = document.getElementById('ai-status-pill');
+  const pInfo = aiState.persistence || {};
   if (aiState.source === 'vault' || aiState.source === 'env') {
     pill.textContent = `TERHUBUNG (${aiState.source.toUpperCase()} • ${cfg.model})`;
     pill.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300';
+  } else if (pInfo.undecryptableCount > 0) {
+    pill.textContent = 'PERLU SIMPAN ULANG KUNCI (Vault Berubah)';
+    pill.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-red-100 text-secondary border border-red-300';
   } else {
     pill.textContent = 'MODE EKSTRAKTIF (Belum Ada Kunci API Aktif)';
     pill.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-amber-100 text-amber-900 border border-amber-300';
   }
 
+  // Persistence & Deploy-Proof Diagnostic Banner
+  const pBanner = document.getElementById('ai-persistence-banner');
+  if (pBanner) {
+    if (pInfo.undecryptableCount > 0) {
+      pBanner.className = 'p-3 rounded-xl text-[11px] border leading-relaxed bg-red-50 border-red-300 text-secondary';
+      pBanner.innerHTML = '<strong>⚠ Perhatian: Kunci Vault Tidak Dapat Didekripsi.</strong> Kunci enkripsi server berubah saat redeploy/restart sehingga kunci lama tidak bisa dibaca. Hapus kunci bertanda merah lalu simpan ulang, <strong>dan</strong> sangat disarankan memasang <code>ANTHROPIC_API_KEY</code> (serta <code>ICOACH_SECRET_KEY</code>) di menu <em>Environment Variables</em> hosting agar permanen.';
+      pBanner.classList.remove('hidden');
+    } else if (pInfo.deployProof) {
+      pBanner.className = 'p-3 rounded-xl text-[11px] border leading-relaxed bg-emerald-50 border-emerald-300 text-emerald-950';
+      pBanner.innerHTML = '<strong>✓ Tahan Redeploy (Deploy-Proof):</strong> Variabel lingkungan server <code>ANTHROPIC_API_KEY</code> aktif. API Key tidak akan pernah hilang meskipun server di-redeploy atau di-restart.';
+      pBanner.classList.remove('hidden');
+    } else if ((cfg.keys || []).length > 0) {
+      pBanner.className = 'p-3 rounded-xl text-[11px] border leading-relaxed bg-amber-50 border-amber-300 text-amber-950';
+      pBanner.innerHTML = '<strong>ℹ Tip Anti-Hilang Saat Redeploy:</strong> Kunci saat ini tersimpan terenkripsi di brankas lokal &amp; cermin persisten. Jika panel hosting (mis. Hostinger/Cloud) mereset folder saat deploy GitHub, tambahkan <code>ANTHROPIC_API_KEY</code> dan <code>ICOACH_SECRET_KEY</code> di <em>Environment Variables</em> hosting agar kunci 100% permanen.';
+      pBanner.classList.remove('hidden');
+    } else {
+      pBanner.classList.add('hidden');
+    }
+  }
+
   document.getElementById('ai-telemetry-cards').innerHTML = [
     { label: 'Sumber Kunci Aktif', val: aiState.source.toUpperCase(), sub: `${(cfg.keys || []).length} kunci di brankas` },
-    { label: 'Model Utama', val: cfg.model || 'claude-sonnet-4-5', sub: `Max ${cfg.maxTokens || 700} tokens` },
+    { label: 'Model Utama', val: cfg.model || 'claude-sonnet-4-5', sub: `Max ${cfg.maxTokens || 1000} tokens` },
     { label: 'Panggilan Bulan Ini', val: `${u.month.calls || 0} Sesi`, sub: `OK: ${u.month.ok || 0} • Ekstraktif: ${u.month.extractive || 0}` },
     { label: 'Pemakaian Token', val: `${((u.month.inTok || 0) + (u.month.outTok || 0)).toLocaleString()} tok`, sub: `In: ${u.month.inTok || 0} • Out: ${u.month.outTok || 0}` },
     { label: 'Estimasi Biaya Bulan Ini', val: `$${u.month.costUsd || 0}`, sub: cfg.monthlyBudgetUsd > 0 ? `Batas: $${cfg.monthlyBudgetUsd}` : 'Tanpa batas anggaran' }
@@ -3269,11 +3293,11 @@ async function loadAiDashboard() {
   // Keys list
   const kBox = document.getElementById('ai-keys-list');
   const rows = (cfg.keys || []).map((k, idx) => `
-    <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-surface border border-outline-variant/40 text-xs">
+    <div class="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl ${k.decryptable === false ? 'bg-red-50 border-red-300' : 'bg-surface border-outline-variant/40'} border text-xs">
       <div class="space-y-0.5">
         <div class="flex items-center gap-2">
           <span class="font-bold text-primary">${esc(k.label)}</span>
-          ${idx === 0 && !k.disabled ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded ring-badge-0">UTAMA</span>' : ''}
+          ${k.decryptable === false ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 text-secondary font-bold">✕ TIDAK BISA DIDEKRIPSI — SIMPAN ULANG</span>' : (idx === 0 && !k.disabled ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded ring-badge-0">UTAMA</span>' : '')}
           ${k.disabled ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 text-secondary">NONAKTIF</span>' : ''}
         </div>
         <div class="font-mono text-[11px] text-outline">Token: ${esc(k.hint)} • Status: ${esc(k.lastStatus || 'belum diuji')}</div>
@@ -3287,16 +3311,16 @@ async function loadAiDashboard() {
     </div>
   `);
   if (aiState.envKeyPresent) {
-    rows.push(`<div class="p-3 rounded-xl bg-surface border border-outline-variant/40 text-xs flex items-center justify-between">
-      <div><strong>Variabel Lingkungan Server (ANTHROPIC_API_KEY)</strong><div class="text-[11px] text-outline">Aktif sebagai cadangan otomatis</div></div>
-      <button onclick="testClaudeConnection('env')" class="px-2.5 py-1 rounded bg-surface-container text-primary font-semibold">Tes Env Key</button>
+    rows.push(`<div class="p-3 rounded-xl bg-emerald-50/60 border border-emerald-300 text-xs flex items-center justify-between">
+      <div><strong>Variabel Lingkungan Server (ANTHROPIC_API_KEY)</strong><div class="text-[11px] text-emerald-900">Aktif permanen &amp; tahan redeploy</div></div>
+      <button onclick="testClaudeConnection('env')" class="px-2.5 py-1 rounded bg-white border border-emerald-300 text-emerald-950 font-semibold">Tes Env Key</button>
     </div>`);
   }
-  kBox.innerHTML = rows.join('') || '<div class="text-xs text-outline p-3 bg-surface rounded-xl border border-dashed border-outline-variant">Belum ada API Token Claude yang disimpan. Masukkan token `sk-ant-...` di atas untuk mengaktifkan generasi Claude AI.</div>';
+  kBox.innerHTML = rows.join('') || '<div class="text-xs text-outline p-3 bg-surface rounded-xl border border-dashed border-outline-variant">Belum ada API Token Claude yang disimpan. Masukkan token `sk-ant-...` di atas lalu klik + Simpan Kunci (atau pasang ANTHROPIC_API_KEY di Environment Variables server).</div>';
 
   // Form fields
   document.getElementById('ai-enabled-toggle').checked = cfg.enabled !== false;
-  const defModel = cfg.model || 'claude-sonnet-5-5';
+  const defModel = cfg.model || 'claude-sonnet-4-5';
   document.getElementById('ai-model-default').value = defModel;
 
   // Dynamically populate model datalist & preset select with all live models from Anthropic
@@ -3330,12 +3354,12 @@ async function loadAiDashboard() {
   document.getElementById('ai-model-r1').value = (cfg.ringModels && cfg.ringModels[1]) || '';
   document.getElementById('ai-model-r2').value = (cfg.ringModels && cfg.ringModels[2]) || '';
   document.getElementById('ai-model-r3').value = (cfg.ringModels && cfg.ringModels[3]) || '';
-  document.getElementById('ai-max-tokens').value = cfg.maxTokens || 700;
-  document.getElementById('ai-temperature').value = cfg.temperature ?? 0.25;
+  document.getElementById('ai-max-tokens').value = cfg.maxTokens || 1000;
+  document.getElementById('ai-temperature').value = cfg.temperature ?? 0.45;
   const topKEl = document.getElementById('ai-top-k-docs');
-  if (topKEl) topKEl.value = cfg.topKDocs || 5;
+  if (topKEl) topKEl.value = cfg.topKDocs || 6;
   const antiHallEl = document.getElementById('ai-anti-hallucination');
-  if (antiHallEl) antiHallEl.value = cfg.antiHallucinationMode || 'strict';
+  if (antiHallEl) antiHallEl.value = cfg.antiHallucinationMode || 'guided';
   const respStyleEl = document.getElementById('ai-response-style');
   if (respStyleEl) respStyleEl.value = cfg.responseStyle || 'concise_socratic';
   const citModeEl = document.getElementById('ai-citation-mode');
@@ -3358,14 +3382,31 @@ async function loadAiDashboard() {
   `).join('') || '<div class="text-outline">Belum ada panggilan tercatat.</div>';
 }
 
-function restoreDefaultAiDosDonts() {
+function applyOptimalRing3Preset() {
+  const antiHallEl = document.getElementById('ai-anti-hallucination');
+  const tempEl = document.getElementById('ai-temperature');
+  const maxTokEl = document.getElementById('ai-max-tokens');
+  const topKEl = document.getElementById('ai-top-k-docs');
+  const respStyleEl = document.getElementById('ai-response-style');
+  const citModeEl = document.getElementById('ai-citation-mode');
+  if (antiHallEl) antiHallEl.value = 'guided';
+  if (tempEl) tempEl.value = 0.45;
+  if (maxTokEl) maxTokEl.value = 1000;
+  if (topKEl) topKEl.value = 6;
+  if (respStyleEl) respStyleEl.value = 'concise_socratic';
+  if (citModeEl) citModeEl.value = 'natural';
+  restoreDefaultAiDosDonts(true);
+  toast('Setelan Optimal Ring 3 (Guided Leadership, Temp 0.45, Max 1000 tok) diterapkan! Klik "Simpan Seluruh Konfigurasi" untuk mengaktifkan.');
+}
+
+function restoreDefaultAiDosDonts(silent = false) {
   const defaultDos = (aiState && aiState.defaults && aiState.defaults.dosList) || (aiState && aiState.defaultDosList) || '';
   const defaultDonts = (aiState && aiState.defaults && aiState.defaults.dontsList) || (aiState && aiState.defaultDontsList) || '';
   const dosEl = document.getElementById('ai-dos-list');
   const dontsEl = document.getElementById('ai-donts-list');
   if (dosEl && defaultDos) dosEl.value = defaultDos;
   if (dontsEl && defaultDonts) dontsEl.value = defaultDonts;
-  toast("Daftar Do's & Don'ts dikembalikan ke rekomendasi standar Digital Twin. Klik 'Simpan' untuk menerapkan.");
+  if (!silent) toast("Daftar Do's & Don'ts dikembalikan ke rekomendasi standar Digital Twin. Klik 'Simpan' untuk menerapkan.");
 }
 
 async function addClaudeKey() {
@@ -3411,12 +3452,25 @@ async function testClaudeConnection(id = '') {
     box.textContent = `✓ KONEKSI BERHASIL (${r.data.latencyMs} ms) • ${models.length} model Claude tersedia: ${models.slice(0, 5).join(', ')}`;
   } else {
     box.className = 'p-3 rounded-xl text-xs font-mono border bg-red-50 border-red-300 text-secondary';
-    box.textContent = `✕ Koneksi gagal: ${(r.data && r.data.error) || 'Periksa kembali API key Anda.'}`;
+    box.textContent = `✕ Koneksi gagal: ${(r.data && (r.data.detail || r.data.error)) || 'Periksa kembali API key Anda.'}`;
   }
-  loadAiDashboard();
+  await loadAiDashboard();
 }
 
 async function saveAiConfig() {
+  // UX safeguard: if user pasted a new Claude API key into the input box but forgot to click "+ Simpan Kunci", save it automatically first!
+  const pendingKeyEl = document.getElementById('ai-new-key-val');
+  const pendingKey = pendingKeyEl ? pendingKeyEl.value.trim() : '';
+  if (pendingKey.length > 0) {
+    if (pendingKey.length < 20 || /\s/.test(pendingKey)) {
+      return toast('Format API Token Claude di kotak brankas tidak valid (minimal 20 karakter tanpa spasi). Perbaiki atau kosongkan sebelum menyimpan.', true);
+    }
+    const label = (document.getElementById('ai-new-key-label')?.value || '').trim() || 'Kunci Claude Utama';
+    const addRes = await api('POST', '/admin/api/ai/keys/add', { label, key: pendingKey, primary: true });
+    if (!addRes.ok) return toast('Gagal menyimpan API Token Claude ke brankas.', true);
+    if (pendingKeyEl) pendingKeyEl.value = '';
+  }
+
   const r = await api('POST', '/admin/api/ai/config', {
     enabled: document.getElementById('ai-enabled-toggle').checked,
     model: document.getElementById('ai-model-default').value.trim(),
@@ -3427,10 +3481,10 @@ async function saveAiConfig() {
       2: document.getElementById('ai-model-r2').value.trim(),
       3: document.getElementById('ai-model-r3').value.trim()
     },
-    maxTokens: Number(document.getElementById('ai-max-tokens').value || 700),
+    maxTokens: Number(document.getElementById('ai-max-tokens').value || 1000),
     temperature: document.getElementById('ai-temperature').value,
-    topKDocs: Number(document.getElementById('ai-top-k-docs')?.value || 5),
-    antiHallucinationMode: document.getElementById('ai-anti-hallucination')?.value || 'strict',
+    topKDocs: Number(document.getElementById('ai-top-k-docs')?.value || 6),
+    antiHallucinationMode: document.getElementById('ai-anti-hallucination')?.value || 'guided',
     responseStyle: document.getElementById('ai-response-style')?.value || 'concise_socratic',
     citationMode: document.getElementById('ai-citation-mode')?.value || 'natural',
     dosList: document.getElementById('ai-dos-list')?.value || '',
@@ -3454,12 +3508,16 @@ async function runAiPlayground() {
   const r = await api('POST', '/admin/api/ai/playground', { ring, lang, message });
   if (!r.ok) { out.textContent = 'Gagal menjalankan simulasi.'; return; }
   const d = r.data;
+  const diagHtml = d.mode === 'extractive' && d.reason
+    ? `<div class="p-2 rounded bg-amber-50 border border-amber-300 text-amber-950 text-[11px] font-mono">⚠ Fallback Ekstraktif (${esc(d.reason)})${d.detail ? ' — ' + esc(d.detail) : ''}</div>`
+    : '';
   out.innerHTML = `
     <div class="flex items-center justify-between text-[11px] font-mono text-outline border-b pb-1.5">
       <span>Ring ${ring} • Mode: <strong>${esc(d.mode)}</strong> ${d.model ? '(' + esc(d.model) + ')' : ''}</span>
       <span>${d.totalMs} ms • Outcome: ${esc(d.outcome)}</span>
     </div>
-    <div class="font-serif text-sm text-primary leading-relaxed py-1">${esc(d.text)}</div>
+    ${diagHtml}
+    <div class="font-serif text-sm text-primary leading-relaxed py-1 whitespace-pre-wrap">${esc(d.text)}</div>
     <div class="text-[11px] font-mono text-outline">Sumber Dokumen: ${esc((d.sources || []).join(', ') || 'Tidak ada (Refusal)')}</div>
   `;
   loadAiDashboard();

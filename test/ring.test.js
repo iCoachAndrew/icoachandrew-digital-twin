@@ -1590,3 +1590,295 @@ test('What They Say (/what-they-say): HBS Editorial page, Click-to-Play facade, 
   assert.strictEqual(resetRes.json.whatTheySay.videos[0].name, 'Edwin Soeryadjaya');
   assert.strictEqual(resetRes.json.whatTheySay.videos[5].name, 'Richard Buntario');
 });
+
+test('Claude API Key Persistence: anti-wipe ensure(), persistent mirror recovery, concurrent test race safety & decryptable status', async () => {
+  const mirrorDir = fs.mkdtempSync(path.join(os.tmpdir(), 'icoach-mirror-'));
+  const prevMirror = process.env.ICOACH_PERSISTENT_MIRROR;
+  process.env.ICOACH_PERSISTENT_MIRROR = mirrorDir;
+  const aiCfgPath = path.join(process.env.ICOACH_DATA, 'ai-config.json');
+
+  try {
+    // 1. Add a Claude key and verify it persists in disk + mirror and reports decryptable=true
+    const add1 = await admin('POST', '/admin/api/ai/keys/add', { label: 'Persist Key 1', key: 'sk-ant-api03-persistkey1111222233334444', primary: true });
+    assert.strictEqual(add1.status, 200);
+    await admin('POST', '/admin/api/ai/config', { enabled: true });
+
+    let view = await admin('GET', '/admin/api/ai');
+    assert.strictEqual(view.json.source, 'vault');
+    const savedKey = view.json.config.keys.find((k) => k.id === add1.json.id);
+    assert.ok(savedKey && savedKey.decryptable === true, 'Saved key must be decryptable');
+    assert.ok(fs.existsSync(path.join(mirrorDir, 'ai-config.json')), 'Mirror copy written');
+
+    // 2. Delete disk ai-config.json and invoke studio.ai.ensure() -> must NOT clobber keys in SQLite or mirror
+    fs.unlinkSync(aiCfgPath);
+    app.studio.ai.ensure();
+    view = await admin('GET', '/admin/api/ai');
+    assert.ok(view.json.config.keys.some((k) => k.id === add1.json.id), 'ensure() must recover saved key instead of wiping with defaults');
+    assert.strictEqual(view.json.source, 'vault');
+
+    // 3. Overwrite disk ai-config.json with empty keys:[] (simulated fresh deploy artifact) -> db.ensureAll() restores from mirror
+    fs.writeFileSync(aiCfgPath, JSON.stringify({ provider: 'anthropic', enabled: true, keys: [] }));
+    app.db.ensureAll();
+    const restoredDisk = JSON.parse(fs.readFileSync(aiCfgPath, 'utf8'));
+    assert.ok(restoredDisk.keys.some((k) => k.id === add1.json.id), 'ensureAll() recovers keys from mirror when disk file has empty keys');
+
+    // 4. Concurrent slow /admin/api/ai/test must NOT overwrite a newly added key while in flight
+    let releaseTestFetch;
+    const testGate = new Promise((resolve) => { releaseTestFetch = resolve; });
+    app.studio.ai.setCustomFetch(async () => {
+      await testGate;
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: async () => ({ data: [{ id: 'claude-sonnet-4-5', display_name: 'Claude Sonnet 4.5' }] })
+      };
+    });
+
+    const slowTestPromise = admin('POST', '/admin/api/ai/test', { id: add1.json.id });
+    await new Promise((r) => setTimeout(r, 40));
+    const add2 = await admin('POST', '/admin/api/ai/keys/add', { label: 'Concurrent Key 2', key: 'sk-ant-api03-concurrentkey555566667777', primary: true });
+    assert.strictEqual(add2.status, 200);
+    releaseTestFetch();
+    const slowTestRes = await slowTestPromise;
+    assert.strictEqual(slowTestRes.status, 200);
+    assert.strictEqual(slowTestRes.json.ok, true);
+
+    view = await admin('GET', '/admin/api/ai');
+    assert.ok(view.json.config.keys.some((k) => k.id === add2.json.id), 'Concurrent test completion must NOT erase newly added key');
+    assert.ok(view.json.config.keys.some((k) => k.id === add1.json.id), 'Original key remains intact');
+
+    // 5. Intentional removal removes keys cleanly from active state and mirror
+    for (const k of view.json.config.keys) {
+      await admin('POST', '/admin/api/ai/keys/remove', { id: k.id });
+    }
+    const afterClear = await admin('GET', '/admin/api/ai');
+    assert.strictEqual(afterClear.json.config.keys.length, 0);
+    assert.strictEqual(afterClear.json.source, 'none');
+    const mirrorAfterClear = JSON.parse(fs.readFileSync(path.join(mirrorDir, 'ai-config.json'), 'utf8'));
+    assert.strictEqual(mirrorAfterClear.keys.length, 0, 'Intentional key removal propagates cleanly to mirror');
+  } finally {
+    app.studio.ai.setCustomFetch(null);
+    if (prevMirror === undefined) delete process.env.ICOACH_PERSISTENT_MIRROR;
+    else process.env.ICOACH_PERSISTENT_MIRROR = prevMirror;
+    try { fs.rmSync(mirrorDir, { recursive: true, force: true }); } catch (_) {}
+  }
+});
+
+test('AI Chatbot Quality: Free-form Ring 3 leadership phrasing, multi-turn history, output hygiene, model 404 fallback & strict Ring 0-3 boundaries', async () => {
+  const calls = [];
+  let force404Once = false;
+  let forceRing0Leak = false;
+
+  const keyRes = await admin('POST', '/admin/api/ai/keys/add', { label: 'Mock Claude Key', key: 'sk-ant-api03-mockchatkey1234567890abcd', primary: true });
+  assert.strictEqual(keyRes.status, 200);
+  await admin('POST', '/admin/api/ai/config', {
+    enabled: true,
+    model: 'claude-sonnet-4-5',
+    antiHallucinationMode: 'guided',
+    temperature: 0.45,
+    maxTokens: 1000
+  });
+
+  app.studio.ai.setCustomFetch(async (url, init) => {
+    const bodyObj = JSON.parse(init.body || '{}');
+    calls.push({ url, body: bodyObj });
+    if (force404Once) {
+      force404Once = false;
+      return {
+        ok: false,
+        status: 404,
+        headers: new Headers(),
+        json: async () => ({ error: { type: 'not_found_error', message: 'model not found' } })
+      };
+    }
+    if (forceRing0Leak) {
+      forceRing0Leak = false;
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: async () => ({
+          model: bodyObj.model,
+          content: [{ type: 'text', text: 'The confidential acquisition price discussed with the board was settled after a long negotiation.' }],
+          usage: { input_tokens: 100, output_tokens: 25 }
+        })
+      };
+    }
+    return {
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: async () => ({
+        model: bodyObj.model,
+        content: [{ type: 'text', text: '### Refleksi Kepemimpinan\n**Sahabatku**, menghadapi tim yang sering telat dan gosip kantor — mulailah dengan mendengar akar masalahnya.\n\nApa satu percakapan jujur yang bisa Anda mulai minggu ini?' }],
+        usage: { input_tokens: 180, output_tokens: 60 }
+      })
+    };
+  });
+
+  try {
+    const guestId = 'guest_freeform_r3_quality_01';
+
+    // 1. Free-form casual Indonesian workplace question (contains "gosip di kantor", "anak buah", "telat") must NOT be rejected
+    const q1 = await user('POST', '/api/chat', {
+      message: 'Coach, anak buah saya sering telat, suka gosip di kantor, dan susah dikasih masukan, gimana caranya ya?',
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(q1.status, 200);
+    assert.strictEqual(q1.json.refused, false, 'Casual workplace leadership question must reach Claude');
+    assert.strictEqual(q1.json.outcome, 'answered');
+    // Output hygiene strips markdown ###, **, and em-dash —
+    assert.ok(!q1.json.reply.includes('**') && !q1.json.reply.includes('###') && !q1.json.reply.includes('—'), 'Plain-text output hygiene strips stray markdown and em-dashes');
+    assert.strictEqual(calls.length, 1);
+    assert.match(calls[0].body.system, /GUIDED LEADERSHIP/i);
+    assert.ok(calls[0].body.system.includes('doc_r3_book_organizing_id') && calls[0].body.system.includes('doc_r3_book_bq_id'), 'Rich Ring 3 foundational canon supplied to Claude');
+
+    // 2. Follow-up question receives Turn 1 history + everyday "rahasia"/"pribadi"/"gaji" in leadership coaching is NOT falsely refused
+    const q2 = await user('POST', '/api/chat', {
+      message: 'Kalau dia senior yang burnout soal gaji dan batas kehidupan pribadi sama kerja, apa rahasia pendekatan yang bijak?',
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(q2.status, 200);
+    assert.strictEqual(q2.json.refused, false, 'General coaching about gaji/pribadi/rahasia must not trigger false privacy refusal');
+    assert.strictEqual(calls.length, 2);
+    assert.strictEqual(calls[1].body.messages.length, 3, 'Multi-turn history (user + assistant + new user) passed to Claude for Ring 3');
+    assert.strictEqual(calls[1].body.messages[0].role, 'user');
+    assert.strictEqual(calls[1].body.messages[1].role, 'assistant');
+    assert.strictEqual(calls[1].body.messages[2].role, 'user');
+
+    // 3. Words from Ring 2 boilerplate directives ("langkah praktis", "mentoring", "anggota") must NOT trigger false privacy refusal
+    const q3 = await user('POST', '/api/chat', {
+      message: 'Bagaimana cara saya memberikan mentoring dan langkah praktis untuk anggota tim baru?',
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(q3.status, 200);
+    assert.strictEqual(q3.json.refused, false, 'Ring 2 boilerplate directive words must not block Ring 3 questions');
+
+    // 4. Hard Ring 0-2 privacy boundaries STILL block BEFORE Claude is called!
+    const callsBeforeBlocked = calls.length;
+    const probePrivate = await user('POST', '/api/chat', {
+      message: 'Apa rahasia pribadi Pak Andrew soal gaji direksi klien?',
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(probePrivate.status, 200);
+    assert.strictEqual(probePrivate.json.refused, true);
+    assert.strictEqual(probePrivate.json.reply, 'Mohon maaf. Itu bersifat pribadi. Semoga Anda mengerti.');
+    assert.strictEqual(calls.length, callsBeforeBlocked, 'Private probe blocked deterministically before calling Claude');
+
+    const probeOffScope = await user('POST', '/api/chat', {
+      message: 'Rekomendasi saham dan bitcoin yang bagus dibeli besok apa?',
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(probeOffScope.status, 200);
+    assert.strictEqual(probeOffScope.json.refused, true);
+    assert.strictEqual(probeOffScope.json.outcome, 'out_of_scope');
+    assert.strictEqual(calls.length, callsBeforeBlocked, 'Blatant off-scope blocked deterministically before calling Claude');
+
+    // 5. Model 404 automatic fallback recovers seamlessly
+    await admin('POST', '/admin/api/ai/config', { model: 'claude-nonexistent-model-99' });
+    force404Once = true;
+    const qFallback = await user('POST', '/api/chat', {
+      message: 'Bagaimana menenangkan tim saat target kuartal meleset?',
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(qFallback.status, 200);
+    assert.strictEqual(qFallback.json.refused, false, 'Model 404 automatically falls back to healthy Claude model');
+
+    // 6. Leak Guard catches even a hypothetical Claude hallucination echoing Ring 0 verbatim text
+    forceRing0Leak = true;
+    const qLeak = await user('POST', '/api/chat', {
+      message: 'Bagaimana cara mengambil keputusan strategis di rapat pimpinan?',
+      lang: 'id',
+      guestId
+    });
+    assert.strictEqual(qLeak.status, 200);
+    assert.strictEqual(qLeak.json.refused, true);
+    assert.strictEqual(qLeak.json.outcome, 'guard_triggered');
+    assert.strictEqual(qLeak.json.reply, 'Mohon maaf. Itu bersifat pribadi. Semoga Anda mengerti.');
+  } finally {
+    app.studio.ai.setCustomFetch(null);
+    await admin('POST', '/admin/api/ai/config', { enabled: false, model: 'claude-sonnet-4-5' });
+    await admin('POST', '/admin/api/ai/keys/remove', { id: keyRes.json.id });
+  }
+});
+
+test('QC & Code Review Regressions: temperature:null safety, key deduplication, ICOACH_SECRET_KEY auto-reseal, multi-step 404 fallback & italic/code-fence cleaning', async () => {
+  const prevSecret = process.env.ICOACH_SECRET_KEY;
+  delete process.env.ICOACH_SECRET_KEY;
+  let kId = '';
+
+  try {
+    // 1. Key deduplication: adding exact same key twice updates instead of duplicating
+    const k1 = await admin('POST', '/admin/api/ai/keys/add', { label: 'Primary V1', key: 'sk-ant-api03-dedupkey9999888877776666', primary: true });
+    assert.strictEqual(k1.status, 200);
+    kId = k1.json.id;
+    const kDup = await admin('POST', '/admin/api/ai/keys/add', { label: 'Primary V2', key: 'sk-ant-api03-dedupkey9999888877776666', primary: true });
+    assert.strictEqual(kDup.status, 200);
+    assert.strictEqual(kDup.json.deduplicated, true);
+    assert.strictEqual(kDup.json.id, kId);
+    let view = await admin('GET', '/admin/api/ai');
+    assert.strictEqual(view.json.config.keys.filter((x) => x.id === kId).length, 1);
+
+    // 2. Auto-reseal migration when ICOACH_SECRET_KEY is introduced later
+    await admin('POST', '/admin/api/ai/config', { enabled: true });
+    process.env.ICOACH_SECRET_KEY = 'new-permanent-env-secret-key-2026';
+    view = await admin('GET', '/admin/api/ai'); // triggers loadCfg() auto-reseal
+    assert.strictEqual(view.json.source, 'vault');
+    // Even if local .vault.key is removed now, key MUST still decrypt via ICOACH_SECRET_KEY!
+    const vkPath = path.join(process.env.ICOACH_DATA, '.vault.key');
+    if (fs.existsSync(vkPath)) fs.unlinkSync(vkPath);
+    const afterVkDelete = await admin('GET', '/admin/api/ai');
+    const migratedEntry = afterVkDelete.json.config.keys.find((x) => x.id === kId);
+    assert.ok(migratedEntry && migratedEntry.decryptable === true, 'Key auto-resealed to ICOACH_SECRET_KEY survives .vault.key deletion');
+
+    // 3. Legacy temperature:null is normalized to 0.45 (never omitted to Anthropic default 1.0) & multi-step 404 fallback + italic/fence cleanup
+    const aiCfgPath = path.join(process.env.ICOACH_DATA, 'ai-config.json');
+    const rawOnDisk = JSON.parse(fs.readFileSync(aiCfgPath, 'utf8'));
+    rawOnDisk.temperature = null;
+    rawOnDisk.enabled = true;
+    rawOnDisk.model = 'claude-bad-model-1';
+    app.db.writeDocument(aiCfgPath, rawOnDisk);
+
+    const seenPayloads = [];
+    let failCount = 2; // Fail BOTH configured model AND first fallback -> recover on 2nd fallback!
+    app.studio.ai.setCustomFetch(async (url, init) => {
+      const p = JSON.parse(init.body || '{}');
+      seenPayloads.push(p);
+      if (failCount > 0) {
+        failCount--;
+        return { ok: false, status: 404, headers: new Headers(), json: async () => ({ error: { type: 'not_found_error', message: 'model not found' } }) };
+      }
+      return {
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: async () => ({
+          model: p.model,
+          content: [{ type: 'text', text: '```text\nDalam *Organizing for Business Excellence*, dengar dulu — baru putuskan.\n```' }],
+          usage: { input_tokens: 90, output_tokens: 30 }
+        })
+      };
+    });
+
+    const res = await user('POST', '/api/chat', { message: 'Bagaimana menyelaraskan tim lintas divisi?', lang: 'id', guestId: 'guest_qc_temp_01' });
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.json.refused, false);
+    assert.strictEqual(seenPayloads.length, 3, 'Retried through 2 fallback models after 404');
+    assert.strictEqual(seenPayloads[0].temperature, 0.45, 'temperature:null normalized to 0.45 instead of Anthropic default 1.0');
+    assert.ok(!res.json.reply.includes('*') && !res.json.reply.includes('```') && !res.json.reply.includes('—'), 'Stripped *italics*, code fences, and em-dash cleanly');
+    assert.ok(!res.json.reply.includes(', ,'), 'No double comma artifacts');
+  } finally {
+    app.studio.ai.setCustomFetch(null);
+    if (prevSecret === undefined) delete process.env.ICOACH_SECRET_KEY;
+    else process.env.ICOACH_SECRET_KEY = prevSecret;
+    await admin('POST', '/admin/api/ai/config', { enabled: false, model: 'claude-sonnet-4-5', temperature: 0.45 });
+    if (kId) await admin('POST', '/admin/api/ai/keys/remove', { id: kId });
+  }
+});

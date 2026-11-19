@@ -2059,9 +2059,9 @@
                 <div class="font-mono text-[11px] font-bold text-on-tertiary-container uppercase">Langkah 3: Parameter &amp; Anti-Halusinasi</div>
                 <div class="font-bold text-primary">Setelan Ideal Digital Twin</div>
                 <ul class="list-disc list-inside space-y-1 text-on-surface-variant text-[11px]">
-                  <li><strong>Temperature = <code>0.25</code>:</strong> Menjaga jawaban tetap faktual, konsisten, dan tidak mengarang di luar buku Pak Andrew.</li>
-                  <li><strong>Max Tokens = <code>700–900</code>:</strong> Menghasilkan 3–4 paragraf reflektif yang padat tanpa bertele-tele.</li>
-                  <li><strong>Anti-Halusinasi = <code>Strict Grounding</code>:</strong> Memaksa AI menolak dengan sopan jika ditanya gosip politik, prediksi saham, atau hal di luar dokumen <code>.md</code>.</li>
+                  <li><strong>Temperature = <code>0.45</code>:</strong> Keseimbangan terbaik — kreatif, hangat, dan kontekstual untuk pertanyaan bebas Ring 3 tanpa mengarang fakta.</li>
+                  <li><strong>Max Tokens = <code>900–1200</code>:</strong> Cukup untuk 2–4 paragraf reflektif Bahasa Indonesia/Inggris yang utuh tanpa terpotong.</li>
+                  <li><strong>Anti-Halusinasi = <code>Guided Leadership</code>:</strong> Nol halusinasi biografi/fakta, tetap cerdas menjawab variasi bahasa bebas seputar leadership &amp; menolak keras topik Ring 0–2 maupun di luar konteks.</li>
                 </ul>
               </div>
             </div>
@@ -2078,7 +2078,7 @@
               <div class="flex items-center justify-between">
                 <div>
                   <h3 class="font-serif text-lg font-bold text-primary">1. Brankas Kunci API Claude (Multi-Key AES-256-GCM)</h3>
-                  <p class="text-[11px] text-on-surface-variant">Simpan satu atau lebih kunci API Anthropic (otomatis dienkripsi &amp; mendukung rotasi kunci).</p>
+                  <p class="text-[11px] text-on-surface-variant">Simpan satu atau lebih kunci API Anthropic (otomatis dienkripsi, dicerminkan ke penyimpanan persisten &amp; mendukung <code>ANTHROPIC_API_KEY</code> env var).</p>
                 </div>
                 <label class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs font-bold cursor-pointer">
                   <input id="ai-enabled-toggle" type="checkbox"/> Aktifkan Mesin AI Claude
@@ -2089,6 +2089,7 @@
                 <input id="ai-new-key-val" type="password" placeholder="Tempel kode sk-ant-api03-... di sini" class="col-span-8 sm:col-span-5 border rounded-lg p-2 text-xs font-mono bg-white"/>
                 <button onclick="addClaudeKey()" class="col-span-4 sm:col-span-3 rounded-lg bg-primary text-white text-xs font-semibold py-2 cursor-pointer">+ Simpan Kunci</button>
               </div>
+              <div id="ai-persistence-banner" class="hidden p-3 rounded-xl text-[11px] border leading-relaxed"></div>
               <div id="ai-keys-list" class="space-y-2"></div>
               <div id="ai-test-result" class="hidden p-3 rounded-lg text-xs font-mono border"></div>
             </div>
@@ -2132,7 +2133,7 @@
                       <option value="claude-3-7-sonnet-latest">🧠 Claude 3.7 Sonnet — Penalaran Hibrida</option>
                       <option value="claude-3-5-sonnet-latest">🛡️ Claude 3.5 Sonnet — Versi Stabil</option>
                     </select>
-                    <input id="ai-model-default" list="claude-models-datalist" type="text" placeholder="claude-sonnet-5-5" class="sm:col-span-5 border rounded-lg p-2 font-mono text-xs bg-white"/>
+                    <input id="ai-model-default" list="claude-models-datalist" type="text" placeholder="claude-sonnet-4-5" class="sm:col-span-5 border rounded-lg p-2 font-mono text-xs bg-white"/>
                   </div>
                 </label>
               </div>
@@ -2151,28 +2152,28 @@
                 <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
                   <span class="font-bold text-primary flex items-center justify-between">
                     <span>📏 Panjang Maksimal Jawaban (Max Tokens)</span>
-                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 700–1000</span>
+                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 900–1200</span>
                   </span>
-                  <span class="block text-[11px] text-on-surface-variant">Batas panjang respons AI per satu pertanyaan (<code>700</code> token ≈ 3–4 paragraf nasihat eksekutif yang padat).</span>
-                  <input id="ai-max-tokens" type="number" step="50" min="150" max="4096" placeholder="700" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
+                  <span class="block text-[11px] text-on-surface-variant">Batas panjang respons AI per satu pertanyaan (<code>1000</code> token ≈ 3–4 paragraf nasihat eksekutif utuh tanpa terpotong).</span>
+                  <input id="ai-max-tokens" type="number" step="50" min="150" max="4096" placeholder="1000" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
                 </label>
 
                 <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
                   <span class="font-bold text-primary flex items-center justify-between">
-                    <span>🎯 Temperature (Akurasi vs Variasi)</span>
-                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 0.2 – 0.3</span>
+                    <span>🎯 Temperature (Akurasi vs Kreativitas)</span>
+                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 0.40 – 0.55</span>
                   </span>
-                  <span class="block text-[11px] text-on-surface-variant">Rentang <code>0.0</code> – <code>1.0</code>. Angka rendah (<code>0.25</code>) membuat AI sangat patuh pada dokumen <code>.md</code> &amp; bebas halusinasi.</span>
-                  <input id="ai-temperature" type="number" step="0.05" min="0" max="1" placeholder="0.25" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
+                  <span class="block text-[11px] text-on-surface-variant">Rentang <code>0.0</code> – <code>1.0</code>. Angka <code>0.45</code> menghasilkan coaching yang hangat, kreatif &amp; kontekstual namun tetap bebas halusinasi.</span>
+                  <input id="ai-temperature" type="number" step="0.05" min="0" max="1" placeholder="0.45" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
                 </label>
 
                 <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
                   <span class="font-bold text-primary flex items-center justify-between">
                     <span>📚 Jumlah Dokumen .MD per Tanya (Top-K)</span>
-                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 5 Dokumen</span>
+                    <span class="font-mono text-[10px] text-emerald-800">Ideal: 6 Dokumen</span>
                   </span>
                   <span class="block text-[11px] text-on-surface-variant">Jumlah karya/bab <code>.md</code> paling relevan yang dibaca AI setiap kali menjawab pertanyaan (<code>1</code>–<code>15</code>).</span>
-                  <input id="ai-top-k-docs" type="number" step="1" min="1" max="15" placeholder="5" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
+                  <input id="ai-top-k-docs" type="number" step="1" min="1" max="15" placeholder="6" class="w-full border rounded-lg p-2 font-mono text-xs bg-white mt-1"/>
                 </label>
               </div>
 
@@ -2213,18 +2214,23 @@
                   <h3 class="font-serif text-lg font-bold text-primary">3. Protokol Anti-Halusinasi, Do's &amp; Don'ts &amp; Gaya Jawaban</h3>
                   <p class="text-[11px] text-on-surface-variant">Pagar pembatas perilaku (*Guardrails*) agar Digital Twin selalu menjaga marwah, keaslian pemikiran, dan batas privasi Pak Andrew Tani.</p>
                 </div>
-                <button type="button" onclick="restoreDefaultAiDosDonts()" class="px-2.5 py-1 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-[11px] font-semibold text-primary cursor-pointer">
-                  ↺ Pulihkan Default Do's &amp; Don'ts
-                </button>
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <button type="button" onclick="applyOptimalRing3Preset()" class="px-2.5 py-1 rounded-lg border border-emerald-400 bg-emerald-50 hover:bg-emerald-100 text-[11px] font-bold text-emerald-950 cursor-pointer">
+                    ✨ Setelan Optimal Ring 3 (Kreatif &amp; Anti-Halusinasi)
+                  </button>
+                  <button type="button" onclick="restoreDefaultAiDosDonts()" class="px-2.5 py-1 rounded-lg border border-outline-variant bg-surface hover:bg-surface-container text-[11px] font-semibold text-primary cursor-pointer">
+                    ↺ Pulihkan Default Do's &amp; Don'ts
+                  </button>
+                </div>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <label class="p-3 rounded-xl bg-surface border border-outline-variant/40 space-y-1 block">
                   <span class="font-bold text-primary block">🛡️ Mode Protokol Anti-Halusinasi</span>
-                  <span class="block text-[10px] text-on-surface-variant">Sikap AI saat ditanya topik di luar arsip buku/dokumen <code>.md</code>.</span>
+                  <span class="block text-[10px] text-on-surface-variant">Sikap AI menghadapi pertanyaan bebas seputar leadership vs topik di luar konteks.</span>
                   <select id="ai-anti-hallucination" class="w-full border rounded-lg p-2 bg-white font-semibold text-primary text-xs mt-1">
-                    <option value="strict">Strict Grounding (Ketat — Wajib Tolak Jika Di Luar Dokumen)</option>
-                    <option value="guided">Guided Reflective (Terpandu — Refleksi Prinsip Umum)</option>
+                    <option value="guided">Guided Leadership (Rekomendasi Utama — Kreatif Kontekstual &amp; Nol Halusinasi Fakta)</option>
+                    <option value="strict">Strict Grounding (Ketat — Hanya Jawab Persis Isi Dokumen .md)</option>
                   </select>
                 </label>
 
@@ -2315,7 +2321,7 @@
               </p>
               <ol class="list-decimal list-inside space-y-1.5 text-[11px] text-on-surface leading-relaxed">
                 <li><strong>Gunakan Format <code>.md</code> Terstruktur per Bab/Topik:</strong> Mesin kini otomatis mengubah setiap file Drive yang di-assign menjadi file <code>.md</code> ringan dengan <em>YAML Frontmatter</em> (Ring, Judul, Ringkasan, Isi). Di Google Drive, pisahkan buku panjang menjadi per bab/topik agar pengambilan konteks <em>Top-K</em> jauh lebih tajam.</li>
-                <li><strong>Setel <code>Temperature = 0.20 – 0.30</code> &amp; <code>Strict Grounding</code>:</strong> Tokoh eksekutif tidak boleh terlihat "mengarang bebas". Dengan suhu <code>0.25</code> dan mode <em>Strict</em>, Twin hanya berbicara dari karya asli Pak Andrew dan berani berkata <em>"Topik tersebut berada di luar fokus literatur saya"</em> saat dipancing isu politik/spekulasi.</li>
+                <li><strong>Setel <code>Temperature = 0.40 – 0.55</code> &amp; <code>Guided Leadership</code>:</strong> Keseimbangan ideal agar Digital Twin luwes, kreatif, dan kontekstual menjawab variasi bahasa bebas seputar leadership Ring 3, namun tetap nol halusinasi fakta dan menolak tegas isu politik/saham maupun arsip privat Ring 0–2.</li>
                 <li><strong>Strategi Dual-Model (Hemat &amp; Tajam):</strong> Gunakan <code>claude-sonnet-4-5</code> sebagai Model Utama (Ring 2 &amp; 3), lalu isi <code>claude-opus-4-1</code> khusus pada kotak <strong>Model Ring 0 &amp; Ring 1</strong> untuk diskusi tingkat dewan direksi.</li>
                 <li><strong>Pisahkan File Non-Materi ke Status <code>Irrelevant</code>:</strong> Jika folder Google Drive berisi file jadwal, poster, atau draf kasar, tandai sebagai <strong>Irrelevant</strong> di Penjelajah Drive agar tidak mengotori indeks pencarian FTS5 AI.</li>
                 <li><strong>Audit Berkala via Tombol "Lihat System Prompt":</strong> Setiap kali Anda menambah <em>Do's &amp; Don'ts</em> atau <em>Memori Persona</em>, klik tombol <strong>"🔍 Lihat System Prompt"</strong> di atas untuk memastikan instruksi akhir yang diterima Claude tidak saling bertentangan.</li>
