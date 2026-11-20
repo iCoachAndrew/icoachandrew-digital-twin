@@ -1882,3 +1882,25 @@ test('QC & Code Review Regressions: temperature:null safety, key deduplication, 
     if (kId) await admin('POST', '/admin/api/ai/keys/remove', { id: kId });
   }
 });
+
+test('Official restored iCoachAndrew avatar served on user & admin servers and replaces old AI-generated portrait across all pages', async () => {
+  // 1. Served cleanly on both user & admin servers with JPEG magic bytes
+  for (const [base, opts] of [[U, {}], [A, { headers: { cookie } }]]) {
+    const r = await fetch(base + '/avatar-icoachandrew.jpg', opts);
+    assert.strictEqual(r.status, 200);
+    assert.strictEqual(r.headers.get('content-type'), 'image/jpeg');
+    const buf = Buffer.from(await r.arrayBuffer());
+    assert.ok(buf.length > 20000, 'Avatar JPEG is non-empty');
+    assert.strictEqual(buf[0], 0xff);
+    assert.strictEqual(buf[1], 0xd8);
+    assert.strictEqual(buf[2], 0xff);
+  }
+
+  // 2. All public pages reference /avatar-icoachandrew.jpg and contain zero remnants of the old AI portrait URL
+  const oldAiUrlFragment = 'AB6AXuBe4pR3qDTdDEAWFtUTib0PQaQQVYNFJ';
+  for (const route of ['/', '/what-they-say', '/alternatif-1', '/alternatif-2']) {
+    const html = await (await fetch(U + route)).text();
+    assert.ok(html.includes('/avatar-icoachandrew.jpg'), `${route} renders official /avatar-icoachandrew.jpg`);
+    assert.ok(!html.includes(oldAiUrlFragment), `${route} must not contain old AI-generated portrait URL`);
+  }
+});

@@ -878,7 +878,7 @@ function sendFile(res, filePath, contentType = 'text/html; charset=utf-8', req =
   const baseHeaders = defaultSecurityHeaders(req);
   res.writeHead(200, {
     'content-type': contentType,
-    'cache-control': 'no-store',
+    'cache-control': contentType.startsWith('image/') ? 'public, max-age=86400' : 'no-store',
     ...baseHeaders
   });
   res.end(fs.readFileSync(filePath));
@@ -1032,6 +1032,12 @@ async function handleAdmin(req, res) {
     }
     if (req.method === 'GET' && pathname === '/cms-runtime.js') {
       return sendFile(res, path.join(PUBLIC_DIR, 'cms-runtime.js'), 'application/javascript; charset=utf-8', req);
+    }
+    if (req.method === 'GET' && pathname === '/avatar-icoachandrew.jpg') {
+      const avPath = fs.existsSync(path.join(PUBLIC_DIR, 'avatar-icoachandrew.jpg'))
+        ? path.join(PUBLIC_DIR, 'avatar-icoachandrew.jpg')
+        : path.join(__dirname, 'avatar-icoachandrew.jpg');
+      return sendFile(res, avPath, 'image/jpeg', req);
     }
     if (req.method === 'GET' && studio && studio.serveMedia(req, res, pathname)) {
       return;
@@ -1368,6 +1374,12 @@ const userServer = http.createServer(async (req, res) => {
         ? path.join(PUBLIC_DIR, 'cms-runtime.js')
         : path.join(__dirname, 'cms-runtime.js');
       return sendFile(res, cmsPath, 'application/javascript; charset=utf-8', req);
+    }
+    if (req.method === 'GET' && pathname === '/avatar-icoachandrew.jpg') {
+      const avPath = fs.existsSync(path.join(PUBLIC_DIR, 'avatar-icoachandrew.jpg'))
+        ? path.join(PUBLIC_DIR, 'avatar-icoachandrew.jpg')
+        : path.join(__dirname, 'avatar-icoachandrew.jpg');
+      return sendFile(res, avPath, 'image/jpeg', req);
     }
     if (req.method === 'GET' && studio && studio.serveMedia(req, res, pathname)) {
       return;
