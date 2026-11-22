@@ -10,6 +10,7 @@
   let selectedKey = null;
   let hoverEl = null;
   let studioMode = 'inspect'; // 'inspect' | 'navigate'
+  let receivedStudioDoc = false;
   const originals = new Map();
 
   function sanitizeHtml(raw) {
@@ -19,7 +20,7 @@
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
     const doc = new DOMParser().parseFromString('<body>' + str + '</body>', 'text/html');
-    const blockedTags = new Set(['script', 'iframe', 'object', 'embed', 'svg', 'math', 'style', 'link', 'meta', 'base', 'form', 'template', 'noscript']);
+    const blockedTags = new Set(['script', 'iframe', 'object', 'embed', 'applet', 'svg', 'math', 'style', 'link', 'meta', 'base', 'form', 'template', 'noscript', 'video', 'audio', 'source', 'marquee', 'input', 'textarea', 'select']);
     const walk = (node) => {
       for (const child of Array.from(node.childNodes)) {
         if (child.nodeType === 1) {
@@ -31,7 +32,7 @@
           for (const attr of Array.from(child.attributes)) {
             const name = attr.name.toLowerCase();
             const val = String(attr.value || '').trim();
-            if (name.startsWith('on') || name === 'srcdoc' || name === 'formaction') {
+            if (name.startsWith('on') || name === 'srcdoc' || name === 'formaction' || name === 'style' || name === 'srcset' || name === 'ping' || name === 'poster' || name === 'background') {
               child.removeAttribute(attr.name);
             } else if ((name === 'href' || name === 'src' || name === 'xlink:href' || name === 'action') && !isSafeHref(val)) {
               child.removeAttribute(attr.name);
@@ -123,6 +124,13 @@
         el.classList.remove('hidden');
         el.removeAttribute('data-cms-hidden');
       }
+      el.removeAttribute('data-cms-text-edited');
+      el.removeAttribute('data-cms-prompt');
+      const pBtn = el.closest && el.closest('button[data-prompt-chip], button[data-chamber-prompt]');
+      if (pBtn && pBtn !== el) {
+        pBtn.removeAttribute('data-cms-text-edited');
+        pBtn.removeAttribute('data-cms-prompt');
+      }
     }
     document.querySelectorAll('.book-buy-links, #footer-social-links').forEach((wrap) => {
       wrap.classList.remove('hidden');
@@ -166,10 +174,20 @@
         if (ph !== undefined) el.setAttribute('placeholder', ph);
       } else {
         const txt = pickI18n(entry.text, lang);
-        if (txt !== undefined && !el.querySelector('svg')) {
+        if (txt !== undefined && !isStructuralContainer(el)) {
           const origRec = originals.get(key);
           if (origRec) origRec.htmlModified = true;
-          el.innerHTML = sanitizeHtml(txt);
+          applyTextPreservingIcons(el, txt);
+          el.setAttribute('data-cms-text-edited', '1');
+          const pBtn = el.closest && el.closest('button[data-prompt-chip], button[data-chamber-prompt]');
+          if (pBtn && pBtn !== el) pBtn.setAttribute('data-cms-text-edited', '1');
+        }
+        const customPrompt = pickI18n(entry.prompt, lang);
+        if (customPrompt !== undefined && String(customPrompt).trim()) {
+          const cleanP = String(customPrompt).trim();
+          el.setAttribute('data-cms-prompt', cleanP);
+          const pBtn = el.closest && el.closest('button[data-prompt-chip], button[data-chamber-prompt]');
+          if (pBtn && pBtn !== el) pBtn.setAttribute('data-cms-prompt', cleanP);
         }
       }
 
@@ -694,9 +712,105 @@
     'wts-hero': 'What They Say — Judul & Deskripsi',
     'wts-videos': 'What They Say — Galeri Video',
     'wts-cta': 'What They Say — Ajakan Diskusi (CTA)',
+    'site-header': 'Baris Menu Atas (Header)',
+    'site-footer': 'Catatan Kaki (Bagian Bawah)',
+    'notice-banner': 'Pemberitahuan Resmi Digital Twin',
+    'wts-header': 'What They Say — Menu Atas',
+    'wts-footer': 'What They Say — Catatan Kaki',
     'footer': 'Catatan Kaki (Bagian Bawah)',
     'halaman': 'Bagian Atas / Navigasi'
   };
+
+  const STRUCTURAL_CHILD_SEL = 'section, form, input, textarea, select, img, h1, h2, h3, h4, h5, h6, p, ul, ol, nav, header, footer, article, aside, button, table, iframe';
+  function isStructuralContainer(el) {
+    if (!el || el.nodeType !== 1) return false;
+    const t = el.tagName;
+    if (['SECTION', 'HEADER', 'FOOTER', 'MAIN', 'NAV', 'FORM', 'ASIDE', 'ARTICLE', 'UL', 'OL', 'TABLE'].includes(t)) return true;
+    return Boolean(el.querySelector && el.querySelector(STRUCTURAL_CHILD_SEL));
+  }
+
+  const INLINE_ALLOWED_TAGS = new Set(['b', 'strong', 'i', 'em', 'u', 'br', 'span', 'a', 'small', 'sup', 'sub', 'mark', 's']);
+  function sanitizeInlineClient(raw) {
+    const clean = sanitizeHtml(raw);
+    if (typeof DOMParser === 'undefined') return clean;
+    const doc = new DOMParser().parseFromString('<body>' + clean + '</body>', 'text/html');
+    const stripNonInline = (node) => {
+      for (const child of Array.from(node.childNodes)) {
+        if (child.nodeType === 1) {
+          const tag = child.tagName.toLowerCase();
+          stripNonInline(child);
+          if (!INLINE_ALLOWED_TAGS.has(tag)) {
+            while (child.firstChild) node.insertBefore(child.firstChild, child);
+            child.remove();
+          }
+        }
+      }
+    };
+    stripNonInline(doc.body);
+    return doc.body.innerHTML;
+  }
+
+  function formatEditableHtml(raw) {
+    const str = String(raw ?? '');
+    if (!/<[a-z][\s\S]*>/i.test(str) && str.includes('\n')) {
+      return sanitizeInlineClient(str.replace(/\n/g, '<br>'));
+    }
+    return sanitizeInlineClient(str);
+  }
+
+  function applyTextPreservingIcons(el, txt) {
+    if (!el) return;
+    const safe = formatEditableHtml(txt);
+    const hasIcon = Boolean(el.querySelector('svg, .material-symbols-outlined'));
+    if (!hasIcon) {
+      el.innerHTML = safe;
+      return;
+    }
+    // Prefer updating an existing non-icon text span inside the element
+    const nonIconSpans = Array.from(el.children).filter(
+      (c) => c.tagName === 'SPAN' && !c.classList.contains('material-symbols-outlined') && !c.querySelector('svg, .material-symbols-outlined')
+    );
+    if (nonIconSpans.length === 1) {
+      nonIconSpans[0].innerHTML = safe;
+      return;
+    }
+    // Otherwise update/replace direct text nodes while keeping icons intact
+    const textNodes = Array.from(el.childNodes).filter((n) => n.nodeType === 3 && n.textContent.trim().length > 0);
+    if (textNodes.length > 0) {
+      textNodes[0].textContent = decodeHtmlToPlainText(safe);
+      for (let i = 1; i < textNodes.length; i++) textNodes[i].textContent = '';
+      return;
+    }
+    const labelSpan = el.querySelector('span[data-cms-label="1"]');
+    if (labelSpan) {
+      labelSpan.innerHTML = safe;
+      return;
+    }
+    const sp = document.createElement('span');
+    sp.setAttribute('data-cms-label', '1');
+    sp.innerHTML = safe;
+    el.appendChild(sp);
+  }
+
+  function getPromptButtonMeta(el, lang) {
+    if (!el) return { isPromptButton: false, defaultPrompt: '' };
+    const l = lang === 'en' ? 'en' : 'id';
+    const chipBtn = el.closest ? el.closest('button[data-prompt-chip]') : null;
+    if (chipBtn || (el.id && /^prompt-chip-(\d+)$/.test(el.id))) {
+      const idx = (chipBtn && chipBtn.getAttribute('data-prompt-chip')) || (el.id && el.id.replace('prompt-chip-', ''));
+      const map = window.SUGGESTED_PROMPTS || {};
+      const obj = map[idx] || map[Number(idx)];
+      return { isPromptButton: true, defaultPrompt: obj ? (obj[l] || obj.id || '') : '' };
+    }
+    const chBtn = el.closest ? el.closest('button[data-chamber-prompt]') : null;
+    if (chBtn || (el.id && /^chamber-prompt-(\d+)$/.test(el.id))) {
+      const idx = (chBtn && chBtn.getAttribute('data-chamber-prompt')) || (el.id && el.id.replace('chamber-prompt-', ''));
+      const map = window.CHAMBER_PROMPTS || {};
+      const obj = map[idx] || map[Number(idx)];
+      return { isPromptButton: true, defaultPrompt: obj ? (obj[l] || obj.id || '') : '' };
+    }
+    return { isPromptButton: false, defaultPrompt: '' };
+  }
 
   const ELEMENT_ID_LABELS = {
     'top-bar-left': 'Label Baris Atas (Header)',
@@ -709,6 +823,11 @@
     'prompt-chip-2': 'Tombol Pertanyaan Kilat 2',
     'prompt-chip-3': 'Tombol Pertanyaan Kilat 3',
     'prompt-chip-4': 'Tombol Pertanyaan Kilat 4',
+    'chamber-prompt-1': 'Tombol Studi Kasus Dewan 1',
+    'chamber-prompt-2': 'Tombol Studi Kasus Dewan 2',
+    'chamber-prompt-3': 'Tombol Studi Kasus Dewan 3',
+    'notice-label': 'Label Pemberitahuan Resmi',
+    'notice-body': 'Isi Pemberitahuan Resmi',
     'chat-welcome-header': 'Judul Sapaan Pembuka Chat',
     'chat-welcome-body': 'Isi Sapaan Pembuka iCoachAndrew',
     'chat-welcome-foot': 'Catatan Kaki Sapaan Chat',
@@ -760,8 +879,15 @@
   };
 
   function decodeHtmlToPlainText(rawHtml, fallbackEl) {
-    if (fallbackEl && typeof fallbackEl.innerText === 'string' && fallbackEl.children.length === 0) {
-      return fallbackEl.textContent.replace(/\s+/g, ' ').trim();
+    if (fallbackEl && fallbackEl.nodeType === 1) {
+      if (fallbackEl.children.length === 0) {
+        return (fallbackEl.textContent || '').replace(/\s+/g, ' ').trim();
+      }
+      if (fallbackEl.querySelector && fallbackEl.querySelector('svg, .material-symbols-outlined')) {
+        const clone = fallbackEl.cloneNode(true);
+        clone.querySelectorAll('svg, .material-symbols-outlined, script, style').forEach((n) => n.remove());
+        return (clone.textContent || '').replace(/\s+/g, ' ').trim();
+      }
     }
     const str = String(rawHtml ?? '')
       .replace(/<br\s*\/?>/gi, '\n')
@@ -881,7 +1007,18 @@
       if (!raw) return null;
       const img = raw.closest('img');
       if (img) return img;
+      // Clicking an icon inside a button/link should select the button/link (or its inner text span)
+      if (raw.closest && raw.closest('svg, .material-symbols-outlined')) {
+        const host = raw.closest('button, a, li, div');
+        if (host) raw = host;
+      }
       const leaf = raw.closest('h1,h2,h3,h4,h5,h6,p,span,a,button,li,blockquote,figcaption,label,input,textarea,div,section');
+      if (leaf && leaf.tagName === 'BUTTON') {
+        const innerSpan = leaf.querySelector(':scope > span[id^="prompt-chip-"], :scope > span[id]:not(.material-symbols-outlined)');
+        if (innerSpan && leaf.querySelectorAll(':scope > span:not(.material-symbols-outlined)').length === 1) {
+          return innerSpan;
+        }
+      }
       return leaf || raw;
     }
 
@@ -912,7 +1049,7 @@
     document.addEventListener('dblclick', (e) => {
       if (studioMode !== 'inspect') return;
       const t = pickBestTarget(e.target);
-      if (!t || ['IMG', 'INPUT', 'TEXTAREA', 'SECTION'].includes(t.tagName)) return;
+      if (!t || ['IMG', 'INPUT', 'TEXTAREA', 'SECTION', 'HEADER', 'FOOTER'].includes(t.tagName) || isStructuralContainer(t) || (t.querySelector && t.querySelector('svg, .material-symbols-outlined'))) return;
       e.preventDefault();
       e.stopPropagation();
       selectElement(t);
@@ -934,6 +1071,7 @@
       if (e.origin !== window.location.origin || e.source !== window.parent) return;
       const msg = e.data || {};
       if (msg.type === 'cms:apply-doc' && msg.doc) {
+        receivedStudioDoc = true;
         applySiteDoc(msg.doc);
         updateBoxes();
       } else if (msg.type === 'cms:set-mode') {
@@ -977,18 +1115,25 @@
       const entry = (siteDoc && siteDoc.elements && siteDoc.elements[key]) || {};
       const secEl = el.closest('section[id], footer, header');
       const secId = secEl ? (secEl.id || secEl.tagName.toLowerCase()) : 'halaman';
+      const curLang = activeLang();
       const plainText = decodeHtmlToPlainText(el.innerHTML, el);
+      const pMeta = getPromptButtonMeta(el, curLang);
+      const savedPrompt = (entry.prompt && pickI18n(entry.prompt, curLang)) || '';
       window.parent.postMessage({
         type: 'cms:selected',
         key,
         friendlyLabel: getFriendlyLabel(el, key),
-        friendlyType: getFriendlyType(el),
+        friendlyType: pMeta.isPromptButton ? 'Tombol Pertanyaan' : getFriendlyType(el),
         sectionLabel: getFriendlySectionName(secId),
         tag: el.tagName.toLowerCase(),
         isImage: el.tagName === 'IMG',
         isLink: el.tagName === 'A',
         isInput: el.tagName === 'INPUT' || el.tagName === 'TEXTAREA',
-        lang: activeLang(),
+        isContainer: isStructuralContainer(el),
+        isPromptButton: pMeta.isPromptButton,
+        promptValue: savedPrompt,
+        defaultPrompt: pMeta.defaultPrompt,
+        lang: curLang,
         html: plainText,
         plainText,
         text: plainText.slice(0, 400),
@@ -1055,7 +1200,7 @@
 
     const editableElements = [];
     const seenKeys = new Set();
-    const candidates = document.querySelectorAll('h1, h2, h3, [id^="chat-"], [id^="prompt-chip-"], [id^="who-trigger-"], [id^="hero-"], [id^="portrait-"], [id^="book"], [id^="tier"], [id^="footer-"], [id^="wts-"], #header-subtitle, #top-bar-left');
+    const candidates = document.querySelectorAll('h1, h2, h3, [id^="chat-"], [id^="prompt-chip-"], [id^="chamber-prompt-"], [id^="who-trigger-"], [id^="hero-"], [id^="portrait-"], [id^="book"], [id^="tier"], [id^="footer-"], [id^="wts-"], #header-subtitle, #top-bar-left, #notice-label, #notice-body');
     candidates.forEach((el) => {
       if (!el || el.tagName === 'IMG' || el.tagName === 'SECTION' || el.tagName === 'FORM' || el.tagName === 'AUDIO') return;
       if (el.closest('[data-cms-injected="studio-ui"]') || el.closest('.wts-card') || el.id === 'wts-video-grid' || el.id === 'wts-empty-state') return;
@@ -1098,7 +1243,7 @@
       ]);
       if (worksRes.ok) { const wj = await worksRes.json(); worksList = wj.works || []; }
       if (pricingRes.ok) { pricingData = await pricingRes.json(); }
-      if (siteRes.ok) { const sj = await siteRes.json(); applySiteDoc(sj); }
+      if (siteRes.ok && !receivedStudioDoc) { const sj = await siteRes.json(); applySiteDoc(sj); }
     } catch (_) {}
     if (isStudio) setTimeout(notifyParentState, 150);
   }

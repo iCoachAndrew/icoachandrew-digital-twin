@@ -417,7 +417,10 @@ function setEditorMode(mode) {
 
 let currentEditorPage = 'home';
 
-function switchEditorPage(page) {
+async function switchEditorPage(page) {
+  if (typeof flushDraftSaves === 'function') {
+    await flushDraftSaves();
+  }
   currentEditorPage = (page === 'what-they-say') ? 'what-they-say' : 'home';
   const homeBtn = document.getElementById('ve-page-home-btn');
   const wtsBtn = document.getElementById('ve-page-wts-btn');
@@ -465,7 +468,8 @@ function setEditorView(view) {
   postToCanvas({ type: 'cms:set-view', view });
 }
 
-function setEditorLang(lang) {
+async function setEditorLang(lang) {
+  if (typeof flushDraftSaves === 'function') await flushDraftSaves();
   editorLang = lang === 'en' ? 'en' : 'id';
   const idBtn = document.getElementById('ve-lang-id');
   const enBtn = document.getElementById('ve-lang-en');
@@ -473,6 +477,8 @@ function setEditorLang(lang) {
   if (enBtn) enBtn.className = editorLang === 'en' ? 'px-2 py-1 rounded-md bg-primary text-white font-semibold' : 'px-2 py-1 rounded-md text-on-surface-variant';
   const insBadge = document.getElementById('ins-lang-badge');
   if (insBadge) insBadge.textContent = editorLang.toUpperCase();
+  const insPromptBadge = document.getElementById('ins-prompt-lang-badge');
+  if (insPromptBadge) insPromptBadge.textContent = editorLang.toUpperCase();
   const topEn = document.getElementById('admin-top-lang-en');
   const topId = document.getElementById('admin-top-lang-id');
   if (topEn && topId) {
@@ -480,6 +486,10 @@ function setEditorLang(lang) {
     topId.className = editorLang === 'id' ? 'px-space-xs py-space-xs text-tertiary-fixed-dim font-bold' : 'px-space-xs py-space-xs text-on-primary-container hover:text-on-primary';
   }
   postToCanvas({ type: 'cms:set-lang', lang: editorLang });
+  if (selectedElem && selectedElem.key) {
+    const curKey = selectedElem.key;
+    setTimeout(() => postToCanvas({ type: 'cms:select-key', key: curKey }), 120);
+  }
   if (siteState && siteState.draft && siteState.draft.seo) {
     populateWebInfoUI(siteState.draft.seo);
   }
@@ -509,6 +519,7 @@ function decodeHtmlEntities(str) {
   txt.innerHTML = String(str).replace(/<br\s*\/?>/gi, '\n').replace(/<\/?[^>]+(>|$)/g, '');
   return txt.value;
 }
+function decodeHtmlToPlainText(str) { return decodeHtmlEntities(str); }
 
 function setEditorViewport(w) {
   const wrap = document.getElementById('ve-iframe-wrap');
@@ -701,11 +712,36 @@ function renderPageImagesDock() {
   `).join('');
 }
 
-function selectCanvasKey(key) {
+async function selectCanvasKey(key) {
+  if (typeof flushDraftSaves === 'function') await flushDraftSaves();
   postToCanvas({ type: 'cms:select-key', key });
 }
 
+function setInspectorSaveStatus(state, customMsg) {
+  const el = document.getElementById('ins-save-status');
+  if (!el) return;
+  if (state === 'unsaved') {
+    el.className = 'font-semibold text-amber-800 flex items-center gap-1';
+    el.innerHTML = '<span class="material-symbols-outlined text-[14px]">edit_note</span><span>' + esc(customMsg || 'Belum Disimpan') + '</span>';
+  } else if (state === 'saving') {
+    el.className = 'font-semibold text-primary flex items-center gap-1';
+    el.innerHTML = '<span class="material-symbols-outlined text-[14px] animate-spin">sync</span><span>' + esc(customMsg || 'Menyimpan...') + '</span>';
+  } else if (state === 'published') {
+    el.className = 'font-semibold text-emerald-900 flex items-center gap-1';
+    el.innerHTML = '<span class="material-symbols-outlined text-[14px]">rocket_launch</span><span>' + esc(customMsg || 'Tayang di Web Live') + '</span>';
+  } else if (state === 'error') {
+    el.className = 'font-semibold text-secondary flex items-center gap-1';
+    el.innerHTML = '<span class="material-symbols-outlined text-[14px]">error</span><span>' + esc(customMsg || 'Gagal Menyimpan') + '</span>';
+  } else {
+    el.className = 'font-semibold text-emerald-800 flex items-center gap-1';
+    el.innerHTML = '<span class="material-symbols-outlined text-[14px]">check_circle</span><span>' + esc(customMsg || 'Tersimpan di Draf') + '</span>';
+  }
+}
+
 function onCanvasElementSelected(info) {
+  if (selectedElem && selectedElem.key && selectedElem.key !== info.key && pendingDraftPatch) {
+    flushDraftSaves();
+  }
   selectedElem = info;
   if (veRightCollapsed) {
     toggleVeRightPanel(false);
@@ -723,16 +759,21 @@ function onCanvasElementSelected(info) {
   }
   document.getElementById('ins-tag-badge').textContent = info.friendlyType || (info.isImage ? 'Foto / Gambar' : 'Teks');
   document.getElementById('ins-lang-badge').textContent = editorLang.toUpperCase();
+  const promptLangBadge = document.getElementById('ins-prompt-lang-badge');
+  if (promptLangBadge) promptLangBadge.textContent = editorLang.toUpperCase();
 
   const imgSec = document.getElementById('ins-image-section');
   const txtSec = document.getElementById('ins-text-section');
   const phSec = document.getElementById('ins-placeholder-section');
   const linkSec = document.getElementById('ins-link-section');
+  const promptSec = document.getElementById('ins-prompt-section');
+  const containerNotice = document.getElementById('ins-container-notice');
 
   if (info.isImage) {
     imgSec.classList.remove('hidden');
     txtSec.classList.add('hidden');
     phSec.classList.add('hidden');
+    if (containerNotice) containerNotice.classList.add('hidden');
     document.getElementById('ins-img-preview').src = info.src || '';
     document.getElementById('ins-img-src').value = info.src || '';
     document.getElementById('ins-img-alt').value = info.alt || '';
@@ -742,13 +783,36 @@ function onCanvasElementSelected(info) {
     imgSec.classList.add('hidden');
     txtSec.classList.add('hidden');
     phSec.classList.remove('hidden');
+    if (containerNotice) containerNotice.classList.add('hidden');
     document.getElementById('ins-placeholder-value').value = decodeHtmlEntities(info.placeholder || '');
+  } else if (info.isContainer) {
+    imgSec.classList.add('hidden');
+    txtSec.classList.add('hidden');
+    phSec.classList.add('hidden');
+    if (containerNotice) containerNotice.classList.remove('hidden');
   } else {
     imgSec.classList.add('hidden');
     txtSec.classList.remove('hidden');
     phSec.classList.add('hidden');
+    if (containerNotice) containerNotice.classList.add('hidden');
     const cleanText = decodeHtmlEntities(info.plainText !== undefined ? info.plainText : (info.html || ''));
     document.getElementById('ins-text-value').value = cleanText;
+  }
+
+  if (promptSec) {
+    if (info.isPromptButton) {
+      promptSec.classList.remove('hidden');
+      const promptEl = document.getElementById('ins-prompt-value');
+      const hintEl = document.getElementById('ins-prompt-hint');
+      if (promptEl) promptEl.value = info.promptValue || '';
+      if (hintEl) {
+        hintEl.textContent = info.defaultPrompt
+          ? `Kosongkan agar otomatis mengikuti teks tombol di atas bila diubah/diperpendek. Bawaan: "${info.defaultPrompt}"`
+          : 'Jika dikosongkan dan teks tombol diubah/diperpendek, pertanyaan yang dikirim ke AI otomatis mengikuti teks tombol baru tersebut.';
+      }
+    } else {
+      promptSec.classList.add('hidden');
+    }
   }
 
   if (info.isLink) {
@@ -771,27 +835,95 @@ function onCanvasElementSelected(info) {
   document.getElementById('ins-style-radius').value = st.borderRadius || '';
   document.getElementById('ins-style-padding').value = st.padding || '';
   document.getElementById('ins-hidden-toggle').checked = Boolean(info.hidden);
+
+  const hasPendingForKey = Boolean(pendingDraftPatch && pendingDraftPatch.elements && Object.prototype.hasOwnProperty.call(pendingDraftPatch.elements, info.key));
+  setInspectorSaveStatus(hasPendingForKey ? 'unsaved' : 'saved');
 }
 
 let draftTimer = null;
+let pendingDraftPatch = null;
+let draftFlushInFlight = null;
+
+function mergeDraftPatch(base, incoming) {
+  const out = base ? { ...base } : {};
+  if (!incoming || typeof incoming !== 'object') return out;
+  if (incoming.elements && typeof incoming.elements === 'object') {
+    out.elements = { ...(out.elements || {}), ...incoming.elements };
+  }
+  for (const part of ['layout', 'blocks', 'theme', 'seo', 'links', 'whatTheySay', 'settings']) {
+    if (incoming[part] !== undefined) out[part] = incoming[part];
+  }
+  return out;
+}
+
+function applyPatchLocallyToDraft(draft, patch) {
+  if (!draft || !patch) return;
+  draft.elements = draft.elements || {};
+  if (patch.elements && typeof patch.elements === 'object') {
+    for (const [k, v] of Object.entries(patch.elements)) {
+      if (v === null) delete draft.elements[k];
+      else draft.elements[k] = v;
+    }
+  }
+  for (const part of ['layout', 'blocks', 'theme', 'seo', 'links', 'whatTheySay', 'settings']) {
+    if (patch[part] !== undefined) draft[part] = patch[part];
+  }
+}
+
+async function flushDraftSaves() {
+  clearTimeout(draftTimer);
+  draftTimer = null;
+  if (draftFlushInFlight) {
+    await draftFlushInFlight;
+  }
+  if (!pendingDraftPatch) return { ok: true, skipped: true };
+  const toSend = pendingDraftPatch;
+  pendingDraftPatch = null;
+  setInspectorSaveStatus('saving');
+  const run = (async () => {
+    const r = await api('POST', '/admin/api/site/draft', toSend);
+    if (r.ok && r.data && r.data.draft) {
+      siteState.draft = r.data.draft;
+      // Preserve any newer edits queued while this save request was in flight
+      if (pendingDraftPatch) {
+        applyPatchLocallyToDraft(siteState.draft, pendingDraftPatch);
+      }
+      siteState.dirty = Boolean(r.data.dirty || pendingDraftPatch);
+      updateDirtyIndicator();
+      if (!pendingDraftPatch) setInspectorSaveStatus('saved');
+      return { ok: true, data: r.data };
+    }
+    // Restore unsent patch on failure so no edit is lost
+    pendingDraftPatch = mergeDraftPatch(toSend, pendingDraftPatch);
+    setInspectorSaveStatus('error', 'Gagal Menyimpan');
+    const errReason = (r && r.data && (r.data.message || r.data.error)) || ('HTTP ' + (r ? r.status : 'network'));
+    toast('Gagal menyimpan perubahan draf (' + errReason + '). Silakan klik Simpan Elemen lagi.', true);
+    return { ok: false, status: r ? r.status : 0, data: r ? r.data : {} };
+  })();
+  draftFlushInFlight = run;
+  const res = await run;
+  draftFlushInFlight = null;
+  if (res.ok && pendingDraftPatch) {
+    return flushDraftSaves();
+  }
+  return res;
+}
+
 function queueSaveDraft(patch) {
   siteState.dirty = true;
   updateDirtyIndicator();
+  setInspectorSaveStatus('unsaved');
+  pendingDraftPatch = mergeDraftPatch(pendingDraftPatch, patch);
   postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
   clearTimeout(draftTimer);
-  draftTimer = setTimeout(async () => {
-    const r = await api('POST', '/admin/api/site/draft', patch);
-    if (r.ok) {
-      siteState.draft = r.data.draft;
-      siteState.dirty = r.data.dirty;
-      updateDirtyIndicator();
-    }
-  }, 280);
+  draftTimer = setTimeout(() => { flushDraftSaves(); }, 450);
 }
 
-function applyInspectorChange() {
-  if (!selectedElem || !selectedElem.key) return;
+function buildInspectorElementEntry() {
+  if (!selectedElem || !selectedElem.key) return null;
   const key = selectedElem.key;
+  siteState.draft = siteState.draft || { elements: {}, layout: { order: [], hidden: [] }, blocks: [], theme: {}, seo: {}, settings: {} };
+  siteState.draft.elements = siteState.draft.elements || {};
   const cur = siteState.draft.elements[key] || {};
   const next = { ...cur };
 
@@ -802,12 +934,26 @@ function applyInspectorChange() {
   } else if (selectedElem.isInput) {
     const ph = document.getElementById('ins-placeholder-value').value;
     next.placeholder = { ...(typeof next.placeholder === 'object' ? next.placeholder : {}), [editorLang]: ph };
-  } else {
+  } else if (!selectedElem.isContainer) {
     const plainVal = document.getElementById('ins-text-value').value;
-    const origPlain = decodeHtmlToPlainText(selectedElem.html || selectedElem.text || '');
-    const hasIconMarkup = /<svg\b|material-symbols-outlined/i.test(String(selectedElem.html || ''));
-    if (!hasIconMarkup && (plainVal !== origPlain || cur.text)) {
+    const origPlain = decodeHtmlEntities(selectedElem.plainText !== undefined ? selectedElem.plainText : (selectedElem.html || selectedElem.text || ''));
+    const hasCurLangText = Boolean(cur.text && typeof cur.text === 'object' && Object.prototype.hasOwnProperty.call(cur.text, editorLang));
+    if (plainVal !== origPlain || hasCurLangText) {
       next.text = { ...(typeof next.text === 'object' ? next.text : {}), [editorLang]: plainVal };
+    }
+  }
+
+  if (selectedElem.isPromptButton) {
+    const promptInput = document.getElementById('ins-prompt-value');
+    const promptVal = promptInput ? promptInput.value.trim() : '';
+    const prevPrompts = (typeof next.prompt === 'object' && next.prompt) ? { ...next.prompt } : {};
+    if (promptVal) {
+      prevPrompts[editorLang] = promptVal;
+      next.prompt = prevPrompts;
+    } else {
+      delete prevPrompts[editorLang];
+      if (Object.keys(prevPrompts).length) next.prompt = prevPrompts;
+      else delete next.prompt;
     }
   }
 
@@ -832,21 +978,58 @@ function applyInspectorChange() {
   if (document.getElementById('ins-hidden-toggle').checked) next.hidden = true;
   else delete next.hidden;
 
-  siteState.draft.elements[key] = next;
-  queueSaveDraft({ elements: { [key]: next } });
+  const payloadVal = Object.keys(next).length ? next : null;
+  if (payloadVal) siteState.draft.elements[key] = payloadVal;
+  else delete siteState.draft.elements[key];
+  return { key, value: payloadVal };
+}
+
+function applyInspectorChange() {
+  const built = buildInspectorElementEntry();
+  if (!built) return;
+  queueSaveDraft({ elements: { [built.key]: built.value } });
+}
+
+async function saveSelectedElement(andPublish = false) {
+  if (!selectedElem || !selectedElem.key) {
+    toast('Silakan pilih elemen di kanvas terlebih dahulu.', true);
+    return;
+  }
+  const built = buildInspectorElementEntry();
+  if (built) {
+    pendingDraftPatch = mergeDraftPatch(pendingDraftPatch, { elements: { [built.key]: built.value } });
+    postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+  }
+  const res = await flushDraftSaves();
+  if (!res.ok) return;
+  if (andPublish) {
+    await publishSiteDraft();
+    setInspectorSaveStatus('published', 'Tayang di Web Live');
+    return;
+  }
+  setInspectorSaveStatus('saved', 'Tersimpan di Draf');
+  toast('Perubahan elemen berhasil disimpan ke draf!');
 }
 
 async function resetSelectedElement() {
   if (!selectedElem || !selectedElem.key) return;
   const key = selectedElem.key;
+  clearTimeout(draftTimer);
+  if (pendingDraftPatch && pendingDraftPatch.elements) delete pendingDraftPatch.elements[key];
   delete siteState.draft.elements[key];
+  setInspectorSaveStatus('saving', 'Mereset...');
   const r = await api('POST', '/admin/api/site/draft', { elements: { [key]: null } });
   if (r.ok) {
     siteState.draft = r.data.draft;
     siteState.dirty = r.data.dirty;
     updateDirtyIndicator();
+    setInspectorSaveStatus('saved', 'Kembali ke Awal');
     postToCanvas({ type: 'cms:apply-doc', doc: siteState.draft });
+    setTimeout(() => postToCanvas({ type: 'cms:select-key', key }), 100);
     toast('Elemen dikembalikan ke tampilan awal.');
+  } else {
+    setInspectorSaveStatus('error', 'Gagal Reset');
+    toast('Gagal mereset elemen.', true);
   }
 }
 
@@ -1667,7 +1850,14 @@ function renderVersionsDock() {
 }
 
 async function saveSiteDraft() {
+  if (selectedElem && selectedElem.key) {
+    const built = buildInspectorElementEntry();
+    if (built) pendingDraftPatch = mergeDraftPatch(pendingDraftPatch, { elements: { [built.key]: built.value } });
+  }
+  const flushed = await flushDraftSaves();
+  if (!flushed.ok) return false;
   const r = await api('POST', '/admin/api/site/draft', {
+    elements: siteState.draft.elements || {},
     layout: siteState.draft.layout,
     blocks: siteState.draft.blocks,
     theme: siteState.draft.theme,
@@ -1676,18 +1866,36 @@ async function saveSiteDraft() {
     settings: siteState.draft.settings
   });
   if (r.ok) {
+    if (r.data && r.data.draft) siteState.draft = r.data.draft;
     siteState.dirty = r.data.dirty;
     updateDirtyIndicator();
-    toast('Draf website berhasil disimpan.');
+    setInspectorSaveStatus('saved', 'Tersimpan di Draf');
+    toast('Seluruh draf website (termasuk teks & elemen) berhasil disimpan.');
+    return true;
   }
+  toast('Gagal menyimpan draf website. Silakan coba lagi.', true);
+  return false;
 }
 
 async function publishSiteDraft() {
+  if (selectedElem && selectedElem.key) {
+    const built = buildInspectorElementEntry();
+    if (built) pendingDraftPatch = mergeDraftPatch(pendingDraftPatch, { elements: { [built.key]: built.value } });
+  }
+  const flushed = await flushDraftSaves();
+  if (!flushed.ok) {
+    toast('Publikasi dibatalkan karena penyimpanan draf terakhir gagal. Mohon simpan ulang.', true);
+    return false;
+  }
   const r = await api('POST', '/admin/api/site/publish', { note: 'Publikasi Visual Studio' });
   if (r.ok) {
     await loadSiteState();
+    setInspectorSaveStatus('published', 'Tayang di Web Live');
     toast('Perubahan telah dipublikasikan ke website utama (Live)!');
+    return true;
   }
+  toast('Gagal mempublikasikan perubahan ke web live.', true);
+  return false;
 }
 
 async function discardSiteDraft() {

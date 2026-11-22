@@ -1904,3 +1904,75 @@ test('Official restored iCoachAndrew avatar served on user & admin servers and r
     assert.ok(!html.includes(oldAiUrlFragment), `${route} must not contain old AI-generated portrait URL`);
   }
 });
+
+
+test('Visual Website Editor: per-element save, prompt button auto-sync & custom prompt override, icon-safe editing, and cross-page persistence', async () => {
+  // 1. Save text + custom prompt on starter chip & shortened text-only edit on chip 2 + what-they-say title
+  const draftRes = await admin('POST', '/admin/api/site/draft', {
+    elements: {
+      '#prompt-chip-1': {
+        text: { id: '📖 Intisari Orbex', en: '📖 Orbex Core' },
+        prompt: { id: 'Apa 3 prinsip inti dalam buku Organizing for Business Excellence?' }
+      },
+      '#prompt-chip-2': {
+        text: { id: 'Bagaimana neurosains membantu keputusan CEO?' }
+      },
+      '#chamber-prompt-1': {
+        text: { id: 'Strategi suksesi generasi penerus' }
+      },
+      '#wts-title': {
+        text: { id: 'Perspektif Pemimpin tentang iCoachAndrew' }
+      }
+    }
+  });
+  assert.strictEqual(draftRes.status, 200);
+  assert.strictEqual(draftRes.json.ok, true);
+  assert.strictEqual(draftRes.json.draft.elements['#prompt-chip-1'].text.id, '📖 Intisari Orbex');
+  assert.strictEqual(draftRes.json.draft.elements['#prompt-chip-1'].prompt.id, 'Apa 3 prinsip inti dalam buku Organizing for Business Excellence?');
+  assert.strictEqual(draftRes.json.draft.elements['#prompt-chip-2'].text.id, 'Bagaimana neurosains membantu keputusan CEO?');
+  assert.strictEqual(draftRes.json.draft.elements['#wts-title'].text.id, 'Perspektif Pemimpin tentang iCoachAndrew');
+
+  // Empty prompt strings must be stripped cleanly so edited button text takes over
+  const stripRes = await admin('POST', '/admin/api/site/draft', {
+    elements: {
+      '#prompt-chip-2': {
+        text: { id: 'Bagaimana neurosains membantu keputusan CEO?' },
+        prompt: { id: '   ' }
+      }
+    }
+  });
+  assert.strictEqual(stripRes.status, 200);
+  assert.strictEqual(stripRes.json.draft.elements['#prompt-chip-2'].prompt, undefined);
+
+  // Publish & verify /api/site-content exposes all overrides
+  assert.strictEqual((await admin('POST', '/admin/api/site/publish', { note: 'Per-element save & prompt sync test' })).status, 200);
+  const pubRes = await user('GET', '/api/site-content');
+  assert.strictEqual(pubRes.status, 200);
+  assert.strictEqual(pubRes.json.elements['#prompt-chip-1'].prompt.id, 'Apa 3 prinsip inti dalam buku Organizing for Business Excellence?');
+  assert.strictEqual(pubRes.json.elements['#wts-title'].text.id, 'Perspektif Pemimpin tentang iCoachAndrew');
+
+  // 2. Verify Admin HTML, Admin Studio JS, CMS Runtime, Index & What-They-Say static contracts
+  const adminHtml = await (await fetch(A + '/admin', { headers: { cookie } })).text();
+  assert.ok(adminHtml.includes('id="btn-ins-save-elem"'), 'Per-element save button exists in Inspector');
+  assert.ok(adminHtml.includes('id="btn-ins-save-publish-elem"'), 'Per-element save & publish button exists');
+  assert.ok(adminHtml.includes('id="ins-save-status"'), 'Dynamic per-element save status badge exists');
+  assert.ok(adminHtml.includes('id="ins-prompt-section"'), 'Prompt question editor exists for question buttons');
+
+  const studioJs = await (await fetch(A + '/admin-studio.js', { headers: { cookie } })).text();
+  assert.ok(studioJs.includes('function decodeHtmlToPlainText('), 'decodeHtmlToPlainText defined (prevents ReferenceError on text edit)');
+  assert.ok(studioJs.includes('async function saveSelectedElement('), 'saveSelectedElement defined');
+  assert.ok(studioJs.includes('async function flushDraftSaves('), 'flushDraftSaves cumulative queue defined');
+  assert.ok(!studioJs.includes('if (!hasIconMarkup'), 'Broken icon text-save blocker removed');
+
+  const homeHtml = await (await fetch(U + '/')).text();
+  assert.ok(homeHtml.includes('id="site-header"') && homeHtml.includes('id="site-footer"'), 'Header and footer have stable IDs for CMS editing');
+  assert.ok(homeHtml.includes('id="chamber-prompt-1"'), 'Chamber prompt buttons have stable IDs');
+  assert.ok(homeHtml.includes("getAttribute('data-cms-prompt')") && homeHtml.includes("getAttribute('data-cms-text-edited')"), 'Question buttons dynamically read edited text and custom prompt');
+
+  const wtsHtml = await (await fetch(U + '/what-they-say')).text();
+  assert.ok(wtsHtml.includes('id="wts-header"') && wtsHtml.includes('id="wts-footer"'), 'What They Say header/footer have stable IDs');
+
+  // Clean up test overrides so subsequent checks stay clean
+  assert.strictEqual((await admin('POST', '/admin/api/site/reset-all')).status, 200);
+  assert.strictEqual((await admin('POST', '/admin/api/site/publish', { note: 'Cleanup test overrides' })).status, 200);
+});

@@ -1407,6 +1407,16 @@
             </div>
 
             <div id="ins-form" class="hidden space-y-3.5">
+              <!-- Per-Element Live Save Status & Quick Save Bar -->
+              <div class="flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg bg-surface border border-outline-variant/40 text-[11px]">
+                <span id="ins-save-status" class="font-semibold text-emerald-800 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                  <span>Tersimpan di Draf</span>
+                </span>
+                <button type="button" onclick="saveSelectedElement(false)" class="px-2.5 py-1 rounded-md bg-primary hover:bg-primary-container text-white font-semibold text-[11px] flex items-center gap-1 shrink-0 cursor-pointer">
+                  <span class="material-symbols-outlined text-[14px]">save</span>Simpan Elemen
+                </button>
+              </div>
               <!-- Image Editor Section -->
               <div id="ins-image-section" class="hidden space-y-2.5 text-xs">
                 <img id="ins-img-preview" src="" alt="" class="h-32 w-full object-contain bg-surface-container rounded-lg border border-outline-variant/40 p-1"/>
@@ -1433,13 +1443,31 @@
                 <input id="ins-img-src" type="hidden" oninput="applyInspectorChange()"/>
               </div>
 
+              <!-- Structural Container Info Box (Prevents accidental innerHTML wipe of sections/cards) -->
+              <div id="ins-container-notice" class="hidden p-3 rounded-xl bg-surface border border-outline-variant/50 text-[11px] text-on-surface-variant leading-relaxed">
+                <strong class="text-primary block mb-0.5">Wadah / Bagian Halaman Terpilih</strong>
+                Anda dapat mengatur warna latar, sudut, spasi, atau menyembunyikan wadah ini. Untuk mengubah teks di dalamnya, klik langsung pada judul, paragraf, atau tombol di dalam kotak ini.
+              </div>
+
               <!-- Clean Natural Text Editor Section -->
               <div id="ins-text-section" class="space-y-1.5">
                 <div class="flex items-center justify-between">
                   <label for="ins-text-value" class="text-xs font-bold text-primary">Isi Teks / Kalimat (<span id="ins-lang-badge">ID</span>)</label>
-                  <span class="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-medium">Otomatis Tersimpan</span>
+                  <span class="text-[10px] text-on-surface-variant">Pratinjau langsung</span>
                 </div>
                 <textarea id="ins-text-value" rows="4" oninput="applyInspectorChange()" placeholder="Ketik teks di sini..." class="w-full border border-outline-variant rounded-lg p-2.5 text-xs bg-white leading-relaxed focus:border-primary focus:outline-none"></textarea>
+              </div>
+
+              <!-- Question Starter Prompt Editor (Only shown for Question Buttons) -->
+              <div id="ins-prompt-section" class="hidden space-y-1.5 p-3 rounded-xl bg-amber-50/80 border border-amber-300/70">
+                <div class="flex items-center justify-between gap-1">
+                  <label for="ins-prompt-value" class="text-xs font-bold text-primary flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[15px] text-amber-800">chat</span>
+                    <span>Pertanyaan yang Dikirim ke AI (<span id="ins-prompt-lang-badge">ID</span>)</span>
+                  </label>
+                </div>
+                <textarea id="ins-prompt-value" rows="3" oninput="applyInspectorChange()" placeholder="Kosongkan agar otomatis mengikuti teks tombol di atas, atau tulis pertanyaan lengkap khusus..." class="w-full border border-amber-300 rounded-lg p-2 text-xs bg-white leading-relaxed focus:border-primary focus:outline-none"></textarea>
+                <p id="ins-prompt-hint" class="text-[10px] text-amber-950/90 leading-snug">Jika dikosongkan dan teks tombol diubah/diperpendek, pertanyaan yang dilemparkan ke AI otomatis mengikuti teks tombol baru tersebut.</p>
               </div>
 
               <!-- Input Placeholder Editor -->
@@ -1530,7 +1558,17 @@
                 <input id="ins-hidden-toggle" type="checkbox" onchange="applyInspectorChange()"/>
                 <span>Sembunyikan Elemen Ini dari Halaman</span>
               </label>
-              <button onclick="resetSelectedElement()" class="w-full py-1.5 rounded-lg border border-secondary text-secondary hover:bg-red-50 font-semibold text-xs cursor-pointer">Kembalikan Elemen ke Awal (Reset)</button>
+              <div class="pt-2 border-t border-outline-variant/40 space-y-2">
+                <button id="btn-ins-save-elem" type="button" onclick="saveSelectedElement(false)" class="w-full py-2.5 px-3 rounded-lg bg-primary hover:bg-primary-container text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+                  <span class="material-symbols-outlined text-[16px]">save</span>
+                  <span>Simpan Perubahan Elemen Ini</span>
+                </button>
+                <button id="btn-ins-save-publish-elem" type="button" onclick="saveSelectedElement(true)" class="w-full py-2 px-3 rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+                  <span class="material-symbols-outlined text-[15px]">rocket_launch</span>
+                  <span>Simpan &amp; Publikasikan Live</span>
+                </button>
+                <button type="button" onclick="resetSelectedElement()" class="w-full py-1.5 rounded-lg border border-secondary text-secondary hover:bg-red-50 font-semibold text-xs cursor-pointer">Kembalikan Elemen ke Awal (Reset)</button>
+              </div>
             </div>
           </aside>
         </div>

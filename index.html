@@ -351,7 +351,7 @@
   <!-- ========================================================================= -->
   <!-- MINIMALIST SINGLE TOP BAR (CLAUDE / CHATGPT STYLE FOR 9:16 & DESKTOP)     -->
   <!-- ========================================================================= -->
-  <header class="w-full h-14 bg-[#FAF9F6]/90 backdrop-blur-md border-b border-gray-200/70 sticky top-0 z-40">
+  <header id="site-header" class="w-full h-14 bg-[#FAF9F6]/90 backdrop-blur-md border-b border-gray-200/70 sticky top-0 z-40">
     <div class="max-w-5xl mx-auto h-full px-3 sm:px-6 flex items-center justify-between gap-2">
       <!-- Left: Hamburger Menu (Opens Collapsible Drawer) + Brand -->
       <div class="flex items-center gap-2 min-w-0">
@@ -519,16 +519,16 @@
 
             <!-- Strictly 1-Line Starter Suggestion Pills (Never wraps into 2 rows on any screen size) -->
             <div id="chat-starter-chips" class="flex flex-nowrap items-center justify-start sm:justify-center gap-1.5 overflow-x-auto no-scrollbar whitespace-nowrap py-0.5">
-              <button type="button" onclick="submitSuggestedPrompt(1)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+              <button type="button" data-prompt-chip="1" onclick="submitSuggestedPrompt(1, this)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
                 <span id="prompt-chip-1">📖 Buku Orbex</span>
               </button>
-              <button type="button" onclick="submitSuggestedPrompt(2)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+              <button type="button" data-prompt-chip="2" onclick="submitSuggestedPrompt(2, this)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
                 <span id="prompt-chip-2">🧠 Brain Quotient</span>
               </button>
-              <button type="button" onclick="submitSuggestedPrompt(3)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+              <button type="button" data-prompt-chip="3" onclick="submitSuggestedPrompt(3, this)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
                 <span id="prompt-chip-3">🤝 Suksesi Bisnis</span>
               </button>
-              <button type="button" onclick="submitSuggestedPrompt(4)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
+              <button type="button" data-prompt-chip="4" onclick="submitSuggestedPrompt(4, this)" class="shrink-0 whitespace-nowrap cursor-pointer text-[11px] sm:text-xs font-sans px-3 py-1.5 rounded-full border border-gray-200/90 bg-white text-hbs-charcoal hover:border-hbs-crimson hover:text-hbs-crimson transition-all shadow-2xs">
                 <span id="prompt-chip-4">✨ Karya &amp; Legacy</span>
               </button>
             </div>
@@ -1037,13 +1037,13 @@
             <div class="bg-white border border-hbs-stoneDark rounded-xl p-5 shadow-xs space-y-3">
               <div class="font-mono text-xs uppercase tracking-wider text-hbs-crimson font-bold">STUDI KASUS POPULER DEWAN</div>
               <div class="space-y-2">
-                <button onclick="submitChamberPrompt(1)" class="w-full text-left p-3 rounded-lg border border-hbs-stoneDark hover:border-hbs-crimson bg-hbs-stone hover:bg-white text-xs font-medium text-hbs-charcoal transition-all">
+                <button id="chamber-prompt-1" type="button" data-chamber-prompt="1" onclick="submitChamberPrompt(1, this)" class="w-full text-left p-3 rounded-lg border border-hbs-stoneDark hover:border-hbs-crimson bg-hbs-stone hover:bg-white text-xs font-medium text-hbs-charcoal transition-all">
                   “Dilema suksesi generasi kedua &amp; penyelarasan budaya pendiri”
                 </button>
-                <button onclick="submitChamberPrompt(2)" class="w-full text-left p-3 rounded-lg border border-hbs-stoneDark hover:border-hbs-crimson bg-hbs-stone hover:bg-white text-xs font-medium text-hbs-charcoal transition-all">
+                <button id="chamber-prompt-2" type="button" data-chamber-prompt="2" onclick="submitChamberPrompt(2, this)" class="w-full text-left p-3 rounded-lg border border-hbs-stoneDark hover:border-hbs-crimson bg-hbs-stone hover:bg-white text-xs font-medium text-hbs-charcoal transition-all">
                   “Menyelaraskan strategi dewan dengan perilaku tim di lapangan”
                 </button>
-                <button onclick="submitChamberPrompt(3)" class="w-full text-left p-3 rounded-lg border border-hbs-stoneDark hover:border-hbs-crimson bg-hbs-stone hover:bg-white text-xs font-medium text-hbs-charcoal transition-all">
+                <button id="chamber-prompt-3" type="button" data-chamber-prompt="3" onclick="submitChamberPrompt(3, this)" class="w-full text-left p-3 rounded-lg border border-hbs-stoneDark hover:border-hbs-crimson bg-hbs-stone hover:bg-white text-xs font-medium text-hbs-charcoal transition-all">
                   “Mengatasi kelelahan kognitif eksekutif saat krisis organisasi”
                 </button>
               </div>
@@ -1088,7 +1088,7 @@
   <!-- NOTICE BANNER: DIGITAL TWIN PROVENANCE     -->
   <!-- (Collapsed in Chat Room mode; shown only when Full Profile is opened) -->
   <!-- ========================================== -->
-  <div data-bio-section="1" class="w-full bg-hbs-stone border-t border-hbs-stoneDark py-5 px-4 sm:px-6 lg:px-12 text-xs text-hbs-muted text-center">
+  <div id="notice-banner" data-bio-section="1" class="w-full bg-hbs-stone border-t border-hbs-stoneDark py-5 px-4 sm:px-6 lg:px-12 text-xs text-hbs-muted text-center">
     <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-2 leading-relaxed">
       <span class="material-symbols-outlined text-hbs-crimson text-[18px] shrink-0">verified</span>
       <span>
@@ -1102,7 +1102,7 @@
   <!-- HBS-INSPIRED ACADEMIC FOOTER               -->
   <!-- (Collapsed in Chat Room mode; shown only when Full Profile is opened) -->
   <!-- ========================================== -->
-  <footer data-bio-section="1" class="w-full bg-hbs-charcoal text-white py-12 border-t-4 border-hbs-crimson text-sm mt-auto">
+  <footer id="site-footer" data-bio-section="1" class="w-full bg-hbs-charcoal text-white py-12 border-t-4 border-hbs-crimson text-sm mt-auto">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 grid grid-cols-1 md:grid-cols-12 gap-8">
       
       <div class="md:col-span-6 space-y-4">
@@ -2317,6 +2317,9 @@
       }
     };
 
+    window.SUGGESTED_PROMPTS = SUGGESTED_PROMPTS;
+    window.CHAMBER_PROMPTS = CHAMBER_PROMPTS;
+
     function escapeHtml(s) {
       return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
@@ -2871,13 +2874,42 @@
       submitFrontpageQuestion(q);
     }
 
-    function submitSuggestedPrompt(idx) {
+    function stripPromptDecor(str) {
+      return String(str || '')
+        .replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s“”"‘’'•\-]+/u, '')
+        .replace(/[“”"‘’'\s]+$/u, '')
+        .trim();
+    }
+
+    function submitSuggestedPrompt(idx, btnEl) {
+      const chipEl = document.getElementById('prompt-chip-' + idx);
+      const parentBtn = btnEl || (chipEl && chipEl.closest('button'));
+      const explicitPrompt = (chipEl && chipEl.getAttribute('data-cms-prompt'))
+        || (parentBtn && parentBtn.getAttribute('data-cms-prompt')) || '';
+      if (explicitPrompt.trim()) {
+        return submitFrontpageQuestion(explicitPrompt.trim());
+      }
+      const isEdited = (chipEl && chipEl.getAttribute('data-cms-text-edited') === '1')
+        || (parentBtn && parentBtn.getAttribute('data-cms-text-edited') === '1');
+      if (isEdited) {
+        const editedText = stripPromptDecor((chipEl || parentBtn).textContent || '');
+        if (editedText) return submitFrontpageQuestion(editedText);
+      }
       const promptObj = SUGGESTED_PROMPTS[idx];
       const q = promptObj ? (promptObj[currentLang] || promptObj.id) : '';
       if (q) submitFrontpageQuestion(q);
     }
 
-    function submitChamberPrompt(idx) {
+    function submitChamberPrompt(idx, btnEl) {
+      const btn = btnEl || document.getElementById('chamber-prompt-' + idx);
+      const explicitPrompt = (btn && btn.getAttribute('data-cms-prompt')) || '';
+      if (explicitPrompt.trim()) {
+        return submitChamberQuestion(explicitPrompt.trim());
+      }
+      if (btn && btn.getAttribute('data-cms-text-edited') === '1') {
+        const editedText = stripPromptDecor(btn.textContent || '');
+        if (editedText) return submitChamberQuestion(editedText);
+      }
       const promptObj = CHAMBER_PROMPTS[idx];
       const q = promptObj ? (promptObj[currentLang] || promptObj.id) : '';
       if (q) submitChamberQuestion(q);

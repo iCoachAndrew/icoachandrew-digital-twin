@@ -537,3 +537,58 @@ test('SEC-25 Mixed public+Ring0 memory probe blocked preemptively, history poiso
     await admin('POST', '/admin/api/ai/keys/remove', { id: k.json.id });
   }
 });
+
+
+test('SEC-26 Visual Website Editor CMS draft/prompt XSS sanitization, prototype-pollution block & structural container guard', async () => {
+  // 1. Unauthenticated writes to /admin/api/site/draft & /publish fail closed (401)
+  const unauthDraft = await call(A, 'POST', '/admin/api/site/draft', {
+    elements: { '#prompt-chip-1': { text: { id: 'hacked' }, prompt: { id: 'hacked' } } }
+  });
+  assert.strictEqual(unauthDraft.status, 401);
+  const unauthPub = await call(A, 'POST', '/admin/api/site/publish', { note: 'unauth' });
+  assert.strictEqual(unauthPub.status, 401);
+
+  // 2. Authenticated admin submits prototype-pollution keys + XSS payloads in text, prompt, href, and style
+  const longPrompt = 'Pertanyaan ' + 'A'.repeat(2500);
+  const res = await admin('POST', '/admin/api/site/draft', {
+    elements: {
+      __proto__: { polluted: true },
+      constructor: { polluted: true },
+      'invalid-no-hash': { text: { id: 'should be ignored' } },
+      '#prompt-chip-1': {
+        text: { id: '<b>Orbex</b><script>alert(1)</script><img src=x onerror=alert(2)>' },
+        prompt: { id: '<script>alert(3)</script><svg onload=alert(4)>Apa isi buku Orbex?\x00\x07' },
+        href: 'javascript:alert(5)',
+        style: { color: 'red; background:url(javascript:alert(6))', backgroundColor: '#ffffff' }
+      },
+      '#prompt-chip-2': {
+        prompt: { id: longPrompt }
+      }
+    }
+  });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(({}).polluted, undefined, 'Object.prototype must never be polluted');
+  assert.strictEqual(res.json.draft.elements['invalid-no-hash'], undefined, 'Keys failing KEY_RE must be rejected');
+
+  const chip1 = res.json.draft.elements['#prompt-chip-1'];
+  assert.ok(chip1, '#prompt-chip-1 entry persisted');
+  assert.ok(!chip1.text.id.includes('<script') && !chip1.text.id.includes('onerror') && !chip1.text.id.includes('<img'), 'text XSS stripped');
+  assert.ok(chip1.text.id.includes('<b>Orbex</b>'), 'Safe inline formatting preserved');
+  assert.ok(!chip1.prompt.id.includes('<script') && !chip1.prompt.id.includes('<svg') && !/[\x00-\x1f]/.test(chip1.prompt.id), 'prompt HTML/control chars stripped');
+  assert.strictEqual(chip1.prompt.id, 'Apa isi buku Orbex?');
+  assert.strictEqual(chip1.href, undefined, 'javascript: href rejected');
+  assert.strictEqual(chip1.style.color, undefined, 'CSS injection in style.color rejected');
+  assert.strictEqual(chip1.style.backgroundColor, '#ffffff', 'Safe hex style preserved');
+
+  const chip2 = res.json.draft.elements['#prompt-chip-2'];
+  assert.ok(chip2.prompt.id.length <= 1200, 'Oversized prompt strictly bounded to 1200 chars');
+
+  // 3. Verify client-side defense-in-depth guards exist in cms-runtime.js
+  const cmsRuntime = await (await fetch(U + '/cms-runtime.js')).text();
+  assert.ok(cmsRuntime.includes('function isStructuralContainer('), 'Structural container wipe guard present');
+  assert.ok(cmsRuntime.includes('function sanitizeInlineClient('), 'Strict inline client allowlist present');
+  assert.ok(cmsRuntime.includes('!isStructuralContainer(el)'), 'applySiteDoc refuses to overwrite container innerHTML');
+
+  // Cleanup draft
+  await admin('POST', '/admin/api/site/reset-all');
+});
